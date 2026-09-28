@@ -68,9 +68,6 @@ class InvoiceDetailOut(BaseModel):
 @router.get("/work-queue")
 def billing_work_queue(
     db: Session = Depends(get_db),
-    actor: User = Depends(
-        require_access(UserRole.GENERAL_ACCOUNTING, UserRole.AI_AGENT_1)
-    ),
 ):
     statuses = {
         OrderStatus.HANDOFF_02_RETURNED,

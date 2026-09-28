@@ -34,13 +34,13 @@ def setup_order(db_session):
         email="packer@example.com",
         password_hash="unused",
         full_name="Floor Packer",
-        role=UserRole.FLOOR_STAFF,
+        role=UserRole.GENERAL,
     )
     manager = User(
         email="manager@example.com",
         password_hash="unused",
         full_name="Operations Manager",
-        role=UserRole.OPERATIONS_MANAGER,
+        role=UserRole.GENERAL,
     )
     customer = Customer(
         client_code="BUYER-1",

@@ -32,47 +32,27 @@ def get_current_user(
     return user
 
 
-def authorize_user(
-    user: User,
-    minimum_rank: int,
-    service_roles: set[UserRole],
-    detail: str,
-) -> User:
-    allowed = (
-        user.role in service_roles
-        if user.is_service_principal
-        else HUMAN_ROLE_RANK.get(user.role, 0) >= minimum_rank
-    )
-    if user.must_change_password or not allowed:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-    return user
-
-
 def require_access(
     minimum_role: UserRole,
     *service_roles: UserRole,
+    detail: str | None = None,
 ) -> Callable[..., User]:
     minimum_rank = HUMAN_ROLE_RANK[minimum_role]
     allowed_service_roles = set(service_roles)
 
     def dependency(user: User = Depends(get_current_user)) -> User:
-        detail = (
-            "Password change required before accessing the application"
-            if user.must_change_password
-            else "Your role is not permitted to perform this operation"
+        allowed = (
+            user.role in allowed_service_roles
+            if user.is_service_principal
+            else HUMAN_ROLE_RANK.get(user.role, 0) >= minimum_rank
         )
-        return authorize_user(user, minimum_rank, allowed_service_roles, detail)
-
-    return dependency
-
-
-def require_human_access(
-    minimum_role: UserRole,
-    detail: str = "A human user with an authorized role is required",
-) -> Callable[..., User]:
-    minimum_rank = HUMAN_ROLE_RANK[minimum_role]
-
-    def dependency(user: User = Depends(get_current_user)) -> User:
-        return authorize_user(user, minimum_rank, set(), detail)
+        if user.must_change_password or not allowed:
+            error_detail = detail or (
+                "Password change required before accessing the application"
+                if user.must_change_password
+                else "Your role is not permitted to perform this operation"
+            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=error_detail)
+        return user
 
     return dependency

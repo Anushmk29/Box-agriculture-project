@@ -32,7 +32,7 @@ def test_login_returns_standard_signed_jwt(db_session):
         email="manager@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Operations Manager",
-        role=UserRole.OPERATIONS_MANAGER,
+        role=UserRole.GENERAL,
     )
     db_session.add(user)
     db_session.commit()
@@ -57,7 +57,7 @@ def test_http_only_session_cookie_authenticates_and_logout_clears_it(db_session)
         email="cookie-user@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Cookie User",
-        role=UserRole.OPERATIONS_MANAGER,
+        role=UserRole.GENERAL,
     )
     db_session.add(user)
     db_session.commit()
@@ -69,7 +69,7 @@ def test_http_only_session_cookie_authenticates_and_logout_clears_it(db_session)
     )
     assert login.status_code == 200
     assert "HttpOnly" in login.headers["set-cookie"]
-    assert client.get("/api/v3/auth/me").json()["role"] == UserRole.OPERATIONS_MANAGER.value
+    assert client.get("/api/v3/auth/me").json()["role"] == UserRole.GENERAL.value
     assert client.get("/api/v3/master-data/products").status_code == 200
 
     logout = client.post("/api/v3/auth/logout")
@@ -95,7 +95,7 @@ def test_service_principal_cannot_confirm_procurement_batch(db_session):
         email="procurement-bot@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Procurement Bot",
-        role=UserRole.PROCUREMENT_BUYER,
+        role=UserRole.GENERAL,
         is_service_principal=True,
     )
     db_session.add(service_user)
@@ -130,7 +130,7 @@ def test_accounting_level_includes_general_procurement_access(db_session):
         email="accounting-only@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Accounting Only",
-        role=UserRole.ACCOUNTING_OFFICER,
+        role=UserRole.GENERAL_ACCOUNTING,
     )
     db_session.add(accounting_user)
     db_session.commit()
@@ -167,7 +167,7 @@ def test_procurement_combine_rejects_unknown_order_sources(db_session):
         email="combine-manager@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Combine Manager",
-        role=UserRole.OPERATIONS_MANAGER,
+        role=UserRole.GENERAL,
     )
     db_session.add(manager)
     db_session.commit()
@@ -193,7 +193,7 @@ def test_procurement_auto_reference_does_not_collide_for_different_sources(db_se
         email="batch-reference-manager@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Batch Reference Manager",
-        role=UserRole.OPERATIONS_MANAGER,
+        role=UserRole.GENERAL,
     )
     main_customer = Customer(
         client_code="MAIN-BATCH-REF",
@@ -303,7 +303,7 @@ def test_order_upload_rejects_non_excel_file_without_server_error(db_session):
         email="customer-agent@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Customer Agent",
-        role=UserRole.CUSTOMER_AGENT,
+        role=UserRole.GENERAL,
     )
     db_session.add(user)
     db_session.commit()
@@ -330,7 +330,7 @@ def test_order_upload_requires_explicit_shipment_and_route(db_session):
         email="dated-upload@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Dated Upload User",
-        role=UserRole.CUSTOMER_AGENT,
+        role=UserRole.GENERAL,
     )
     main_customer = Customer(
         client_code="MAIN-DATED",
@@ -372,7 +372,7 @@ def test_selling_price_defaults_to_the_current_date(db_session):
         email="pricing-accountant@example.com",
         password_hash=hash_password("correct horse battery staple"),
         full_name="Pricing Accountant",
-        role=UserRole.ACCOUNTING_OFFICER,
+        role=UserRole.GENERAL_ACCOUNTING,
     )
     main_customer = Customer(
         client_code="MAIN-PRICE",
@@ -446,21 +446,21 @@ def test_manifest_api_does_not_default_to_a_specific_flight(db_session):
     app.dependency_overrides.clear()
 
 
-def test_staff_has_universal_operational_access(db_session):
-    staff_user = User(
-        email="operations-staff@example.com",
+def test_general_user_has_universal_operational_access(db_session):
+    general_user = User(
+        email="general-user@example.com",
         password_hash=hash_password("Password123!"),
-        full_name="Operations Staff",
-        role=UserRole.STAFF,
+        full_name="General User",
+        role=UserRole.GENERAL,
         is_service_principal=False,
     )
-    db_session.add(staff_user)
+    db_session.add(general_user)
     db_session.commit()
 
     client = client_for(db_session, raise_server_exceptions=False)
     login_resp = client.post(
         "/api/v3/auth/login",
-        json={"email": staff_user.email, "password": "Password123!"},
+        json={"email": general_user.email, "password": "Password123!"},
     )
     assert login_resp.status_code == 200
     token = login_resp.json()["access_token"]
@@ -468,9 +468,9 @@ def test_staff_has_universal_operational_access(db_session):
 
     me_resp = client.get("/api/v3/auth/me", headers=headers)
     assert me_resp.status_code == 200
-    assert me_resp.json()["role"] == UserRole.STAFF.value
+    assert me_resp.json()["role"] == UserRole.GENERAL.value
 
-    # Staff can access procurement endpoints without 403
+    # General users can access procurement endpoints without 403
     buffer_resp = client.put(
         "/api/v3/procurement/items/dummy-item-id/buffer",
         headers=headers,
@@ -478,7 +478,7 @@ def test_staff_has_universal_operational_access(db_session):
     )
     assert buffer_resp.status_code != 403
 
-    # Staff can access SKU mapping endpoints without 403
+    # General users can access SKU mapping endpoints without 403
     sku_resp = client.get("/api/v3/master-data/sku-mappings", headers=headers)
     assert sku_resp.status_code == 200
 

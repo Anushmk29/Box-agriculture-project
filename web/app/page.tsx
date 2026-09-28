@@ -28,17 +28,11 @@ type OperationsSummary = {
 
 export default function OperationsPage() {
   const [summary, setSummary] = useState<OperationsSummary | null>(null);
-  const [role, setRole] = useState("");
   const [error, setError] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    api<{ role: string }>("/auth/me")
-      .then(session => {
-        if (isMounted) setRole(session.role);
-      })
-      .catch(() => {});
     api<OperationsSummary>("/operations/summary")
       .then(data => {
         if (isMounted) {
@@ -100,7 +94,7 @@ export default function OperationsPage() {
     { step: "02", title: "Procurement", team: "Buyers", detail: "Confirm supplier purchases and send Handoff 01 to the packing floor.", href: "/procurement" },
     { step: "03", title: "Packing floor", team: "Packing floor", detail: "Pack cartons, record net weights, seal boxes, and return Handoff 02.", href: "/packing" },
     { step: "04", title: "Billing", team: "Accounts", detail: "Issue and approve invoices, record payments, and issue receipts.", href: "/billing" },
-  ].filter(step => step.href !== "/billing" || (role && role !== "GENERAL")).map((step, index) => {
+  ].filter(step => step.href !== "/billing" || summary?.awaiting_billing !== undefined).map((step, index) => {
     const count = stageCounts[index];
     const attention = index === 2 && boxesToWeigh > 0;
     return {
@@ -197,7 +191,7 @@ export default function OperationsPage() {
           </div>
         </Link>
 
-        {role && role !== "GENERAL" ? <Link href="/billing" className="metric-card-v2">
+        {summary?.awaiting_billing !== undefined ? <Link href="/billing" className="metric-card-v2">
           <div className="metric-card-top">
             <div className="metric-icon-box emerald"><ReceiptText size={20} /></div>
           </div>

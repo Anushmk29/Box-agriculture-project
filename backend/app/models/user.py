@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Literal
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, String
 
@@ -13,15 +14,12 @@ class UserRole(StrEnum):
     AI_AGENT_1 = "AI_AGENT_1"
     AI_AGENT_2 = "AI_AGENT_2"
 
-    # Compatibility aliases for scripts and historical records during rollout.
-    STAFF = "GENERAL"
-    CUSTOMER_AGENT = "GENERAL"
-    PROCUREMENT_BUYER = "GENERAL"
-    FLOOR_STAFF = "GENERAL"
-    OPERATIONS_MANAGER = "GENERAL"
-    ACCOUNTING_OFFICER = "GENERAL_ACCOUNTING"
-    SYSTEM_ADMIN = "OWNER_ADMIN"
 
+HumanRole = Literal[
+    UserRole.GENERAL,
+    UserRole.GENERAL_ACCOUNTING,
+    UserRole.OWNER_ADMIN,
+]
 
 HUMAN_ROLE_RANK = {
     UserRole.GENERAL: 1,

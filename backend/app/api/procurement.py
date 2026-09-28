@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import require_access, require_human_access
+from app.core.dependencies import require_access
 from app.models.order import RawOrderFile
 from app.models.procurement import MasterPurchasingList, PurchasingItem
 from app.models.user import User, UserRole
@@ -130,7 +130,7 @@ def confirm_procurement_batch(
     payload: ProcurementBatchConfirmationRequest,
     db: Session = Depends(get_db),
     actor: User = Depends(
-        require_human_access(
+        require_access(
             UserRole.GENERAL,
             detail="A human procurement role must confirm purchases",
         )
@@ -296,7 +296,10 @@ def adjust_purchasing_buffer(
     payload: BufferUpdateRequest,
     db: Session = Depends(get_db),
     _actor: User = Depends(
-        require_human_access(UserRole.GENERAL)
+        require_access(
+            UserRole.GENERAL,
+            detail="A human user with an authorized role is required",
+        )
     ),
 ):
     """

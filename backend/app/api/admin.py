@@ -8,7 +8,7 @@ from app.core.database import get_db
 from app.core.dependencies import require_access
 from app.core.security import hash_password
 from app.models.audit import AuditLog
-from app.models.user import HUMAN_ROLES, User, UserRole
+from app.models.user import HumanRole, User, UserRole
 
 router = APIRouter(
     prefix="/admin/users",
@@ -29,7 +29,7 @@ class UserOut(BaseModel):
 class UserCreate(BaseModel):
     email: str = Field(min_length=3, max_length=255)
     full_name: str = Field(min_length=1, max_length=255)
-    role: UserRole
+    role: HumanRole
 
     @field_validator("email")
     @classmethod
@@ -44,13 +44,6 @@ class UserCreate(BaseModel):
     def normalize_name(cls, value: str) -> str:
         return value.strip()
 
-    @field_validator("role")
-    @classmethod
-    def human_role_only(cls, value: UserRole) -> UserRole:
-        if value not in HUMAN_ROLES:
-            raise ValueError("Only human roles can be assigned")
-        return value
-
 
 class UserCreateResponse(BaseModel):
     user: UserOut
@@ -58,15 +51,8 @@ class UserCreateResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    role: UserRole | None = None
+    role: HumanRole | None = None
     is_active: bool | None = None
-
-    @field_validator("role")
-    @classmethod
-    def human_role_only(cls, value: UserRole | None) -> UserRole | None:
-        if value is not None and value not in HUMAN_ROLES:
-            raise ValueError("Only human roles can be assigned")
-        return value
 
     @model_validator(mode="after")
     def require_change(self):
