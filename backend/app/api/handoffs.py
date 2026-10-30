@@ -3,8 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import require_access
-from app.models.user import User, UserRole
+from app.core.dependencies import require_action
+from app.core.policy import Action
+from app.models.user import User
 from app.modules.handoffs.service import HandoffService
 
 router = APIRouter(prefix="/agents", tags=["Agent handoff contracts"])
@@ -30,8 +31,8 @@ def handoff_response(handoff):
 @router.post("/handoff-01/dispatch")
 def dispatch_handoff_01(
     payload: Handoff01Request,
-    db: Session = Depends(get_db),
-    actor: User = Depends(require_access(UserRole.OWNER_ADMIN, UserRole.AI_AGENT_1)),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.DISPATCH_HANDOFF_01)),
 ):
     try:
         return handoff_response(
@@ -44,8 +45,8 @@ def dispatch_handoff_01(
 @router.post("/handoff-02/return")
 def return_handoff_02(
     payload: Handoff02Request,
-    db: Session = Depends(get_db),
-    actor: User = Depends(require_access(UserRole.OWNER_ADMIN, UserRole.AI_AGENT_2)),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.RETURN_HANDOFF_02)),
 ):
     try:
         return handoff_response(

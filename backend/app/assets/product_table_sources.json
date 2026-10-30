@@ -1,0 +1,4998 @@
+{
+  "sources": [
+    {
+      "file": "PRODUCT CODES.xlsx",
+      "sha256": "bbf7784a2d2086ad74f3a0bf4c68b11e28933ea0dd77054fe088d0ef61be2a2f"
+    },
+    {
+      "file": "Rev.1 Grouping List (1).xlsx",
+      "sha256": "2f4a20903682a59e634ecca34138cd442a0ee18ccc362b93a856a266a1c5f46b"
+    }
+  ],
+  "products": [
+    {
+      "row": 8,
+      "code": "11-001",
+      "name_th": "ตะไคร้",
+      "name_en": "LEMON GLASS",
+      "control_status": null
+    },
+    {
+      "row": 9,
+      "code": "11-002",
+      "name_th": "ข่าอ่อน",
+      "name_en": "YOUNG GALANGAL",
+      "control_status": null
+    },
+    {
+      "row": 10,
+      "code": "11-003",
+      "name_th": "ใบมะกรูดสด",
+      "name_en": "LEECH LIME LEAF",
+      "control_status": null
+    },
+    {
+      "row": 11,
+      "code": "11-004",
+      "name_th": "กระเพรา",
+      "name_en": "HOLY BASIL (ka-prow)",
+      "control_status": "EL"
+    },
+    {
+      "row": 12,
+      "code": "11-005",
+      "name_th": "โหระพา",
+      "name_en": "SWEET BASIL (horapa)",
+      "control_status": "EL"
+    },
+    {
+      "row": 13,
+      "code": "11-006",
+      "name_th": "ผักบุ้งจีน",
+      "name_en": "MORNING GLORY",
+      "control_status": null
+    },
+    {
+      "row": 14,
+      "code": "11-007",
+      "name_th": "คะน้า",
+      "name_en": "KALE",
+      "control_status": "EL"
+    },
+    {
+      "row": 15,
+      "code": "11-008",
+      "name_th": "ยอดคะน้า",
+      "name_en": "YOUNG KALE",
+      "control_status": "EL"
+    },
+    {
+      "row": 16,
+      "code": "11-009",
+      "name_th": "กวางตุ้ง",
+      "name_en": "CHINESE CABBAGE",
+      "control_status": null
+    },
+    {
+      "row": 17,
+      "code": "11-010",
+      "name_th": "คื่นช่าย",
+      "name_en": "CHINESE LEEK, CELERY",
+      "control_status": "EL"
+    },
+    {
+      "row": 18,
+      "code": "11-011",
+      "name_th": "ชุนฉ่าย",
+      "name_en": "CHUN CHAI",
+      "control_status": null
+    },
+    {
+      "row": 19,
+      "code": "11-012",
+      "name_th": "ผักโขมแดง",
+      "name_en": "CHINESE SPINACH",
+      "control_status": null
+    },
+    {
+      "row": 20,
+      "code": "11-013",
+      "name_th": "มะเขือเปราะ",
+      "name_en": "EGG PLANT",
+      "control_status": "EL"
+    },
+    {
+      "row": 21,
+      "code": "11-014",
+      "name_th": "มะเขือพวง",
+      "name_en": "NIGHTSHADE",
+      "control_status": null
+    },
+    {
+      "row": 22,
+      "code": "11-015",
+      "name_th": "บวบเหลี่ยม",
+      "name_en": "LUFFA",
+      "control_status": null
+    },
+    {
+      "row": 23,
+      "code": "11-016",
+      "name_th": "มะระจีน",
+      "name_en": "BALSAM PEAR",
+      "control_status": "EL"
+    },
+    {
+      "row": 24,
+      "code": "11-017",
+      "name_th": "ผักแขยง",
+      "name_en": "KA-YANG",
+      "control_status": null
+    },
+    {
+      "row": 25,
+      "code": "11-018",
+      "name_th": "ผักแพร้ว",
+      "name_en": "PAK PRAWE",
+      "control_status": null
+    },
+    {
+      "row": 26,
+      "code": "11-019",
+      "name_th": "ผักปลัง",
+      "name_en": "MALABAR NIGHTSHADE",
+      "control_status": null
+    },
+    {
+      "row": 27,
+      "code": "11-020",
+      "name_th": "ผักหวานป่า",
+      "name_en": "PHAK WAN",
+      "control_status": null
+    },
+    {
+      "row": 28,
+      "code": "11-021",
+      "name_th": "ก้านคูน",
+      "name_en": "KAN KOON",
+      "control_status": null
+    },
+    {
+      "row": 29,
+      "code": "11-022",
+      "name_th": "พริกขี้หนูสวน",
+      "name_en": "CHILLI BIRD MIXED",
+      "control_status": "EL"
+    },
+    {
+      "row": 30,
+      "code": "11-023",
+      "name_th": "พริกแดง จินดา",
+      "name_en": "RED CHILLI",
+      "control_status": "EL"
+    },
+    {
+      "row": 31,
+      "code": "11-024",
+      "name_th": "พริกเขียว จินดา",
+      "name_en": "GREEN CHILLI",
+      "control_status": "EL"
+    },
+    {
+      "row": 32,
+      "code": "11-025",
+      "name_th": "พริกชี้ฟ้าแดง",
+      "name_en": "CHILLI SPUR RED PEPPER",
+      "control_status": "EL"
+    },
+    {
+      "row": 33,
+      "code": "11-026",
+      "name_th": "พริกชี้ฟ้าเขียว",
+      "name_en": "CHILLI SPUR GREEN PEPPER",
+      "control_status": "EL"
+    },
+    {
+      "row": 34,
+      "code": "11-027",
+      "name_th": "พริกชี้ฟ้าเหลือง",
+      "name_en": "CHILLI SPUR YELLOW PEPPER",
+      "control_status": "EL"
+    },
+    {
+      "row": 35,
+      "code": "11-028",
+      "name_th": "มะละกอดิบ",
+      "name_en": "GREEN PAPAYA",
+      "control_status": null
+    },
+    {
+      "row": 36,
+      "code": "11-029",
+      "name_th": "หัวปลี",
+      "name_en": "BANANA FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 37,
+      "code": "11-030",
+      "name_th": "ฟักเขียว",
+      "name_en": "WAX GOURD",
+      "control_status": null
+    },
+    {
+      "row": 38,
+      "code": "11-031",
+      "name_th": "เผือก",
+      "name_en": "TARO",
+      "control_status": null
+    },
+    {
+      "row": 39,
+      "code": "11-032",
+      "name_th": "มันแกว",
+      "name_en": "YAM BEAN",
+      "control_status": null
+    },
+    {
+      "row": 40,
+      "code": "11-033",
+      "name_th": "มันเทศ",
+      "name_en": "POTATO",
+      "control_status": null
+    },
+    {
+      "row": 41,
+      "code": "11-034",
+      "name_th": "หอมแดง",
+      "name_en": "RED SHALLOT",
+      "control_status": null
+    },
+    {
+      "row": 42,
+      "code": "11-035",
+      "name_th": "กระเทียม",
+      "name_en": "GARLIC",
+      "control_status": null
+    },
+    {
+      "row": 43,
+      "code": "11-036",
+      "name_th": "ผักชีไทย",
+      "name_en": "CORIANDER",
+      "control_status": "EL"
+    },
+    {
+      "row": 44,
+      "code": "11-037",
+      "name_th": "ผักชีฝรั่ง",
+      "name_en": "STINKING",
+      "control_status": "EL"
+    },
+    {
+      "row": 45,
+      "code": "11-038",
+      "name_th": "ผักชีลาว",
+      "name_en": "DILL",
+      "control_status": null
+    },
+    {
+      "row": 46,
+      "code": "11-039",
+      "name_th": "ใบกุ่ยช่าย",
+      "name_en": "CHINESE LEEK LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 47,
+      "code": "11-040",
+      "name_th": "ดอกกุ่ยช่าย",
+      "name_en": "CHINESE LEEK FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 48,
+      "code": "11-041",
+      "name_th": "ใบเตย",
+      "name_en": "PANDAN LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 49,
+      "code": "11-042",
+      "name_th": "ใบตอง",
+      "name_en": "BANANA LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 50,
+      "code": "11-043",
+      "name_th": "ขิงอ่อน",
+      "name_en": "YOUNG GINGER",
+      "control_status": null
+    },
+    {
+      "row": 51,
+      "code": "11-044",
+      "name_th": "ขิงแก่",
+      "name_en": "OLD GINGER",
+      "control_status": null
+    },
+    {
+      "row": 52,
+      "code": "11-045",
+      "name_th": "กระเฉด",
+      "name_en": "WATER MIMOSA",
+      "control_status": null
+    },
+    {
+      "row": 53,
+      "code": "11-046",
+      "name_th": "ต้นหอม",
+      "name_en": "SPRING ONION",
+      "control_status": null
+    },
+    {
+      "row": 54,
+      "code": "11-047",
+      "name_th": "ถั่วฝักยาว",
+      "name_en": "YARD LONG BEAN",
+      "control_status": "EL"
+    },
+    {
+      "row": 55,
+      "code": "11-400",
+      "name_th": "ถั่วฝักยาว 1000 g",
+      "name_en": "YARD LONG BEAN",
+      "control_status": "EL"
+    },
+    {
+      "row": 56,
+      "code": "11-048",
+      "name_th": "ผักบุ้งไทย",
+      "name_en": "WATER CONVOLVULUS",
+      "control_status": null
+    },
+    {
+      "row": 57,
+      "code": "11-049",
+      "name_th": "สะระแหน่",
+      "name_en": "PEPPERMINT",
+      "control_status": null
+    },
+    {
+      "row": 58,
+      "code": "11-050",
+      "name_th": "กระชาย",
+      "name_en": "KAEMPFER",
+      "control_status": null
+    },
+    {
+      "row": 59,
+      "code": "11-051",
+      "name_th": "ฝักกะถิน",
+      "name_en": "LEAD POD",
+      "control_status": null
+    },
+    {
+      "row": 60,
+      "code": "11-052",
+      "name_th": "ยอดกะถิน",
+      "name_en": "LEAD TREE",
+      "control_status": null
+    },
+    {
+      "row": 61,
+      "code": "11-053",
+      "name_th": "กระเจี๊ยบ",
+      "name_en": "OKRA",
+      "control_status": null
+    },
+    {
+      "row": 62,
+      "code": "11-054",
+      "name_th": "ดอกแคร์",
+      "name_en": "SESBAN FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 63,
+      "code": "11-055",
+      "name_th": "ถั่วพู",
+      "name_en": "WINGED BEAN",
+      "control_status": null
+    },
+    {
+      "row": 64,
+      "code": "11-056",
+      "name_th": "ชะอม",
+      "name_en": "ACACIA",
+      "control_status": null
+    },
+    {
+      "row": 65,
+      "code": "11-057",
+      "name_th": "ใบแมงลัก",
+      "name_en": "HAIRY BASIL LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 66,
+      "code": "11-058",
+      "name_th": "ใบบัวบก",
+      "name_en": "INDIAN PENNYWOTH",
+      "control_status": null
+    },
+    {
+      "row": 67,
+      "code": "11-059",
+      "name_th": "ใบย่านาง",
+      "name_en": "SAK TREE LEAF",
+      "control_status": null
+    },
+    {
+      "row": 68,
+      "code": "11-060",
+      "name_th": "ผักหวานบ้าน",
+      "name_en": "PHAK WAN BAN",
+      "control_status": null
+    },
+    {
+      "row": 69,
+      "code": "11-061",
+      "name_th": "ลูกมะนาว",
+      "name_en": "LIME THAI",
+      "control_status": null
+    },
+    {
+      "row": 70,
+      "code": "11-062",
+      "name_th": "ลูกมะกรูด",
+      "name_en": "LEECH LIME",
+      "control_status": null
+    },
+    {
+      "row": 71,
+      "code": "11-063",
+      "name_th": "สะตอฝัก",
+      "name_en": "NITA POD",
+      "control_status": null
+    },
+    {
+      "row": 72,
+      "code": "11-064",
+      "name_th": "สะตอแกะ",
+      "name_en": "NITA POD PEELED",
+      "control_status": null
+    },
+    {
+      "row": 73,
+      "code": "11-065",
+      "name_th": "ลูกเนียง",
+      "name_en": "NIANG",
+      "control_status": null
+    },
+    {
+      "row": 74,
+      "code": "11-066",
+      "name_th": "สะเดาใบ",
+      "name_en": "NEEM TREE",
+      "control_status": null
+    },
+    {
+      "row": 75,
+      "code": "11-067",
+      "name_th": "ดอกกวางตุ้ง",
+      "name_en": "KOW TUNG FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 76,
+      "code": "11-068",
+      "name_th": "ดอกขี้เหล็กสด",
+      "name_en": "CASSOD TREE FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 77,
+      "code": "11-069",
+      "name_th": "สายบัว",
+      "name_en": "STALK OF LOTUS",
+      "control_status": null
+    },
+    {
+      "row": 78,
+      "code": "11-070",
+      "name_th": "รากบัว",
+      "name_en": "LOTUS ROOT",
+      "control_status": null
+    },
+    {
+      "row": 79,
+      "code": "11-071",
+      "name_th": "ตำลึง",
+      "name_en": "IVY GOURD",
+      "control_status": null
+    },
+    {
+      "row": 80,
+      "code": "11-072",
+      "name_th": "ใบชะพลู",
+      "name_en": "CHA PHLU LEAF",
+      "control_status": null
+    },
+    {
+      "row": 81,
+      "code": "11-073",
+      "name_th": "ใบพลู",
+      "name_en": "BAI PHLU LEAF",
+      "control_status": null
+    },
+    {
+      "row": 82,
+      "code": "11-074",
+      "name_th": "ใบยอ",
+      "name_en": "YOR LEAF",
+      "control_status": null
+    },
+    {
+      "row": 83,
+      "code": "11-075",
+      "name_th": "มะระไทย",
+      "name_en": "BITTER GOURD",
+      "control_status": null
+    },
+    {
+      "row": 84,
+      "code": "11-076",
+      "name_th": "มะรุม",
+      "name_en": "HORSE RADISH TREE",
+      "control_status": null
+    },
+    {
+      "row": 85,
+      "code": "11-077",
+      "name_th": "ขนุนอ่อน",
+      "name_en": "YOUNG JACKFRUIT",
+      "control_status": null
+    },
+    {
+      "row": 86,
+      "code": "11-078",
+      "name_th": "แตงกวา",
+      "name_en": "THAI CUCUMBER",
+      "control_status": null
+    },
+    {
+      "row": 87,
+      "code": "11-079",
+      "name_th": "บวบหอม",
+      "name_en": "SPONGE GOURD",
+      "control_status": null
+    },
+    {
+      "row": 88,
+      "code": "11-080",
+      "name_th": "ผักบุ้งแดง",
+      "name_en": "YOUNG MORNING GLORY (red)",
+      "control_status": null
+    },
+    {
+      "row": 89,
+      "code": "11-081",
+      "name_th": "มะขามอ่อน",
+      "name_en": "YOUNG TAMARIND",
+      "control_status": null
+    },
+    {
+      "row": 90,
+      "code": "11-082",
+      "name_th": "ใบมะขามอ่อน",
+      "name_en": "YOUNG TAMARIND LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 91,
+      "code": "11-083",
+      "name_th": "ขมิ้นเหลือง",
+      "name_en": "YELLOW TURMERIC",
+      "control_status": null
+    },
+    {
+      "row": 92,
+      "code": "11-084",
+      "name_th": "ขมิ้นขาว",
+      "name_en": "WHITE CURCUMA",
+      "control_status": null
+    },
+    {
+      "row": 93,
+      "code": "11-085",
+      "name_th": "ถั่วลันเตา",
+      "name_en": "GARDEN PEA",
+      "control_status": null
+    },
+    {
+      "row": 94,
+      "code": "11-086",
+      "name_th": "พริกไทอ่อน",
+      "name_en": "YOUNG BLACK PEPPER",
+      "control_status": null
+    },
+    {
+      "row": 95,
+      "code": "11-087",
+      "name_th": "ข้าวโพดอ่อนกิโล",
+      "name_en": "YOUNG BABY CORN(KG)",
+      "control_status": null
+    },
+    {
+      "row": 96,
+      "code": "11-088",
+      "name_th": "หน่อไม้ฝรั่ง",
+      "name_en": "FRESH BAMBOO WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 97,
+      "code": "11-089",
+      "name_th": "มะเขือเหลือง",
+      "name_en": "EGG PLANT YELLOW",
+      "control_status": null
+    },
+    {
+      "row": 98,
+      "code": "11-090",
+      "name_th": "มะเขือม่วง",
+      "name_en": "EGG PLANT BLUE",
+      "control_status": null
+    },
+    {
+      "row": 99,
+      "code": "11-091",
+      "name_th": "มะเขือเทศสีดา",
+      "name_en": "RED BABY TOMATO",
+      "control_status": null
+    },
+    {
+      "row": 100,
+      "code": "11-092",
+      "name_th": "มะเขือลาย",
+      "name_en": "EGG PLANT STRIP(MA KUA LAI)",
+      "control_status": null
+    },
+    {
+      "row": 101,
+      "code": "11-093",
+      "name_th": "มะเขือขาว",
+      "name_en": "EGG PLANT WHITE",
+      "control_status": null
+    },
+    {
+      "row": 102,
+      "code": "11-094",
+      "name_th": "มะเขือตอแหล",
+      "name_en": "EGG PLANT TOR LAE",
+      "control_status": null
+    },
+    {
+      "row": 103,
+      "code": "11-095",
+      "name_th": "มะอึก",
+      "name_en": "MA-UEK",
+      "control_status": null
+    },
+    {
+      "row": 104,
+      "code": "11-096",
+      "name_th": "ฟักทองเล็ก",
+      "name_en": "PUMKIN WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 105,
+      "code": "11-097",
+      "name_th": "มะเขือยาว",
+      "name_en": "LONG GREEN AUBERGINE",
+      "control_status": null
+    },
+    {
+      "row": 106,
+      "code": "11-098",
+      "name_th": "กะหล่ำปลี",
+      "name_en": "KALUM",
+      "control_status": null
+    },
+    {
+      "row": 107,
+      "code": "11-099",
+      "name_th": "ยอดกะเฉด",
+      "name_en": "WATER MIMOSA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 108,
+      "code": "11-100",
+      "name_th": "มะกอกส้มตำ",
+      "name_en": "HOG PLUM FOR COOKING",
+      "control_status": null
+    },
+    {
+      "row": 109,
+      "code": "11-102",
+      "name_th": "หมากสด",
+      "name_en": "BETEL NUT",
+      "control_status": null
+    },
+    {
+      "row": 110,
+      "code": "11-104",
+      "name_th": "ขี้เหล็กใบสด",
+      "name_en": "CASSOD TREE LEAF",
+      "control_status": null
+    },
+    {
+      "row": 111,
+      "code": "11-105",
+      "name_th": "เห็ดเข็มทอง",
+      "name_en": "INOKE MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 112,
+      "code": "11-106",
+      "name_th": "มะกอกฝรั่ง",
+      "name_en": "HOG PLUM BIG",
+      "control_status": null
+    },
+    {
+      "row": 113,
+      "code": "11-107",
+      "name_th": "ยอดฟักทอง",
+      "name_en": "YOUNG PUMKIN SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 114,
+      "code": "11-108",
+      "name_th": "ยอดตำลึง",
+      "name_en": "IVY GOURD SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 115,
+      "code": "11-109",
+      "name_th": "ยอดมะพร้าวท่อน",
+      "name_en": "EDIBLE COCONUT CROWN",
+      "control_status": null
+    },
+    {
+      "row": 116,
+      "code": "11-110",
+      "name_th": "เห็ดฟาง",
+      "name_en": "CHINESE PADI STROW",
+      "control_status": null
+    },
+    {
+      "row": 117,
+      "code": "11-111",
+      "name_th": "เห็ดหูหนู",
+      "name_en": "WOOD EAR MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 118,
+      "code": "11-112",
+      "name_th": "เห็ดนางฟ้า",
+      "name_en": "PHOENIX MUSHROOM / Hed Nang Fah",
+      "control_status": null
+    },
+    {
+      "row": 119,
+      "code": "11-113",
+      "name_th": "ผักติ้ว",
+      "name_en": "PHAK-TIU",
+      "control_status": null
+    },
+    {
+      "row": 120,
+      "code": "11-114",
+      "name_th": "ใบยี่หร่า",
+      "name_en": "YEE RAA LEAF",
+      "control_status": null
+    },
+    {
+      "row": 121,
+      "code": "11-115",
+      "name_th": "ใบกุ่ยช่ายขาว",
+      "name_en": "WHITE LEEK LEAVE",
+      "control_status": null
+    },
+    {
+      "row": 122,
+      "code": "11-116",
+      "name_th": "ตั้งโอ๋",
+      "name_en": "TUNG OHR",
+      "control_status": null
+    },
+    {
+      "row": 123,
+      "code": "11-117",
+      "name_th": "ดอกโสน",
+      "name_en": "SESBANIA FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 124,
+      "code": "11-118",
+      "name_th": "หน่อไม้ไผ่ตงสด",
+      "name_en": "FRESH BAMBOO WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 125,
+      "code": "11-119",
+      "name_th": "ยอดฝรั่ง",
+      "name_en": "GUAVA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 126,
+      "code": "11-120",
+      "name_th": "รากผักชี",
+      "name_en": "CORAINDER ROOT",
+      "control_status": null
+    },
+    {
+      "row": 127,
+      "code": "11-122",
+      "name_th": "ยอดแค",
+      "name_en": "SESBAN SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 128,
+      "code": "11-123",
+      "name_th": "ดอกกระเจียว",
+      "name_en": "DOK KRA JEAW / SIAM TULIP SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 129,
+      "code": "11-124",
+      "name_th": "ยอดมะกอก",
+      "name_en": "HOG PLUM SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 130,
+      "code": "11-127",
+      "name_th": "ผักโสภณ",
+      "name_en": "CHINESE MUSTARD",
+      "control_status": null
+    },
+    {
+      "row": 131,
+      "code": "11-128",
+      "name_th": "มะขามป้อม",
+      "name_en": "EMBLIC MYRABOLAN",
+      "control_status": null
+    },
+    {
+      "row": 132,
+      "code": "11-129",
+      "name_th": "สมอไทย",
+      "name_en": "CHINESE WHITE OLIVE",
+      "control_status": null
+    },
+    {
+      "row": 133,
+      "code": "11-131",
+      "name_th": "บวบงู",
+      "name_en": "SNAKE GOURD",
+      "control_status": null
+    },
+    {
+      "row": 134,
+      "code": "11-132",
+      "name_th": "ยอดมะระ",
+      "name_en": "BALSAM PEAR SHOOT/BITTER GOURD LEAF",
+      "control_status": null
+    },
+    {
+      "row": 135,
+      "code": "11-133",
+      "name_th": "ผักกาดขาว",
+      "name_en": "CHINESE CABBAGE",
+      "control_status": null
+    },
+    {
+      "row": 136,
+      "code": "11-134",
+      "name_th": "ดอกกระถิน",
+      "name_en": "LEAD FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 137,
+      "code": "11-135",
+      "name_th": "ขิงซอย",
+      "name_en": "SLICED GINGER",
+      "control_status": null
+    },
+    {
+      "row": 138,
+      "code": "11-136",
+      "name_th": "ถั่วลิสงดิบฝัก",
+      "name_en": "PEANUT FRESH RAW",
+      "control_status": null
+    },
+    {
+      "row": 139,
+      "code": "11-137",
+      "name_th": "ถั่วฝักยาวม่วง",
+      "name_en": "LONG RED BEAN",
+      "control_status": null
+    },
+    {
+      "row": 140,
+      "code": "11-138",
+      "name_th": "ก้านจอง",
+      "name_en": "KAN JONG / YELLOW VELVET LEAF",
+      "control_status": null
+    },
+    {
+      "row": 141,
+      "code": "11-139",
+      "name_th": "ดอกหอม",
+      "name_en": "ONION FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 142,
+      "code": "11-140",
+      "name_th": "แตงโมอ่อน",
+      "name_en": "YOUNG WATER MELON",
+      "control_status": null
+    },
+    {
+      "row": 143,
+      "code": "11-142",
+      "name_th": "ผักกาดหอม",
+      "name_en": "ENDIVES LETTUCE / CHINESE LETTUCE",
+      "control_status": null
+    },
+    {
+      "row": 144,
+      "code": "11-143",
+      "name_th": "ผักปวยเล้ง",
+      "name_en": "PUAY LENG",
+      "control_status": null
+    },
+    {
+      "row": 145,
+      "code": "11-144",
+      "name_th": "ยอดกระโดน",
+      "name_en": "KRA DOEN SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 146,
+      "code": "11-145",
+      "name_th": "ใบมะกรูดแช่แข็ง",
+      "name_en": "FROZEN LIME LEAF",
+      "control_status": null
+    },
+    {
+      "row": 147,
+      "code": "11-146",
+      "name_th": "ผักชีล้อม",
+      "name_en": "PAK CHE LOM",
+      "control_status": null
+    },
+    {
+      "row": 148,
+      "code": "11-147",
+      "name_th": "กระชายซอย",
+      "name_en": "SLICED KAEMPFER",
+      "control_status": null
+    },
+    {
+      "row": 149,
+      "code": "11-148",
+      "name_th": "แขนง",
+      "name_en": "CAULIFLOWER SPROUT / BRUSSEL SPROUT",
+      "control_status": null
+    },
+    {
+      "row": 150,
+      "code": "11-149",
+      "name_th": "ยอดหวายอ่อน",
+      "name_en": "YOD WAI SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 151,
+      "code": "11-150",
+      "name_th": "เห็ดหอมสด",
+      "name_en": "SHITAKE MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 152,
+      "code": "11-151",
+      "name_th": "ผักเสี้ยน",
+      "name_en": "PHAK SEAN",
+      "control_status": null
+    },
+    {
+      "row": 153,
+      "code": "11-152",
+      "name_th": "ผักเสี้ยว",
+      "name_en": "PAK SAEL",
+      "control_status": null
+    },
+    {
+      "row": 154,
+      "code": "11-153",
+      "name_th": "ผักแว่น",
+      "name_en": "WATER CLOVER",
+      "control_status": null
+    },
+    {
+      "row": 155,
+      "code": "11-154",
+      "name_th": "สะเดาดิน",
+      "name_en": "MARGOSZ NEEM TREE / SA DOA DIN",
+      "control_status": null
+    },
+    {
+      "row": 156,
+      "code": "11-155",
+      "name_th": "ใบมะม่วง",
+      "name_en": "MANGO LEAF",
+      "control_status": null
+    },
+    {
+      "row": 157,
+      "code": "11-156",
+      "name_th": "ผักสะแล",
+      "name_en": "PHAK-SALAE",
+      "control_status": null
+    },
+    {
+      "row": 158,
+      "code": "11-157",
+      "name_th": "ผักกูด",
+      "name_en": "PAK KUD",
+      "control_status": null
+    },
+    {
+      "row": 159,
+      "code": "11-158",
+      "name_th": "ผักขี้ฮูด",
+      "name_en": "PAK KEE HOOD",
+      "control_status": null
+    },
+    {
+      "row": 160,
+      "code": "11-159",
+      "name_th": "ผักเผ็ด",
+      "name_en": "PAK PED",
+      "control_status": null
+    },
+    {
+      "row": 161,
+      "code": "11-160",
+      "name_th": "ผักเฮียด",
+      "name_en": "PAK HEED",
+      "control_status": null
+    },
+    {
+      "row": 162,
+      "code": "11-161",
+      "name_th": "ลิ้นฟ้า",
+      "name_en": "INDIAN TRUMFET / Lin Far",
+      "control_status": null
+    },
+    {
+      "row": 163,
+      "code": "11-162",
+      "name_th": "ผักตับ",
+      "name_en": "PAK TAB",
+      "control_status": null
+    },
+    {
+      "row": 164,
+      "code": "11-163",
+      "name_th": "ใบมะกอก",
+      "name_en": "HOG PLUM LEAF",
+      "control_status": null
+    },
+    {
+      "row": 165,
+      "code": "11-164",
+      "name_th": "ก้านบอน",
+      "name_en": "KAN BON",
+      "control_status": null
+    },
+    {
+      "row": 166,
+      "code": "11-165",
+      "name_th": "ดอกผักปลัง",
+      "name_en": "MALABAR NIGHTSHADE FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 167,
+      "code": "11-166",
+      "name_th": "ผักสีเสียด",
+      "name_en": "PAK SEE SEAD",
+      "control_status": null
+    },
+    {
+      "row": 168,
+      "code": "11-167",
+      "name_th": "เห็ดลม",
+      "name_en": "HED LOM",
+      "control_status": null
+    },
+    {
+      "row": 169,
+      "code": "11-168",
+      "name_th": "ดอกขจร",
+      "name_en": "DOK KRA JON",
+      "control_status": null
+    },
+    {
+      "row": 170,
+      "code": "11-169",
+      "name_th": "กระเทียมโทน",
+      "name_en": "GARLIC HEAD",
+      "control_status": null
+    },
+    {
+      "row": 171,
+      "code": "11-170",
+      "name_th": "ใบพลูขาว",
+      "name_en": "WHITE PHLU LEAF",
+      "control_status": null
+    },
+    {
+      "row": 172,
+      "code": "11-171",
+      "name_th": "ใบไผ่ตง",
+      "name_en": "BAMBOO SHOOT LEAF",
+      "control_status": null
+    },
+    {
+      "row": 173,
+      "code": "11-174",
+      "name_th": "ผักเสฉวน",
+      "name_en": "PAK SAE SUAN",
+      "control_status": null
+    },
+    {
+      "row": 174,
+      "code": "11-175",
+      "name_th": "ยอดฟักแม้ว",
+      "name_en": "CHAYOTE SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 175,
+      "code": "11-176",
+      "name_th": "ผักกวางตุ้งไต้หวัน",
+      "name_en": "TAIWAN CHINESE CABBAGE",
+      "control_status": null
+    },
+    {
+      "row": 176,
+      "code": "11-177",
+      "name_th": "น้ำเต้าอ่อน",
+      "name_en": "BOTTLE GOURD",
+      "control_status": null
+    },
+    {
+      "row": 177,
+      "code": "11-178",
+      "name_th": "ผักฉ่อย",
+      "name_en": "BOK CHOI",
+      "control_status": null
+    },
+    {
+      "row": 178,
+      "code": "11-179",
+      "name_th": "พริกรวมหนูแดง+หนูเขียว",
+      "name_en": "GREEN-RED HOT CHILLI",
+      "control_status": null
+    },
+    {
+      "row": 179,
+      "code": "11-180",
+      "name_th": "ต้นกระเทียม",
+      "name_en": "GARLIC SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 180,
+      "code": "11-181",
+      "name_th": "หน่อข่า",
+      "name_en": "GALANGA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 181,
+      "code": "11-182",
+      "name_th": "มันมือเสือ",
+      "name_en": "THAI POTATO",
+      "control_status": null
+    },
+    {
+      "row": 182,
+      "code": "11-183",
+      "name_th": "ฟักเขียวลูกใหญ่",
+      "name_en": "WAX GOURD BIG",
+      "control_status": null
+    },
+    {
+      "row": 183,
+      "code": "11-184",
+      "name_th": "มะกอกน้ำ",
+      "name_en": "WATER HOG PLUM",
+      "control_status": null
+    },
+    {
+      "row": 184,
+      "code": "11-185",
+      "name_th": "ลูกจันทร์",
+      "name_en": "WATER HOG PLUM",
+      "control_status": null
+    },
+    {
+      "row": 185,
+      "code": "11-186",
+      "name_th": "มันต่อเผือก",
+      "name_en": "SWEET POTATO (PURPLE) / POTATO TARO",
+      "control_status": null
+    },
+    {
+      "row": 186,
+      "code": "11-187",
+      "name_th": "ใบทองหลาง",
+      "name_en": "BAI TONG LANG",
+      "control_status": null
+    },
+    {
+      "row": 187,
+      "code": "11-188",
+      "name_th": "พริกกระเหรี่ยง(พริกลาว)",
+      "name_en": "KARIENG CHILLI",
+      "control_status": null
+    },
+    {
+      "row": 188,
+      "code": "11-189",
+      "name_th": "เห็ดเผาะ",
+      "name_en": "PAW MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 189,
+      "code": "11-190",
+      "name_th": "เห็ดโคน",
+      "name_en": "TERMITOMYCES MUSHROOM / Hana (Yanagi) MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 190,
+      "code": "11-191",
+      "name_th": "เห็ดเป๋าฮื้อ",
+      "name_en": "PAW HUR MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 191,
+      "code": "11-192",
+      "name_th": "ดอกกะหล่ำ",
+      "name_en": "CAULIFLOWER",
+      "control_status": null
+    },
+    {
+      "row": 192,
+      "code": "11-193",
+      "name_th": "เห็ดกระด้าง",
+      "name_en": "KRA DANG MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 193,
+      "code": "11-194",
+      "name_th": "ผักกาดเขียวปลี",
+      "name_en": "CHINESE MUSTARD",
+      "control_status": null
+    },
+    {
+      "row": 194,
+      "code": "11-195",
+      "name_th": "หัวไช้เท้า",
+      "name_en": "TURNIP FRESH",
+      "control_status": null
+    },
+    {
+      "row": 195,
+      "code": "11-196",
+      "name_th": "ผักกาดแก้ว",
+      "name_en": "ICEBURG LETTUCE",
+      "control_status": null
+    },
+    {
+      "row": 196,
+      "code": "11-197",
+      "name_th": "เห็ดผึ่ง",
+      "name_en": "PUANG MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 197,
+      "code": "11-198",
+      "name_th": "มะเขือญี่ปุ่น",
+      "name_en": "SHERRY TOMATO",
+      "control_status": null
+    },
+    {
+      "row": 198,
+      "code": "11-199",
+      "name_th": "กระเฉดญี่ปุ่น",
+      "name_en": "WATER CRESS JAPAN",
+      "control_status": null
+    },
+    {
+      "row": 199,
+      "code": "11-202",
+      "name_th": "มะเขือพวงเด็ดก้าน",
+      "name_en": "NIGHTSHADE TOPLESS",
+      "control_status": null
+    },
+    {
+      "row": 200,
+      "code": "11-209",
+      "name_th": "ยอดมันสัมปะหลัง",
+      "name_en": "CASAVA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 201,
+      "code": "11-211",
+      "name_th": "หน่อไม้ไผ่ตงหั่น",
+      "name_en": "BAMBOO SHOOT SLICE",
+      "control_status": null
+    },
+    {
+      "row": 202,
+      "code": "11-212",
+      "name_th": "มะเขือเทศเชอร์รี่",
+      "name_en": "CHERRY TOMATO",
+      "control_status": null
+    },
+    {
+      "row": 203,
+      "code": "11-213",
+      "name_th": "ใบบะจ่างสด",
+      "name_en": "BAI BA JANG",
+      "control_status": null
+    },
+    {
+      "row": 204,
+      "code": "11-214",
+      "name_th": "ผักแพงพวย",
+      "name_en": "PHAK PANG PUAY",
+      "control_status": null
+    },
+    {
+      "row": 205,
+      "code": "11-215",
+      "name_th": "ยอดมะละกอ",
+      "name_en": "PAPAYA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 206,
+      "code": "11-217",
+      "name_th": "ใบชะมวง",
+      "name_en": "CHA MUANG LEAF",
+      "control_status": null
+    },
+    {
+      "row": 207,
+      "code": "11-218",
+      "name_th": "ไพร",
+      "name_en": "PRAI HERB",
+      "control_status": null
+    },
+    {
+      "row": 208,
+      "code": "11-219",
+      "name_th": "ตะไคร้หอม",
+      "name_en": "LEMON GRASS",
+      "control_status": null
+    },
+    {
+      "row": 209,
+      "code": "11-220",
+      "name_th": "ใบขิง",
+      "name_en": "GINGER LEAF",
+      "control_status": null
+    },
+    {
+      "row": 210,
+      "code": "11-221",
+      "name_th": "ใบมะยม",
+      "name_en": "GOSBERRY LEAF",
+      "control_status": null
+    },
+    {
+      "row": 211,
+      "code": "11-222",
+      "name_th": "เห็ดนางรม",
+      "name_en": "OYSTER MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 212,
+      "code": "11-223",
+      "name_th": "ยอดกระเจี๊ยบ",
+      "name_en": "OKRA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 213,
+      "code": "11-224",
+      "name_th": "ดอกกระเจี๊ยบ",
+      "name_en": "OKRA FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 214,
+      "code": "11-225",
+      "name_th": "ไหลบัว",
+      "name_en": "WATER LILY STEM",
+      "control_status": null
+    },
+    {
+      "row": 215,
+      "code": "11-227",
+      "name_th": "ลูกยอ",
+      "name_en": "YOR",
+      "control_status": null
+    },
+    {
+      "row": 216,
+      "code": "11-228",
+      "name_th": "ยอดข่าอ่อน",
+      "name_en": "GALANGA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 217,
+      "code": "11-229",
+      "name_th": "ผักสะเหม็ด",
+      "name_en": "PHAK SA MET",
+      "control_status": null
+    },
+    {
+      "row": 218,
+      "code": "11-230",
+      "name_th": "ตะไคร้ 100g",
+      "name_en": "LEMON GRASS 100g Pack",
+      "control_status": null
+    },
+    {
+      "row": 219,
+      "code": "11-231",
+      "name_th": "ใบตะไคร้",
+      "name_en": "LEMON GRASS LEAF",
+      "control_status": null
+    },
+    {
+      "row": 220,
+      "code": "11-232",
+      "name_th": "หน่อไม้ฝรั่ง",
+      "name_en": "ASPARAGUS B",
+      "control_status": null
+    },
+    {
+      "row": 221,
+      "code": "11-233",
+      "name_th": "ข้าวโพดฝัก",
+      "name_en": "SWEET CORN",
+      "control_status": null
+    },
+    {
+      "row": 222,
+      "code": "11-234",
+      "name_th": "ใบขมิ้น",
+      "name_en": "TURMERIC LEAF",
+      "control_status": null
+    },
+    {
+      "row": 223,
+      "code": "11-235",
+      "name_th": "ว่านหางจรเข้",
+      "name_en": "ALOE VERA LEAF",
+      "control_status": null
+    },
+    {
+      "row": 224,
+      "code": "11-244",
+      "name_th": "ข้าวโพด+หน่อไม้+ลันเตา",
+      "name_en": "MIXED BABY CORN+ASP+PEA",
+      "control_status": null
+    },
+    {
+      "row": 225,
+      "code": "11-245",
+      "name_th": "คะน้าฮ่องกง",
+      "name_en": "HONG KONG KALE",
+      "control_status": null
+    },
+    {
+      "row": 226,
+      "code": "11-247",
+      "name_th": "มันสัมปะหลัง",
+      "name_en": "CASAVA",
+      "control_status": null
+    },
+    {
+      "row": 227,
+      "code": "11-248",
+      "name_th": "ผักชี+ต้นหอม",
+      "name_en": "MIXED CORIANDER+SPRING ONION",
+      "control_status": null
+    },
+    {
+      "row": 228,
+      "code": "11-249",
+      "name_th": "เห็ดโคนญี่ปุ่น",
+      "name_en": "HANAIE MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 229,
+      "code": "11-253",
+      "name_th": "ชุดดอกแค+ดอกขจร+ดอกโสน",
+      "name_en": "SET SESBAN FLOWER+SESBANIA+DOK KRA JON FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 230,
+      "code": "11-254",
+      "name_th": "ชุดดอกแค+ดอกขจร",
+      "name_en": "SET SESBAN FLOWER+DOK KRA JONFLOWER",
+      "control_status": null
+    },
+    {
+      "row": 231,
+      "code": "11-255",
+      "name_th": "",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 232,
+      "code": "11-256",
+      "name_th": "แตงไทยอ่อน",
+      "name_en": "YOUNG THAI MELON",
+      "control_status": null
+    },
+    {
+      "row": 233,
+      "code": "11-257",
+      "name_th": "มะเขือเปราะ+โหระพา",
+      "name_en": "EGG PLANT+SWEET BASIL",
+      "control_status": null
+    },
+    {
+      "row": 234,
+      "code": "11-258",
+      "name_th": "ผักชี+ต้นหอม",
+      "name_en": "MIXED CORIANDER+SPRING ONION",
+      "control_status": null
+    },
+    {
+      "row": 235,
+      "code": "11-259",
+      "name_th": "ข่า+ตะไคร์",
+      "name_en": "YOUNG GALANGAL+LEMON GLASS",
+      "control_status": null
+    },
+    {
+      "row": 236,
+      "code": "11-260",
+      "name_th": "กระเพรา+พริก",
+      "name_en": "HOLY BASIL+CHILLI",
+      "control_status": null
+    },
+    {
+      "row": 237,
+      "code": "11-261",
+      "name_th": "ผักชี+ต้นหอม+ผักชีฝรั่ง",
+      "name_en": "MIXED CORIANDER+SPRING ONION+STINKING",
+      "control_status": null
+    },
+    {
+      "row": 238,
+      "code": "11-294",
+      "name_th": "ตีโต้",
+      "name_en": "TITO",
+      "control_status": null
+    },
+    {
+      "row": 239,
+      "code": "11-296",
+      "name_th": "หัวว่านชักมดลูก",
+      "name_en": "nanwinga",
+      "control_status": null
+    },
+    {
+      "row": 240,
+      "code": "11-297",
+      "name_th": "หยวกกล้วย",
+      "name_en": "BANANA CORE",
+      "control_status": null
+    },
+    {
+      "row": 241,
+      "code": "11-298",
+      "name_th": "มะแว้ง",
+      "name_en": "SPARROW'S BRINJAL",
+      "control_status": null
+    },
+    {
+      "row": 242,
+      "code": "11-299",
+      "name_th": "ลูกฟักแม้ว",
+      "name_en": "CHAYOTE",
+      "control_status": null
+    },
+    {
+      "row": 243,
+      "code": "11-300",
+      "name_th": "สะเดาดอก",
+      "name_en": "NEEM TREE FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 244,
+      "code": "11-302",
+      "name_th": "ผักกุ่มดอง",
+      "name_en": "Kum Dong",
+      "control_status": null
+    },
+    {
+      "row": 245,
+      "code": "11-303",
+      "name_th": "หลดบัว",
+      "name_en": "LOTUS ROOT",
+      "control_status": null
+    },
+    {
+      "row": 246,
+      "code": "11-305",
+      "name_th": "ยับก๊า",
+      "name_en": "YABKA",
+      "control_status": null
+    },
+    {
+      "row": 247,
+      "code": "11-308",
+      "name_th": "บอระเพ็ด",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 248,
+      "code": "11-310",
+      "name_th": "มะขวิด",
+      "name_en": "WOOD APPLE",
+      "control_status": null
+    },
+    {
+      "row": 249,
+      "code": "11-311",
+      "name_th": "ผักลาวดาย",
+      "name_en": "Lao Dai",
+      "control_status": null
+    },
+    {
+      "row": 250,
+      "code": "11-312",
+      "name_th": "กวางตุ้งฮ่องเต้",
+      "name_en": "KOW TUNG HONG TE",
+      "control_status": null
+    },
+    {
+      "row": 251,
+      "code": "11-313",
+      "name_th": "มะละกอซอย",
+      "name_en": "PAPAYA SLICE",
+      "control_status": null
+    },
+    {
+      "row": 252,
+      "code": "11-314",
+      "name_th": "ใบมะพร้าว",
+      "name_en": "COCONUT LEAF",
+      "control_status": null
+    },
+    {
+      "row": 253,
+      "code": "11-319",
+      "name_th": "ถั่วแขก",
+      "name_en": "GARDEN BEAN",
+      "control_status": null
+    },
+    {
+      "row": 254,
+      "code": "11-327",
+      "name_th": "เห็ดขอน",
+      "name_en": "Log Mushroom",
+      "control_status": null
+    },
+    {
+      "row": 255,
+      "code": "11-331",
+      "name_th": "ตะไคร้ซอย",
+      "name_en": "LEMON GLASS  SLICE",
+      "control_status": null
+    },
+    {
+      "row": 256,
+      "code": "11-333",
+      "name_th": "ดอกฟักทอง",
+      "name_en": "PUMPKIN FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 257,
+      "code": "11-334",
+      "name_th": "ลูกผักโขม",
+      "name_en": "YOUNG CHINESE SPINACH",
+      "control_status": null
+    },
+    {
+      "row": 258,
+      "code": "11-338",
+      "name_th": "ยอดมะรุม",
+      "name_en": "HORSE RADISH TREE SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 259,
+      "code": "11-340",
+      "name_th": "ฟักทองใหญ่",
+      "name_en": "BIG PUMPKIN",
+      "control_status": null
+    },
+    {
+      "row": 260,
+      "code": "11-343",
+      "name_th": "ชุดผัดผักรวม",
+      "name_en": "MIX FRIED VEGETABLE",
+      "control_status": null
+    },
+    {
+      "row": 261,
+      "code": "11-344",
+      "name_th": "ลูกเนียงแกะเปลือก",
+      "name_en": "Peeled Niang Balls",
+      "control_status": null
+    },
+    {
+      "row": 262,
+      "code": "11-347",
+      "name_th": "ถั่วงอก",
+      "name_en": "BEAN SPROUT",
+      "control_status": null
+    },
+    {
+      "row": 263,
+      "code": "11-357",
+      "name_th": "ซุกินีเขียว",
+      "name_en": "GREEN ZUCCINI",
+      "control_status": null
+    },
+    {
+      "row": 264,
+      "code": "11-358",
+      "name_th": "ข่าแก่",
+      "name_en": "OLD GALANGAL",
+      "control_status": null
+    },
+    {
+      "row": 265,
+      "code": "11-398",
+      "name_th": "หอมหัวใหญ่",
+      "name_en": "BIG  ONION",
+      "control_status": null
+    },
+    {
+      "row": 266,
+      "code": "11-399",
+      "name_th": "หน่อไม้ไผ่ตงไม่ปลอกเปลือก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 267,
+      "code": "11-400",
+      "name_th": "ถั่วฝักยาว 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 268,
+      "code": "11-401",
+      "name_th": "มะเขือเปราะ 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 269,
+      "code": "11-412",
+      "name_th": "สะเดาแช่แข็ง",
+      "name_en": "Frozen NEEM TREE FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 270,
+      "code": "11-420",
+      "name_th": "ดอกแคร์+ดอกสลิด",
+      "name_en": "Kae flower + Gourami flower",
+      "control_status": null
+    },
+    {
+      "row": 271,
+      "code": "11-422",
+      "name_th": "ลูกลังแข",
+      "name_en": "Giant Baccaurea",
+      "control_status": null
+    },
+    {
+      "row": 272,
+      "code": "11-423",
+      "name_th": "ลูกกระบก",
+      "name_en": "Barking Deer's Mango",
+      "control_status": null
+    },
+    {
+      "row": 273,
+      "code": "11-424",
+      "name_th": "หน่อไม้ไร่สด",
+      "name_en": "fresh bamboo shoots",
+      "control_status": null
+    },
+    {
+      "row": 274,
+      "code": "11-425",
+      "name_th": "จาวมะพร้าว",
+      "name_en": "Embryo bud of a Coconut Tree",
+      "control_status": null
+    },
+    {
+      "row": 275,
+      "code": "11-426",
+      "name_th": "รากซู",
+      "name_en": "Su root",
+      "control_status": null
+    },
+    {
+      "row": 276,
+      "code": "11-427",
+      "name_th": "ดอกแคป่า",
+      "name_en": "Cork Wood Tree",
+      "control_status": null
+    },
+    {
+      "row": 277,
+      "code": "11-428",
+      "name_th": "บัวหิมะ",
+      "name_en": "Yacon",
+      "control_status": null
+    },
+    {
+      "row": 278,
+      "code": "11-430",
+      "name_th": "กิงกอย",
+      "name_en": "Cockscombe Mint",
+      "control_status": null
+    },
+    {
+      "row": 279,
+      "code": "11-431",
+      "name_th": "ผักอีนูน",
+      "name_en": "PASSIFLORACEAE (Inoon)",
+      "control_status": null
+    },
+    {
+      "row": 280,
+      "code": "11-432",
+      "name_th": "ลูกดอกสลิด",
+      "name_en": "Cowslip creeper",
+      "control_status": null
+    },
+    {
+      "row": 281,
+      "code": "11-433",
+      "name_th": "ผักตบชวา",
+      "name_en": "Water Hyacinth",
+      "control_status": null
+    },
+    {
+      "row": 282,
+      "code": "11-434",
+      "name_th": "ผักลืมผัก",
+      "name_en": "phak luem pua",
+      "control_status": null
+    },
+    {
+      "row": 283,
+      "code": "11-435",
+      "name_th": "ผักกาดหิ่น",
+      "name_en": "phak kad hin",
+      "control_status": null
+    },
+    {
+      "row": 284,
+      "code": "11-436",
+      "name_th": "ใบทุเรียนเทศ",
+      "name_en": "Soursop leaf",
+      "control_status": null
+    },
+    {
+      "row": 285,
+      "code": "11-437",
+      "name_th": "หัวปลี เปลือย",
+      "name_en": "BANANA FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 286,
+      "code": "11-438",
+      "name_th": "ข่า เปลือย",
+      "name_en": "YOUNG GALANGAL",
+      "control_status": null
+    },
+    {
+      "row": 287,
+      "code": "11-439",
+      "name_th": "กระชาย เปลือย",
+      "name_en": "KAEMPFER",
+      "control_status": null
+    },
+    {
+      "row": 288,
+      "code": "11-440",
+      "name_th": "ตะไคร้ 15 ซม. เปลือย",
+      "name_en": "LEMON GRASS 15 CMS",
+      "control_status": null
+    },
+    {
+      "row": 289,
+      "code": "11-441",
+      "name_th": "ใบตองตัดวงกลม 20-25 ซม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 290,
+      "code": "11-442",
+      "name_th": "ผักบุ้งไทย 200 G",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 291,
+      "code": "11-443",
+      "name_th": "ยอดคะน้า 100 G",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 292,
+      "code": "11-444",
+      "name_th": "ตะไคร้เปลือย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 293,
+      "code": "11-445",
+      "name_th": "ยอดหวายอ่อน 250 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 294,
+      "code": "11-446",
+      "name_th": "หน่อข่าอ่อน 250 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 295,
+      "code": "11-447",
+      "name_th": "มะกอกส้มตำสุก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 296,
+      "code": "11-448",
+      "name_th": "กระชาย เบอร์รอง ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 297,
+      "code": "11-453",
+      "name_th": "ผักชีไทย 50 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 298,
+      "code": "11-454",
+      "name_th": "ผักชีฝรั่ง 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 299,
+      "code": "11-455",
+      "name_th": "ผักชีไทย 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 300,
+      "code": "11-456",
+      "name_th": "ผักชีไทย 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 301,
+      "code": "11-457",
+      "name_th": "ถั่วฝักยาว 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 302,
+      "code": "11-458",
+      "name_th": "มะเขือเปราะ 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 303,
+      "code": "16-147",
+      "name_th": "มะเขือเปราะ ลายใหญ่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 304,
+      "code": "16-148",
+      "name_th": "มะรุมเปลือย กล่องละ 5 กก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 305,
+      "code": "11-550",
+      "name_th": "ยอดหมุยใต้",
+      "name_en": "Lime Berry",
+      "control_status": null
+    },
+    {
+      "row": 306,
+      "code": "11-551",
+      "name_th": "ผักเฮียดต้ม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 308,
+      "code": "EL-450",
+      "name_th": "มะเขือเปราะ เบอร์รอง ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 309,
+      "code": "EL-451",
+      "name_th": "ถั่วฝักยาว เบอร์รอง ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 310,
+      "code": "EL-452",
+      "name_th": "มะเขือตอแหล เปลือย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 311,
+      "code": "EL-453",
+      "name_th": "ผักชีไทย 50 g",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 312,
+      "code": "11-552",
+      "name_th": "ก้านมะตูม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 313,
+      "code": "11-553",
+      "name_th": "ผักอีนูนดอง",
+      "name_en": "Pickled(Inoon)",
+      "control_status": null
+    },
+    {
+      "row": 314,
+      "code": "11-554",
+      "name_th": "ใบไผ่",
+      "name_en": "bamboo leaves",
+      "control_status": null
+    },
+    {
+      "row": 315,
+      "code": "11-555",
+      "name_th": "+",
+      "name_en": "MAK MAO",
+      "control_status": null
+    },
+    {
+      "row": 316,
+      "code": "11-556",
+      "name_th": "หัวขมิ้นแก่",
+      "name_en": "Turmeric head",
+      "control_status": null
+    },
+    {
+      "row": 317,
+      "code": "11-557",
+      "name_th": "หัวข่าแก่",
+      "name_en": "galangal head",
+      "control_status": null
+    },
+    {
+      "row": 318,
+      "code": "11-558",
+      "name_th": "ใบขนุน",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 319,
+      "code": "11-559",
+      "name_th": "ดอกนางลาว",
+      "name_en": "Torch ginger",
+      "control_status": null
+    },
+    {
+      "row": 320,
+      "code": "11-560",
+      "name_th": "ผักสลัดคอส",
+      "name_en": "Cos Lettuce",
+      "control_status": null
+    },
+    {
+      "row": 321,
+      "code": "11-561",
+      "name_th": "โหระพา 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 322,
+      "code": "11-562",
+      "name_th": "ยอดคะน้า 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 323,
+      "code": "11-563",
+      "name_th": "กะเพรา 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 324,
+      "code": "11-564",
+      "name_th": "ขึ้นฉ่าย 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 325,
+      "code": "11-565",
+      "name_th": "รากผักชี 50 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 326,
+      "code": "11-566",
+      "name_th": "ผักชีฝรั่ง 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 327,
+      "code": "11-567",
+      "name_th": "ชะเอมเถา",
+      "name_en": "Thai liconice",
+      "control_status": null
+    },
+    {
+      "row": 328,
+      "code": "11-568",
+      "name_th": "ถั่วปี",
+      "name_en": "RED LONG BEAN",
+      "control_status": null
+    },
+    {
+      "row": 329,
+      "code": "11-569",
+      "name_th": "ผักกาดสร้อย",
+      "name_en": "Chinese mustard",
+      "control_status": null
+    },
+    {
+      "row": 330,
+      "code": "11-570",
+      "name_th": "ลูกเนียงแกะเปลือก (ใหญ่ )",
+      "name_en": "Peeled Niang Balls",
+      "control_status": null
+    },
+    {
+      "row": 331,
+      "code": "11 571",
+      "name_th": "ใบมะละกอ",
+      "name_en": "papaya leaves",
+      "control_status": null
+    },
+    {
+      "row": 332,
+      "code": "11-572",
+      "name_th": "ต้นใบเตย",
+      "name_en": "Pandanus tree",
+      "control_status": null
+    },
+    {
+      "row": 333,
+      "code": "12-112",
+      "name_th": "เห็ดออรินจิ(pack 200g)",
+      "name_en": "ERYNGII  MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 334,
+      "code": "12-113",
+      "name_th": "ลูกมะระหวาน",
+      "name_en": "SWEET BITTER MELON",
+      "control_status": null
+    },
+    {
+      "row": 335,
+      "code": "12-117",
+      "name_th": "เห็ดโคนน้อยสีน้ำตาล(pack150g)",
+      "name_en": "BROWN BEECH MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 336,
+      "code": "12-118",
+      "name_th": "เห็ดโคนหิมะ",
+      "name_en": "WHITE CRAB MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 337,
+      "code": "12-119",
+      "name_th": "เห็ดหลินจือ/เห็ดถ้วย",
+      "name_en": "LING GEUR MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 338,
+      "code": "12-121",
+      "name_th": "มันญี่ปุ่น",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 339,
+      "code": "12-189",
+      "name_th": "คะน้าเห็ดหอม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 340,
+      "code": "12-190",
+      "name_th": "ลูกเหรียง",
+      "name_en": "LUK RIENG",
+      "control_status": null
+    },
+    {
+      "row": 341,
+      "code": "12-191",
+      "name_th": "ดอกขี้เหล็กต้ม",
+      "name_en": "boiled cassia flower",
+      "control_status": null
+    },
+    {
+      "row": 342,
+      "code": "12-192",
+      "name_th": "ฝักกระถินแก่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 343,
+      "code": "12-223",
+      "name_th": "ดอกอัญชัน",
+      "name_en": "butterfly pea flowers",
+      "control_status": null
+    },
+    {
+      "row": 344,
+      "code": "14-004",
+      "name_th": "ชุดสุกี้",
+      "name_en": "Suki set",
+      "control_status": null
+    },
+    {
+      "row": 345,
+      "code": "14-013",
+      "name_th": "มะเขือเปราะ 400 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 346,
+      "code": "14-025",
+      "name_th": "ชุดมะยม",
+      "name_en": "Star Gooseberry Tum Set",
+      "control_status": null
+    },
+    {
+      "row": 347,
+      "code": "14-026",
+      "name_th": "ชุดตำกล้วย",
+      "name_en": "Banana Tum Set",
+      "control_status": null
+    },
+    {
+      "row": 348,
+      "code": "14-027",
+      "name_th": "ชุดตำลูกยอ",
+      "name_en": "Noni Papaya Salad",
+      "control_status": null
+    },
+    {
+      "row": 349,
+      "code": "14-032",
+      "name_th": "ชุดตำข่า",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 350,
+      "code": "14-034",
+      "name_th": "ชุดตำมะขาม",
+      "name_en": "Tamarind Salad Set",
+      "control_status": null
+    },
+    {
+      "row": 351,
+      "code": "14-035",
+      "name_th": "ชุดผัดคะน้า",
+      "name_en": "Stir Fried Kale Set",
+      "control_status": null
+    },
+    {
+      "row": 352,
+      "code": "14-036",
+      "name_th": "ชุดเห็ดรวม",
+      "name_en": "Mixed Mushroom Set",
+      "control_status": null
+    },
+    {
+      "row": 353,
+      "code": "14-037",
+      "name_th": "ชุดตำกระท้อน",
+      "name_en": "santol Tum Set",
+      "control_status": null
+    },
+    {
+      "row": 354,
+      "code": "14-038",
+      "name_th": "ชุดแกงเขียวหวาน",
+      "name_en": "Green Curry set",
+      "control_status": null
+    },
+    {
+      "row": 355,
+      "code": "14-039",
+      "name_th": "หน่อไม้ขม",
+      "name_en": "Bamboo shoot",
+      "control_status": null
+    },
+    {
+      "row": 356,
+      "code": "14-040",
+      "name_th": "ชุดเแกงแดง",
+      "name_en": "Red Curry set",
+      "control_status": null
+    },
+    {
+      "row": 357,
+      "code": "14-043",
+      "name_th": "มะเขือลาย+มะเขือไข่เต่า+มะเขือม่วงกลม",
+      "name_en": "Set eggphant",
+      "control_status": null
+    },
+    {
+      "row": 358,
+      "code": "14-044",
+      "name_th": "ชุดผัดฉ่า",
+      "name_en": "Phad Cha Stir fry set",
+      "control_status": null
+    },
+    {
+      "row": 359,
+      "code": "14-045",
+      "name_th": "ชุดผัดกระเพรา",
+      "name_en": "Pad Krapow Set",
+      "control_status": null
+    },
+    {
+      "row": 360,
+      "code": "14-046",
+      "name_th": "ชุดผัดผักบุ้ง",
+      "name_en": "Stir fried Morning Glory set",
+      "control_status": null
+    },
+    {
+      "row": 361,
+      "code": "14-047",
+      "name_th": "ชุดผัดถั่วฝักยาว",
+      "name_en": "Stir fired Kailan set",
+      "control_status": null
+    },
+    {
+      "row": 362,
+      "code": "14-048",
+      "name_th": "ชุดผัดขิง",
+      "name_en": "Stir fry Ginger set",
+      "control_status": null
+    },
+    {
+      "row": 363,
+      "code": "14-049",
+      "name_th": "ชุดต้มข่า",
+      "name_en": "Tom Kra set",
+      "control_status": null
+    },
+    {
+      "row": 364,
+      "code": "14-050",
+      "name_th": "ชุดผักน้ำพริก",
+      "name_en": "Nam Prik set",
+      "control_status": null
+    },
+    {
+      "row": 365,
+      "code": "14-051",
+      "name_th": "ชุดผัดหน่อไม้ฝรั่ง",
+      "name_en": "Stir fried Asparagus Set",
+      "control_status": null
+    },
+    {
+      "row": 366,
+      "code": "14-052",
+      "name_th": "ชุดผัดสะตอ",
+      "name_en": "Stir fried Sator Set",
+      "control_status": null
+    },
+    {
+      "row": 367,
+      "code": "14-053",
+      "name_th": "ชุดผัดยอดมะพร้าว",
+      "name_en": "Stir fry Kit  Coconut Pith set",
+      "control_status": null
+    },
+    {
+      "row": 368,
+      "code": "14-054",
+      "name_th": "ชุดโหระพาน้ำพริกเผา",
+      "name_en": "Thai Basil and Chili Paste Set",
+      "control_status": null
+    },
+    {
+      "row": 369,
+      "code": "15-077",
+      "name_th": "ผักเม๊ก",
+      "name_en": "PAK-MAX",
+      "control_status": null
+    },
+    {
+      "row": 370,
+      "code": "15-002",
+      "name_th": "ใบมันต่อเผือก",
+      "name_en": "TARO LEAVES IT ON",
+      "control_status": null
+    },
+    {
+      "row": 371,
+      "code": "15-006",
+      "name_th": "มะม่วงพวง",
+      "name_en": "MANGO BUNCH",
+      "control_status": null
+    },
+    {
+      "row": 372,
+      "code": "15-017",
+      "name_th": "มะยงฃิด",
+      "name_en": "Maigchid",
+      "control_status": null
+    },
+    {
+      "row": 373,
+      "code": "15-028",
+      "name_th": "ใบมะตูมแขก",
+      "name_en": "Brazilian Pepper-tree",
+      "control_status": null
+    },
+    {
+      "row": 374,
+      "code": "15-029",
+      "name_th": "ใบมะม่วงหิมพานต์",
+      "name_en": "Cashew Nut Leaf",
+      "control_status": null
+    },
+    {
+      "row": 375,
+      "code": "15-030",
+      "name_th": "กระจับ",
+      "name_en": "Tinghara Nut",
+      "control_status": null
+    },
+    {
+      "row": 376,
+      "code": "15-077",
+      "name_th": "ผักเม็ก",
+      "name_en": "PAK MAX",
+      "control_status": null
+    },
+    {
+      "row": 377,
+      "code": "15-101",
+      "name_th": "ใบมันเทศ",
+      "name_en": "Sweet potato leaves",
+      "control_status": null
+    },
+    {
+      "row": 378,
+      "code": "15-105",
+      "name_th": "เห็ดหลินดำ (ชิมิจิ)",
+      "name_en": "Black Shimeji Mushroom",
+      "control_status": null
+    },
+    {
+      "row": 379,
+      "code": "15-106",
+      "name_th": "เห็ดหลินขาว (ชิมิจิ)",
+      "name_en": "White Shimeji Mushroom",
+      "control_status": null
+    },
+    {
+      "row": 380,
+      "code": "15-108",
+      "name_th": "ตะลิงปลิง",
+      "name_en": "TALING PLING",
+      "control_status": null
+    },
+    {
+      "row": 381,
+      "code": "15-109",
+      "name_th": "ลูกตะคร้อ",
+      "name_en": "Ceylon oak",
+      "control_status": null
+    },
+    {
+      "row": 382,
+      "code": "15-110",
+      "name_th": "มันม่วง",
+      "name_en": "sweet potato",
+      "control_status": null
+    },
+    {
+      "row": 383,
+      "code": "15-111",
+      "name_th": "หัวมันขี้หนู",
+      "name_en": "Hausa potato",
+      "control_status": null
+    },
+    {
+      "row": 384,
+      "code": "15-112",
+      "name_th": "ต้นข่าอ่อน",
+      "name_en": "Young galangal tree",
+      "control_status": null
+    },
+    {
+      "row": 385,
+      "code": "15-113",
+      "name_th": "มะม่วงกะตอย",
+      "name_en": "MANGO - KATOI",
+      "control_status": null
+    },
+    {
+      "row": 386,
+      "code": "15-116",
+      "name_th": "มันสาคู",
+      "name_en": "Arrowroot",
+      "control_status": null
+    },
+    {
+      "row": 387,
+      "code": "15-117",
+      "name_th": "หัวมันขี้หนูเล็ก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 388,
+      "code": "15-118",
+      "name_th": "ใบกระท่อม",
+      "name_en": "Kratom",
+      "control_status": null
+    },
+    {
+      "row": 389,
+      "code": "15-119",
+      "name_th": "ตะคร้อหวาน",
+      "name_en": "sweet Ceylon oak",
+      "control_status": null
+    },
+    {
+      "row": 390,
+      "code": "15-120",
+      "name_th": "ลูกมะกรูดแช่แข็ง",
+      "name_en": "frozen kaffir lime",
+      "control_status": null
+    },
+    {
+      "row": 391,
+      "code": "16-013",
+      "name_th": "เห็ดภูฎาน",
+      "name_en": "THAI MUSHROOD (PU TAN)",
+      "control_status": null
+    },
+    {
+      "row": 392,
+      "code": "16-011",
+      "name_th": "หัวปลีหั่น/ซอย",
+      "name_en": "SLICED BANANA BLOSSOM",
+      "control_status": null
+    },
+    {
+      "row": 393,
+      "code": "16-013",
+      "name_th": "เห็ดภูฎาน",
+      "name_en": "INDIAN OTSTER",
+      "control_status": null
+    },
+    {
+      "row": 394,
+      "code": "16-015",
+      "name_th": "เห็ดหอมสาย",
+      "name_en": "SHITAKE",
+      "control_status": null
+    },
+    {
+      "row": 395,
+      "code": "16-017",
+      "name_th": "หน่อไม้ไผ่เลี้ยง",
+      "name_en": "bamboo shoots",
+      "control_status": null
+    },
+    {
+      "row": 396,
+      "code": "16-018",
+      "name_th": "ผักเฮือน",
+      "name_en": "Phak Huan",
+      "control_status": null
+    },
+    {
+      "row": 397,
+      "code": "16-019",
+      "name_th": "ผักเชียงดา",
+      "name_en": "Gurmar",
+      "control_status": null
+    },
+    {
+      "row": 398,
+      "code": "16-026",
+      "name_th": "อ้อนควั่น",
+      "name_en": "SUGAR CANE",
+      "control_status": null
+    },
+    {
+      "row": 399,
+      "code": "16-032",
+      "name_th": "เม็ดกระถิน",
+      "name_en": "ACACIA SCEDS",
+      "control_status": null
+    },
+    {
+      "row": 400,
+      "code": "16-033",
+      "name_th": "ดอกชมจันทร์",
+      "name_en": "MOON FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 401,
+      "code": "16-034",
+      "name_th": "ผักจิก",
+      "name_en": "JIG VEGETABLES",
+      "control_status": null
+    },
+    {
+      "row": 402,
+      "code": "16-035",
+      "name_th": "กระเทียมหัว",
+      "name_en": "HEAD GARLIC",
+      "control_status": null
+    },
+    {
+      "row": 403,
+      "code": "16-036",
+      "name_th": "ผักกระโดน",
+      "name_en": "KRADON VEGETEABLES",
+      "control_status": null
+    },
+    {
+      "row": 404,
+      "code": "16-037",
+      "name_th": "ผักหวานสีม่วง",
+      "name_en": "PURPLE SWEET PATATO",
+      "control_status": null
+    },
+    {
+      "row": 405,
+      "code": "16-038",
+      "name_th": "ผักหวานสีเหลือง",
+      "name_en": "YELLOW SWEET PATATO",
+      "control_status": null
+    },
+    {
+      "row": 406,
+      "code": "16-039",
+      "name_th": "ข้าวโพดสีม่วง",
+      "name_en": "SWEET CORN",
+      "control_status": null
+    },
+    {
+      "row": 407,
+      "code": "16-042",
+      "name_th": "ตะไคร้ 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 408,
+      "code": "16-043",
+      "name_th": "ข่า 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 409,
+      "code": "16-044",
+      "name_th": "ผักชี 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 410,
+      "code": "16-045",
+      "name_th": "พริกแดง 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 411,
+      "code": "16-046",
+      "name_th": "กระชาย 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 412,
+      "code": "16-047",
+      "name_th": "ใบเหลียง",
+      "name_en": "Gnetum gnemon",
+      "control_status": null
+    },
+    {
+      "row": 413,
+      "code": "16-048",
+      "name_th": "มะขามอ่อน 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 414,
+      "code": "16-049",
+      "name_th": "ยอดเล็บครุฑ",
+      "name_en": "MING ARALIA LEAVES",
+      "control_status": null
+    },
+    {
+      "row": 415,
+      "code": "16-050",
+      "name_th": "ใบมันปู",
+      "name_en": "MUN - POO LEAVES",
+      "control_status": null
+    },
+    {
+      "row": 416,
+      "code": "16-051",
+      "name_th": "หอมแดง 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 417,
+      "code": "16-052",
+      "name_th": "ลูกเนียงเพราะหรือลูกเนียงหมาน",
+      "name_en": "DJENKOL BEAN SPROUT",
+      "control_status": null
+    },
+    {
+      "row": 418,
+      "code": "16-053",
+      "name_th": "ลูกฉิ่ง",
+      "name_en": "Duea Ching",
+      "control_status": null
+    },
+    {
+      "row": 419,
+      "code": "16-054",
+      "name_th": "ลูกมะเขือฮึก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 420,
+      "code": "16-056",
+      "name_th": "เซียนท้อ",
+      "name_en": "Canistel",
+      "control_status": null
+    },
+    {
+      "row": 421,
+      "code": "16-057",
+      "name_th": "สละอินโด",
+      "name_en": "Snake Fruit",
+      "control_status": null
+    },
+    {
+      "row": 422,
+      "code": "16-058",
+      "name_th": "มะระขี้นก",
+      "name_en": "bitter gourd",
+      "control_status": null
+    },
+    {
+      "row": 423,
+      "code": "16-059",
+      "name_th": "กระเพราแดง",
+      "name_en": "HOLY BASIL - RED",
+      "control_status": null
+    },
+    {
+      "row": 424,
+      "code": "16-060",
+      "name_th": "พริกชี้ฟ้าแดงเขียว",
+      "name_en": "CHILLI SPUR RED-GREEN PEPPER",
+      "control_status": null
+    },
+    {
+      "row": 425,
+      "code": "16-061",
+      "name_th": "มะเขือตอแหล",
+      "name_en": "EGG PLANT TOR LAE",
+      "control_status": null
+    },
+    {
+      "row": 426,
+      "code": "16-062",
+      "name_th": "กระชาย 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 427,
+      "code": "16-063",
+      "name_th": "ผักหนาม",
+      "name_en": "Lasia spinosa",
+      "control_status": null
+    },
+    {
+      "row": 428,
+      "code": "16-064",
+      "name_th": "ขนุนอ่อนลูก",
+      "name_en": "Young jackfruit",
+      "control_status": null
+    },
+    {
+      "row": 429,
+      "code": "16-065",
+      "name_th": "มะเขือขื่นหนาม",
+      "name_en": "Cock  Roach Berry",
+      "control_status": null
+    },
+    {
+      "row": 430,
+      "code": "16-066",
+      "name_th": "ลูกหนาม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 431,
+      "code": "16-067",
+      "name_th": "มะเขือลาย",
+      "name_en": "STRIPE EGGPLANT",
+      "control_status": null
+    },
+    {
+      "row": 432,
+      "code": "16-068",
+      "name_th": "มะเขือเหลือง",
+      "name_en": "YELLOW FRUIT NIGHTSHADE",
+      "control_status": null
+    },
+    {
+      "row": 433,
+      "code": "16-069",
+      "name_th": "พริกกระเหรี่ยง(พริกลาว) 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 434,
+      "code": "16-070",
+      "name_th": "ขมิ้นขาว 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 435,
+      "code": "16-071",
+      "name_th": "มะเขือไข่เต่า",
+      "name_en": "THAI  EGGPLANT",
+      "control_status": null
+    },
+    {
+      "row": 436,
+      "code": "16-072",
+      "name_th": "หัวข่าอ่อนพร้อมก้าน",
+      "name_en": "Young galangal head with stalk",
+      "control_status": null
+    },
+    {
+      "row": 437,
+      "code": "16-073",
+      "name_th": "ลอก",
+      "name_en": "Ainoon Vegetables",
+      "control_status": null
+    },
+    {
+      "row": 438,
+      "code": "16-074",
+      "name_th": "ลูกขจร",
+      "name_en": "LUK KRA JON",
+      "control_status": null
+    },
+    {
+      "row": 439,
+      "code": "16-075",
+      "name_th": "ยอดธัมมัง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 440,
+      "code": "16-077",
+      "name_th": "มะปริงดิบ",
+      "name_en": "Ma-pring",
+      "control_status": null
+    },
+    {
+      "row": 441,
+      "code": "16-076",
+      "name_th": "ลูกข้าวเม่า",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 442,
+      "code": "16-078",
+      "name_th": "ดอกขิง",
+      "name_en": "Ginger flower",
+      "control_status": null
+    },
+    {
+      "row": 443,
+      "code": "16-079",
+      "name_th": "ข่าอ่อน 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 444,
+      "code": "16-080",
+      "name_th": "กระชาย 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 445,
+      "code": "16-081",
+      "name_th": "เห็ดผึ้ง",
+      "name_en": "PHUENG  MUSHROOM",
+      "control_status": null
+    },
+    {
+      "row": 446,
+      "code": "16-082",
+      "name_th": "มะพร้าวกะทิ",
+      "name_en": "coconut milk",
+      "control_status": null
+    },
+    {
+      "row": 447,
+      "code": "16-083",
+      "name_th": "ใบเผือก",
+      "name_en": "Taro LEAVES",
+      "control_status": null
+    },
+    {
+      "row": 448,
+      "code": "16-084",
+      "name_th": "ยอดมะพร้าวซอย",
+      "name_en": "EDIBLE COCONUT CROWN",
+      "control_status": null
+    },
+    {
+      "row": 449,
+      "code": "16085",
+      "name_th": "เห็ดระโงก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 450,
+      "code": "16086",
+      "name_th": "เห็ดตะไค",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 451,
+      "code": "16087",
+      "name_th": "เห็ดปลวก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 452,
+      "code": "16088",
+      "name_th": "ผักอีลอก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 453,
+      "code": "16089",
+      "name_th": "",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 454,
+      "code": "16090",
+      "name_th": "หัวทือ",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 455,
+      "code": "16091",
+      "name_th": "หน่อดาหลา",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 456,
+      "code": "16092",
+      "name_th": "ลูกผีผ่วน",
+      "name_en": "Carabao teats.",
+      "control_status": null
+    },
+    {
+      "row": 457,
+      "code": "16093",
+      "name_th": "ลูกบัวบก",
+      "name_en": "Gotu Kola",
+      "control_status": null
+    },
+    {
+      "row": 458,
+      "code": "16094",
+      "name_th": "ยอดมะตูม",
+      "name_en": "Bael shoots",
+      "control_status": null
+    },
+    {
+      "row": 459,
+      "code": "16-095",
+      "name_th": "ข่าอ่อน 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 460,
+      "code": "16-096",
+      "name_th": "ถั่วแระสด",
+      "name_en": "soybean",
+      "control_status": null
+    },
+    {
+      "row": 461,
+      "code": "16-097",
+      "name_th": "เครือหมาน้อย",
+      "name_en": "Icevine",
+      "control_status": null
+    },
+    {
+      "row": 462,
+      "code": "16-098",
+      "name_th": "มะม่วงป่า/มะม่วงกะล่อน",
+      "name_en": "wild mango",
+      "control_status": null
+    },
+    {
+      "row": 463,
+      "code": "16-099",
+      "name_th": "บอนหวาน",
+      "name_en": "Elephant Ear",
+      "control_status": null
+    },
+    {
+      "row": 464,
+      "code": "16-100",
+      "name_th": "ถั่วแฮ",
+      "name_en": "Pigeon pea",
+      "control_status": null
+    },
+    {
+      "row": 465,
+      "code": "16-101",
+      "name_th": "หน่อข่าอ่อนไม่ปลอกเปลือก 500 G",
+      "name_en": "Young galangal shoots without peel",
+      "control_status": null
+    },
+    {
+      "row": 466,
+      "code": "16-102",
+      "name_th": "บุ้งไทย 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 467,
+      "code": "16-103",
+      "name_th": "ตำลึง 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 468,
+      "code": "16-104",
+      "name_th": "ลิ้นฟ้า 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 469,
+      "code": "16-105",
+      "name_th": "รากผักชี 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 470,
+      "code": "16-106",
+      "name_th": "ตะไคร้ 1000 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 471,
+      "code": "16-107",
+      "name_th": "ผักเฮือนต้ม",
+      "name_en": "Phak Huan (Boiled)",
+      "control_status": null
+    },
+    {
+      "row": 472,
+      "code": "16-108",
+      "name_th": "หอมแดงจุก",
+      "name_en": "RED SHALLOT",
+      "control_status": null
+    },
+    {
+      "row": 473,
+      "code": "16-109",
+      "name_th": "คะน้าเม็กซิโก (คะน้าไชยา).",
+      "name_en": "PruniflorumGogel / Chaya Spinash.",
+      "control_status": null
+    },
+    {
+      "row": 474,
+      "code": "16-110",
+      "name_th": "ยอดมะระขี้นก",
+      "name_en": "bitter gourd SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 475,
+      "code": "16-111",
+      "name_th": "ผักพายน้อย (ก้านจองเล็ก)",
+      "name_en": "little vegetable pie",
+      "control_status": null
+    },
+    {
+      "row": 476,
+      "code": "16-112",
+      "name_th": "ลูกยางป่า",
+      "name_en": "wild rubber balls",
+      "control_status": null
+    },
+    {
+      "row": 477,
+      "code": "16-113",
+      "name_th": "ลูกมะเดื่ออ่อน",
+      "name_en": "young figs",
+      "control_status": null
+    },
+    {
+      "row": 478,
+      "code": "16-114",
+      "name_th": "สะตอแกะ (200 กรัม)",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 479,
+      "code": "16-115.",
+      "name_th": "ยอดหวายไม่ปลอกเปลือก.",
+      "name_en": "Rattan shoots without bark.",
+      "control_status": null
+    },
+    {
+      "row": 480,
+      "code": "16-116",
+      "name_th": "บวบอ่อน (มะนอย)",
+      "name_en": "young zucchini.",
+      "control_status": null
+    },
+    {
+      "row": 481,
+      "code": "16-117",
+      "name_th": "พลูคาว",
+      "name_en": "Plu Kaow",
+      "control_status": null
+    },
+    {
+      "row": 482,
+      "code": "16-118",
+      "name_th": "ใบส้มป่อย",
+      "name_en": "som poi leaves",
+      "control_status": null
+    },
+    {
+      "row": 483,
+      "code": "16-119",
+      "name_th": "ยอดอ่อนทานตะวัน",
+      "name_en": "sunflower sprout",
+      "control_status": null
+    },
+    {
+      "row": 484,
+      "code": "16-120",
+      "name_th": "ผักจ๊ะค่าน",
+      "name_en": "ja-kan",
+      "control_status": null
+    },
+    {
+      "row": 485,
+      "code": "16-121",
+      "name_th": "ถั่วพู  1000 กรัม",
+      "name_en": "WINGED BEAN",
+      "control_status": null
+    },
+    {
+      "row": 486,
+      "code": "16-122",
+      "name_th": "เห็ดเผาะต้ม",
+      "name_en": "PAW MUSHROOM Boiled",
+      "control_status": null
+    },
+    {
+      "row": 487,
+      "code": "16-123",
+      "name_th": "ดอกดาหลา",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 488,
+      "code": "16-124",
+      "name_th": "หำขนุน",
+      "name_en": "jackfruit find",
+      "control_status": null
+    },
+    {
+      "row": 489,
+      "code": "16-125",
+      "name_th": "ใบชะพลู 1000",
+      "name_en": "CHA PHLU LEAF",
+      "control_status": null
+    },
+    {
+      "row": 490,
+      "code": "16-126",
+      "name_th": "ดอกอ่อนผักติ้ว",
+      "name_en": "PHAK-TIU",
+      "control_status": null
+    },
+    {
+      "row": 491,
+      "code": "16-127",
+      "name_th": "ดอกขจี",
+      "name_en": "Dok-Kajee",
+      "control_status": null
+    },
+    {
+      "row": 492,
+      "code": "16-128",
+      "name_th": "ข้าวโพดข้าวเหนียว",
+      "name_en": "Glutinous Corn",
+      "control_status": null
+    },
+    {
+      "row": 493,
+      "code": "16-129",
+      "name_th": "ผักบุ้งไทยหั่น/ซอย",
+      "name_en": "Thai Morning Glory Sliced",
+      "control_status": null
+    },
+    {
+      "row": 494,
+      "code": "16-130",
+      "name_th": "หน่อข่าอ่อนไม่ปลอกเปลือก 250 g",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 495,
+      "code": "16-131",
+      "name_th": "ลิ้นฟ้า 250g",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 496,
+      "code": "16-132",
+      "name_th": "เม็ดกระถิน 80 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 497,
+      "code": "16-133",
+      "name_th": "สะตอแกะ  80 กรัม)",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 498,
+      "code": "16-134",
+      "name_th": "มะเขือยาวสีเขียว",
+      "name_en": "green eggplant",
+      "control_status": null
+    },
+    {
+      "row": 499,
+      "code": "16-135",
+      "name_th": "มะเขือเสวย",
+      "name_en": "STRIPE EGGPLANT.",
+      "control_status": null
+    },
+    {
+      "row": 500,
+      "code": "16-136",
+      "name_th": "มันสาคูแดง",
+      "name_en": "red Arrowroot",
+      "control_status": null
+    },
+    {
+      "row": 501,
+      "code": "16-137",
+      "name_th": "มะขามอ่อน 200 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 502,
+      "code": "16-138",
+      "name_th": "ใบมะกูดในน้ำมัน",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 503,
+      "code": "16-139",
+      "name_th": "หน่อข่า เปลือย",
+      "name_en": "GALANGA SHOOT",
+      "control_status": null
+    },
+    {
+      "row": 504,
+      "code": "16-140",
+      "name_th": "สะตอฝัก 100 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 505,
+      "code": "16-141",
+      "name_th": "ดอกกระเจียวขาว",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 506,
+      "code": "16-142",
+      "name_th": "ตะไคร้ 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 507,
+      "code": "16-143",
+      "name_th": "F",
+      "name_en": "Sweet potato shoot",
+      "control_status": null
+    },
+    {
+      "row": 508,
+      "code": "16-144",
+      "name_th": "ผักบุ้งจีน 500 กรัม",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 509,
+      "code": "16-145",
+      "name_th": "ลูกฟักข้าว",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 510,
+      "code": "16-146",
+      "name_th": "มะเขือม่วงลิง",
+      "name_en": "Monkey Eggplant",
+      "control_status": null
+    },
+    {
+      "row": 511,
+      "code": "16-147",
+      "name_th": "มะเขือเปราะลายใหญ่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 512,
+      "code": "16-149",
+      "name_th": "ใบมะเฟือง",
+      "name_en": "Starfruit leaves",
+      "control_status": null
+    },
+    {
+      "row": 513,
+      "code": "16-150",
+      "name_th": "เมล็ดบัว",
+      "name_en": "Lotus Seed",
+      "control_status": null
+    },
+    {
+      "row": 514,
+      "code": "16-151",
+      "name_th": "ก้านหน่อเผือก",
+      "name_en": "Taro stalk",
+      "control_status": null
+    },
+    {
+      "row": 515,
+      "code": "16-152",
+      "name_th": "หน่อไม้ลัน",
+      "name_en": "Bamboo shoot",
+      "control_status": null
+    },
+    {
+      "row": 516,
+      "code": "16-153",
+      "name_th": "หน่อกระวาน ปลอก",
+      "name_en": "Siam Cardamom shoot",
+      "control_status": null
+    },
+    {
+      "row": 517,
+      "code": "16-154",
+      "name_th": "ขนุนติดเปลือก",
+      "name_en": "Whole jackfruit",
+      "control_status": null
+    },
+    {
+      "row": 518,
+      "code": "16-155",
+      "name_th": "ผักโขมเขียว",
+      "name_en": "ASIAN SPINACH",
+      "control_status": null
+    },
+    {
+      "row": 519,
+      "code": "16-156",
+      "name_th": "ดอกมะละกอ",
+      "name_en": "PAPAYA FLOWER",
+      "control_status": null
+    },
+    {
+      "row": 520,
+      "code": "16-159",
+      "name_th": "กระเทียมไทยแกะ 500กรัม",
+      "name_en": "GARLIC",
+      "control_status": null
+    },
+    {
+      "row": 524,
+      "code": "22-308",
+      "name_th": "อ้อยท่อน (ไม่ปลอกเปลือก)",
+      "name_en": "SUGAR CANE",
+      "control_status": null
+    },
+    {
+      "row": 525,
+      "code": "22-309",
+      "name_th": "องุ่นแดงนอก",
+      "name_en": "INPORTED GRAPE",
+      "control_status": null
+    },
+    {
+      "row": 526,
+      "code": "22-310",
+      "name_th": "สัปปะรดนางแล",
+      "name_en": "BABY PINEAPPLE",
+      "control_status": null
+    },
+    {
+      "row": 527,
+      "code": "22-311",
+      "name_th": "ลูกตาล (ปลอกเปลือก)",
+      "name_en": "PALM FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 528,
+      "code": "22-312",
+      "name_th": "ลูกไหนแดง",
+      "name_en": "RED PLUM",
+      "control_status": null
+    },
+    {
+      "row": 529,
+      "code": "22-313",
+      "name_th": "ลูกไหนดำ",
+      "name_en": "BLack PLUM",
+      "control_status": null
+    },
+    {
+      "row": 530,
+      "code": "22-314",
+      "name_th": "ลูกพีซ",
+      "name_en": "PEACH",
+      "control_status": null
+    },
+    {
+      "row": 531,
+      "code": "22-315",
+      "name_th": "เสาวรสสีม่วง",
+      "name_en": "PURPLE PASSION FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 532,
+      "code": "22-316",
+      "name_th": "มะม่วงหาวมะนาวโห่",
+      "name_en": "KARONDA FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 533,
+      "code": "22-333",
+      "name_th": "มะยงชิด",
+      "name_en": "MAIGCHID",
+      "control_status": null
+    },
+    {
+      "row": 534,
+      "code": "22-401",
+      "name_th": "มะละกอสุกออลแลนด์",
+      "name_en": "HOLLAND PAPAYA",
+      "control_status": null
+    },
+    {
+      "row": 535,
+      "code": "22-533",
+      "name_th": "มะพร้าวเจียเปลือก",
+      "name_en": "JIA COCONUT SHELL",
+      "control_status": null
+    },
+    {
+      "row": 536,
+      "code": "22-534",
+      "name_th": "กล้วยตานี",
+      "name_en": "THAI BANANA (TA-NEE)",
+      "control_status": null
+    },
+    {
+      "row": 537,
+      "code": "22-555",
+      "name_th": "มะปรางอ่อนเปรี้ยว",
+      "name_en": "Plum mango (SOUR)",
+      "control_status": null
+    },
+    {
+      "row": 538,
+      "code": "22-556",
+      "name_th": "ลิ้นจี่ป่า / คอแลน",
+      "name_en": "Korlan",
+      "control_status": null
+    },
+    {
+      "row": 539,
+      "code": "22-557",
+      "name_th": "ฝรั่งสาลี่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 540,
+      "code": "22-558",
+      "name_th": "มะม่วงอาร์ทู",
+      "name_en": "R2 MANGO",
+      "control_status": null
+    },
+    {
+      "row": 541,
+      "code": "22-559",
+      "name_th": "มะม่วงน้ำดอกไม้สีม่วง",
+      "name_en": "MA-MUANG-NAM-DOK-MAI PURPLE",
+      "control_status": null
+    },
+    {
+      "row": 542,
+      "code": "22-560",
+      "name_th": "กระท้อนเปรี้ยว",
+      "name_en": "WOOD APPLE (santol)  (SOUR)",
+      "control_status": null
+    },
+    {
+      "row": 543,
+      "code": "22-561",
+      "name_th": "มะม่วงมันขุนศรี",
+      "name_en": "Khun Sri Mango",
+      "control_status": null
+    },
+    {
+      "row": 544,
+      "code": "22-562",
+      "name_th": "ทุเรียนชะนีไข่",
+      "name_en": "Chani Kai Durian",
+      "control_status": null
+    },
+    {
+      "row": 545,
+      "code": "22-563",
+      "name_th": "มะม่วงดิบน้ำดอกไม้",
+      "name_en": "Nam Dok Mai Mango (SOUR)",
+      "control_status": null
+    },
+    {
+      "row": 546,
+      "code": "22-564",
+      "name_th": "ทุเรียนหมอนทองภูเขาไฟ",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 547,
+      "code": "22-565",
+      "name_th": "อินทผาลัมสด",
+      "name_en": "date palm",
+      "control_status": null
+    },
+    {
+      "row": 548,
+      "code": "22-566",
+      "name_th": "มะม่วงสุกสามฤดู",
+      "name_en": "Mango tree",
+      "control_status": null
+    },
+    {
+      "row": 549,
+      "code": "22-567",
+      "name_th": "มะพร้าวเผาซีลสูญญากาศ",
+      "name_en": "GRILED COCONUT (vacuum seal)",
+      "control_status": null
+    },
+    {
+      "row": 550,
+      "code": "22-568",
+      "name_th": "ผักเฮีดนึ่ง",
+      "name_en": "Steamed Head Vegetables",
+      "control_status": null
+    },
+    {
+      "row": 551,
+      "code": "22-569",
+      "name_th": "มะหลอดสด",
+      "name_en": "Bastard Oleaster",
+      "control_status": null
+    },
+    {
+      "row": 552,
+      "code": "22-570",
+      "name_th": "มะม่วงแก้วก้นส่อน",
+      "name_en": "Kaew Son Mango",
+      "control_status": null
+    },
+    {
+      "row": 553,
+      "code": "22-572",
+      "name_th": "ชุดเงาะ+ลองกอง",
+      "name_en": "Rambutan Longkong set",
+      "control_status": null
+    },
+    {
+      "row": 554,
+      "code": "22-575",
+      "name_th": "ชุดเงาะ + มังคุด",
+      "name_en": "Rambutan+ mangosteen set",
+      "control_status": null
+    },
+    {
+      "row": 555,
+      "code": "22-574",
+      "name_th": "ชุดมังคุด + ลองกอง",
+      "name_en": "mangosteen+ Longkong set",
+      "control_status": null
+    },
+    {
+      "row": 556,
+      "code": "22-576",
+      "name_th": "ทุเรียนเทศ",
+      "name_en": "Soursop",
+      "control_status": null
+    },
+    {
+      "row": 558,
+      "code": "25-666",
+      "name_th": "จำปาดะ",
+      "name_en": "Champedak",
+      "control_status": null
+    },
+    {
+      "row": 559,
+      "code": "25-667",
+      "name_th": "หลุมพี",
+      "name_en": "Phi hole",
+      "control_status": null
+    },
+    {
+      "row": 560,
+      "code": "22-577",
+      "name_th": "แก้วมังกรสีเหลือง",
+      "name_en": "yellow dragon fruit",
+      "control_status": null
+    },
+    {
+      "row": 561,
+      "code": "22-578",
+      "name_th": "หน่ออ้อยอ่อน",
+      "name_en": "sugarcane shoots",
+      "control_status": null
+    },
+    {
+      "row": 562,
+      "code": "22-579",
+      "name_th": "ขันหมากเบ็ง",
+      "name_en": "Khan Mak Ben",
+      "control_status": null
+    },
+    {
+      "row": 563,
+      "code": "22-580",
+      "name_th": "เงาะเปลือย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 564,
+      "code": "22-581",
+      "name_th": "มังคุดเปลือย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 565,
+      "code": "22-582",
+      "name_th": "สับปะรดปัตตาเวีย",
+      "name_en": "Pattavia Pineapple",
+      "control_status": null
+    },
+    {
+      "row": 566,
+      "code": "22-583",
+      "name_th": "แตงโมตอปิโด",
+      "name_en": "Torpedo Watermelon",
+      "control_status": null
+    },
+    {
+      "row": 567,
+      "code": "22-584",
+      "name_th": "แตงโมกินรี",
+      "name_en": "Kinnaree Watermelon",
+      "control_status": null
+    },
+    {
+      "row": 568,
+      "code": "22-585",
+      "name_th": "เงาะ ถุง 1 กก  X 5 แพค",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 569,
+      "code": "22-586",
+      "name_th": "ฝรั่งกล่องละ 5 กก",
+      "name_en": "guana 5 kg",
+      "control_status": null
+    },
+    {
+      "row": 570,
+      "code": "22-587",
+      "name_th": "ลำไย ยกกล่อง 5 กก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 571,
+      "code": "22-588",
+      "name_th": "ลองกอง ยกกล่อง 5 กก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 572,
+      "code": "22-589",
+      "name_th": "ลำไย ยกกล่อง",
+      "name_en": "LONGAN",
+      "control_status": null
+    },
+    {
+      "row": 573,
+      "code": "22-590",
+      "name_th": "มังคุด ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 574,
+      "code": "22-591",
+      "name_th": "ลองกอง ยกกล่อง",
+      "name_en": "Longkong box",
+      "control_status": null
+    },
+    {
+      "row": 575,
+      "code": "22-592",
+      "name_th": "ฝรั่งไส้แดง ยกกล่อง",
+      "name_en": "Pink Guana box",
+      "control_status": null
+    },
+    {
+      "row": 576,
+      "code": "22-593",
+      "name_th": "ส้มจี๊ด",
+      "name_en": "Kumquat",
+      "control_status": null
+    },
+    {
+      "row": 577,
+      "code": "22-594",
+      "name_th": "ส้มบางมด",
+      "name_en": "Bang Mod Tangerine",
+      "control_status": null
+    },
+    {
+      "row": 578,
+      "code": "22-595",
+      "name_th": "พุทราไทย ยกกล่อง",
+      "name_en": "JUJUBE",
+      "control_status": null
+    },
+    {
+      "row": 579,
+      "code": "22-596",
+      "name_th": "มะม่วงบ่ายโบก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 580,
+      "code": "22-201",
+      "name_th": "มะม่วงเขียวเสวย",
+      "name_en": "GREEN MANGO",
+      "control_status": null
+    },
+    {
+      "row": 581,
+      "code": "22-202",
+      "name_th": "มะม่วงดิบปลาตะเพียน",
+      "name_en": "MANGO (SOUR)",
+      "control_status": null
+    },
+    {
+      "row": 582,
+      "code": "22-203",
+      "name_th": "มะม่วงสุกน้ำดอกไม้",
+      "name_en": "YELLOW MANGO",
+      "control_status": null
+    },
+    {
+      "row": 583,
+      "code": "22-204",
+      "name_th": "เงาะ",
+      "name_en": "RAMBUTAN",
+      "control_status": null
+    },
+    {
+      "row": 584,
+      "code": "22-205",
+      "name_th": "มังคุด",
+      "name_en": "MANGOSTEEN",
+      "control_status": null
+    },
+    {
+      "row": 585,
+      "code": "22-206",
+      "name_th": "ทุเรียนแกะเนื้อ",
+      "name_en": "DURIAN PEELED",
+      "control_status": null
+    },
+    {
+      "row": 586,
+      "code": "22-207",
+      "name_th": "ทุเรียน",
+      "name_en": "DURIAN WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 587,
+      "code": "22-208",
+      "name_th": "ส้มโอลูกทองดี",
+      "name_en": "POMELO WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 588,
+      "code": "22-209",
+      "name_th": "ฝรั่งกิมจู",
+      "name_en": "GUAVA",
+      "control_status": null
+    },
+    {
+      "row": 589,
+      "code": "22-210",
+      "name_th": "กล้วยน้ำว้า",
+      "name_en": "THAI BANANA",
+      "control_status": null
+    },
+    {
+      "row": 590,
+      "code": "22-211",
+      "name_th": "มะละกอสุก",
+      "name_en": "PAPAYA (RIPE)",
+      "control_status": null
+    },
+    {
+      "row": 591,
+      "code": "22-212",
+      "name_th": "ลิ้นจี่",
+      "name_en": "LYCHEE",
+      "control_status": null
+    },
+    {
+      "row": 592,
+      "code": "22-213",
+      "name_th": "ลำใย",
+      "name_en": "LONGAN",
+      "control_status": null
+    },
+    {
+      "row": 593,
+      "code": "22-214",
+      "name_th": "ลองกอง",
+      "name_en": "LONGKONG",
+      "control_status": null
+    },
+    {
+      "row": 594,
+      "code": "22-215",
+      "name_th": "มะม่วงสุก อกร่อง",
+      "name_en": "MANGO YELLOW (OKRONG)",
+      "control_status": null
+    },
+    {
+      "row": 595,
+      "code": "22-216",
+      "name_th": "ส้มสายน้ำผึ้ง",
+      "name_en": "HONEY ORANGE",
+      "control_status": null
+    },
+    {
+      "row": 596,
+      "code": "22-217",
+      "name_th": "ส้มเขียวหวาน",
+      "name_en": "TANGERINE ORANGE",
+      "control_status": null
+    },
+    {
+      "row": 597,
+      "code": "22-218",
+      "name_th": "กล้วยไข่",
+      "name_en": "THAI BANANA (KHAI)",
+      "control_status": null
+    },
+    {
+      "row": 598,
+      "code": "22-219",
+      "name_th": "มะพร้าวอ่อน",
+      "name_en": "YOUNG COCONUT",
+      "control_status": null
+    },
+    {
+      "row": 599,
+      "code": "22-220",
+      "name_th": "มะพร้าวแก่",
+      "name_en": "OLD COCONUT",
+      "control_status": null
+    },
+    {
+      "row": 600,
+      "code": "22-221",
+      "name_th": "พุทรานมสด",
+      "name_en": "JUJUBE",
+      "control_status": null
+    },
+    {
+      "row": 601,
+      "code": "22-222",
+      "name_th": "ละมุด",
+      "name_en": "SAPODILLA",
+      "control_status": null
+    },
+    {
+      "row": 602,
+      "code": "22-223",
+      "name_th": "ขนุนสุกลูก",
+      "name_en": "JACK FRUIT WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 603,
+      "code": "22-224",
+      "name_th": "สัปปะรด",
+      "name_en": "PINEAPPLE",
+      "control_status": null
+    },
+    {
+      "row": 604,
+      "code": "22-225",
+      "name_th": "น้อยหน่า",
+      "name_en": "SUGAR APPLE",
+      "control_status": null
+    },
+    {
+      "row": 605,
+      "code": "22-226",
+      "name_th": "ชมพู่เขียวแดงเพชร",
+      "name_en": "ROSE APPLE GREEN+RED",
+      "control_status": null
+    },
+    {
+      "row": 606,
+      "code": "22-227",
+      "name_th": "ระกำ",
+      "name_en": "RA-KAM (SALAK)",
+      "control_status": null
+    },
+    {
+      "row": 607,
+      "code": "22-228",
+      "name_th": "อ้อยท่อนปอกเปลือก",
+      "name_en": "SUGARCANE WHOLE",
+      "control_status": null
+    },
+    {
+      "row": 608,
+      "code": "22-229",
+      "name_th": "มะขามหวาน",
+      "name_en": "SWEET TAMARIND",
+      "control_status": null
+    },
+    {
+      "row": 609,
+      "code": "22-230",
+      "name_th": "ลางสาด",
+      "name_en": "RANG-SARD",
+      "control_status": null
+    },
+    {
+      "row": 610,
+      "code": "22-231",
+      "name_th": "แห้วสด",
+      "name_en": "WATER CHESSNUT",
+      "control_status": null
+    },
+    {
+      "row": 611,
+      "code": "22-232",
+      "name_th": "มะปราง",
+      "name_en": "PLUM MANGO",
+      "control_status": null
+    },
+    {
+      "row": 612,
+      "code": "22-233",
+      "name_th": "มะยมสด",
+      "name_en": "STARGOSBERY",
+      "control_status": null
+    },
+    {
+      "row": 613,
+      "code": "22-234",
+      "name_th": "มะขามเทศ",
+      "name_en": "Manila Tamarind",
+      "control_status": null
+    },
+    {
+      "row": 614,
+      "code": "22-235",
+      "name_th": "มะม่วงแรด",
+      "name_en": "MANGO RAD",
+      "control_status": null
+    },
+    {
+      "row": 615,
+      "code": "22-236",
+      "name_th": "กระท้อน",
+      "name_en": "WOOD APPLE (santol)",
+      "control_status": null
+    },
+    {
+      "row": 616,
+      "code": "22-237",
+      "name_th": "มะเฟือง",
+      "name_en": "STAR FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 617,
+      "code": "22-238",
+      "name_th": "มะพร้าวทึนทึก",
+      "name_en": "COCONUT FOR COOKING",
+      "control_status": null
+    },
+    {
+      "row": 618,
+      "code": "22-239",
+      "name_th": "มะดัน",
+      "name_en": "MA DUN",
+      "control_status": null
+    },
+    {
+      "row": 619,
+      "code": "22-240",
+      "name_th": "กล้วยเล็บมือนาง",
+      "name_en": "BANANA LEB MUE NANG",
+      "control_status": null
+    },
+    {
+      "row": 620,
+      "code": "22-241",
+      "name_th": "แก้วมังกรเนื้อขาว",
+      "name_en": "WHITE DRAGON FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 621,
+      "code": "22-242",
+      "name_th": "มะไฟ",
+      "name_en": "BURMESE GRAPE",
+      "control_status": null
+    },
+    {
+      "row": 622,
+      "code": "22-243",
+      "name_th": "กล้วยหอม",
+      "name_en": "BANANA HOM",
+      "control_status": null
+    },
+    {
+      "row": 623,
+      "code": "22-244",
+      "name_th": "ขนุนสุกแกะถาด",
+      "name_en": "JACKFRUIT PEELED",
+      "control_status": null
+    },
+    {
+      "row": 624,
+      "code": "22-245",
+      "name_th": "มะม่วงพิมเสน",
+      "name_en": "MANGO PIM SAIN",
+      "control_status": null
+    },
+    {
+      "row": 625,
+      "code": "22-246",
+      "name_th": "ขนุนอ่อนหั่นแผ่น",
+      "name_en": "JACKFRUIT WHOLE CUT",
+      "control_status": null
+    },
+    {
+      "row": 626,
+      "code": "22-247",
+      "name_th": "มะพร้าวเผา",
+      "name_en": "GRILED COCONUT",
+      "control_status": null
+    },
+    {
+      "row": 627,
+      "code": "22-248",
+      "name_th": "ชมพู่ทับทิมจันทร์",
+      "name_en": "RED ROSE APPLE (TUB TIM)",
+      "control_status": null
+    },
+    {
+      "row": 628,
+      "code": "22-249",
+      "name_th": "มะขามเปรี้ยว",
+      "name_en": "SOUR YOUNG TAMARIND",
+      "control_status": null
+    },
+    {
+      "row": 629,
+      "code": "22-250",
+      "name_th": "ส้มโอขาวน้ำผึ้ง",
+      "name_en": "POMELO NUM PUNG",
+      "control_status": null
+    },
+    {
+      "row": 630,
+      "code": "22-251",
+      "name_th": "มะม่วงฟ้าลั่น",
+      "name_en": "MANGO FAA LAN",
+      "control_status": null
+    },
+    {
+      "row": 631,
+      "code": "22-252",
+      "name_th": "ชมพู่ทูลเกล้า",
+      "name_en": "GREEN ROSE APPLE",
+      "control_status": null
+    },
+    {
+      "row": 632,
+      "code": "22-253",
+      "name_th": "เม็ดขนุนแห้ง",
+      "name_en": "JACKFRUIT SEED",
+      "control_status": null
+    },
+    {
+      "row": 633,
+      "code": "22-254",
+      "name_th": "แตงโม",
+      "name_en": "WATER MELON",
+      "control_status": null
+    },
+    {
+      "row": 634,
+      "code": "22-255",
+      "name_th": "สละ",
+      "name_en": "SALAK",
+      "control_status": null
+    },
+    {
+      "row": 635,
+      "code": "22-256",
+      "name_th": "แตงไทย",
+      "name_en": "THAI CANTALOUPE",
+      "control_status": null
+    },
+    {
+      "row": 636,
+      "code": "22-257",
+      "name_th": "ทับทิม",
+      "name_en": "POMEGRANATE",
+      "control_status": null
+    },
+    {
+      "row": 637,
+      "code": "22-258",
+      "name_th": "ผลไม้รวม",
+      "name_en": "MIX FRUITS",
+      "control_status": null
+    },
+    {
+      "row": 638,
+      "code": "22-260",
+      "name_th": "ลำไยตะกร้า 3 กก",
+      "name_en": "LONGAN PER BASKET",
+      "control_status": null
+    },
+    {
+      "row": 639,
+      "code": "22-261",
+      "name_th": "เงาะ (250 G)",
+      "name_en": "RAMBUTAN (250 G)",
+      "control_status": null
+    },
+    {
+      "row": 640,
+      "code": "22-262",
+      "name_th": "กล้วยหักมุก",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 641,
+      "code": "22-263",
+      "name_th": "สตอร์เบอรรี่",
+      "name_en": "STARWBERRY",
+      "control_status": null
+    },
+    {
+      "row": 642,
+      "code": "22-264",
+      "name_th": "กล้วยไข่ เครือ",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 643,
+      "code": "22-265",
+      "name_th": "ลูกพลับ",
+      "name_en": "PERSIMMON",
+      "control_status": null
+    },
+    {
+      "row": 644,
+      "code": "22-266",
+      "name_th": "ต้นกล้วย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 645,
+      "code": "22-267",
+      "name_th": "มะพร้าวทะลาย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 646,
+      "code": "22-268",
+      "name_th": "มะม่วงดิบลูกเล็ก",
+      "name_en": "SOUR YOUNG MANGO",
+      "control_status": null
+    },
+    {
+      "row": 647,
+      "code": "22-269",
+      "name_th": "ฝรั่งไม่มีเม็ด",
+      "name_en": "GUAVA SEEDLESS",
+      "control_status": null
+    },
+    {
+      "row": 648,
+      "code": "22-270",
+      "name_th": "ฝรั่งไทย",
+      "name_en": "THAI GUAVA",
+      "control_status": null
+    },
+    {
+      "row": 649,
+      "code": "22-271",
+      "name_th": "มะม่วงแก้ว",
+      "name_en": "MANGO KAWE",
+      "control_status": null
+    },
+    {
+      "row": 650,
+      "code": "22-272",
+      "name_th": "มะม่วงสุกโชคอนันต์",
+      "name_en": "MANGO CHOK A NUN RIPE",
+      "control_status": null
+    },
+    {
+      "row": 651,
+      "code": "22-273",
+      "name_th": "ส้มโอแกะถาด",
+      "name_en": "POMELO PEELED PACKED",
+      "control_status": null
+    },
+    {
+      "row": 652,
+      "code": "22-274",
+      "name_th": "ส้มเช้ง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 653,
+      "code": "22-275",
+      "name_th": "ส้มโอลูกปลอกเปลือก",
+      "name_en": "POMELO WHOLE PEELED",
+      "control_status": null
+    },
+    {
+      "row": 654,
+      "code": "22-276",
+      "name_th": "มะยงชิด",
+      "name_en": "PLUM MANGO SWEET",
+      "control_status": null
+    },
+    {
+      "row": 655,
+      "code": "22-277",
+      "name_th": "มะม่วงมหาชนก",
+      "name_en": "MAHACHANOK MANGO",
+      "control_status": null
+    },
+    {
+      "row": 656,
+      "code": "22-278",
+      "name_th": "มะม่วงดิบโชคนันต์",
+      "name_en": "MANGO CHOK A NUN SOUR",
+      "control_status": null
+    },
+    {
+      "row": 657,
+      "code": "22-279",
+      "name_th": "ทุเรียนก้านยาว",
+      "name_en": "DURIAN KAN JAO",
+      "control_status": null
+    },
+    {
+      "row": 658,
+      "code": "22-280",
+      "name_th": "มะม่วงเขียวมรกต",
+      "name_en": "MORAKOT MANGO",
+      "control_status": null
+    },
+    {
+      "row": 659,
+      "code": "22-281",
+      "name_th": "เสาวรส",
+      "name_en": "PASSION FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 660,
+      "code": "22-291",
+      "name_th": "ฝรั่งสีชมพู หงเปาสือ",
+      "name_en": "PINK GUAVA",
+      "control_status": null
+    },
+    {
+      "row": 661,
+      "code": "22-296",
+      "name_th": "แก้วมังกรเนื้อแดง",
+      "name_en": "PINK DRAGON FRUIT",
+      "control_status": null
+    },
+    {
+      "row": 662,
+      "code": "22-401",
+      "name_th": "มะละกอสุกฮอนแลนด์",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 663,
+      "code": "22-402",
+      "name_th": "มะขามหมู",
+      "name_en": "Half - Ripe Tamarind",
+      "control_status": null
+    },
+    {
+      "row": 664,
+      "code": "22-403",
+      "name_th": "พุทราไทย",
+      "name_en": "JUJUBE",
+      "control_status": null
+    },
+    {
+      "row": 665,
+      "code": "22-404",
+      "name_th": "มะมุด",
+      "name_en": "Horse Mango",
+      "control_status": null
+    },
+    {
+      "row": 666,
+      "code": "22-409",
+      "name_th": "พุทราช๊อคโกแลต",
+      "name_en": "jujube red date",
+      "control_status": null
+    },
+    {
+      "row": 667,
+      "code": "22-411",
+      "name_th": "มะม่วงเขียวเสวยสามรส",
+      "name_en": "GREEN MANGO  (Khiew Sawoey)",
+      "control_status": null
+    },
+    {
+      "row": 668,
+      "code": "22-414",
+      "name_th": "มะขามหมู พันธ์สีชมพู",
+      "name_en": "Half - Ripe Tamarind (PINK)",
+      "control_status": null
+    },
+    {
+      "row": 669,
+      "code": "22-417",
+      "name_th": "องุ่นไซมัส",
+      "name_en": "SHINE MUSCAT GRAPE",
+      "control_status": null
+    },
+    {
+      "row": 670,
+      "code": "22-418",
+      "name_th": "เมล่อนแกะสลัก",
+      "name_en": "Japanese Melon",
+      "control_status": null
+    },
+    {
+      "row": 671,
+      "code": "22-419",
+      "name_th": "แคนตาลูปแกะสลัก",
+      "name_en": "Cataloup",
+      "control_status": null
+    },
+    {
+      "row": 672,
+      "code": "22-420",
+      "name_th": "ฟักทองแกะสลัก",
+      "name_en": "Pumpkin",
+      "control_status": null
+    },
+    {
+      "row": 673,
+      "code": "22-421",
+      "name_th": "เผือกแกะสลัก",
+      "name_en": "Taro",
+      "control_status": null
+    },
+    {
+      "row": 674,
+      "code": "22-422",
+      "name_th": "แครอทแกะสลัก",
+      "name_en": "Carrot",
+      "control_status": null
+    },
+    {
+      "row": 675,
+      "code": "22-423",
+      "name_th": "เผือกดอกไม้",
+      "name_en": "taro flower",
+      "control_status": null
+    },
+    {
+      "row": 676,
+      "code": "22-424",
+      "name_th": "แครอทดอกไม้",
+      "name_en": "carrot flower",
+      "control_status": null
+    },
+    {
+      "row": 677,
+      "code": "22-425",
+      "name_th": "ฟักทองดอกไม้",
+      "name_en": "pumpkin flower",
+      "control_status": null
+    },
+    {
+      "row": 678,
+      "code": "22-426",
+      "name_th": "เผือกใบไม้",
+      "name_en": "Taro leaves",
+      "control_status": null
+    },
+    {
+      "row": 679,
+      "code": "22-427",
+      "name_th": "แครอทใบไม้",
+      "name_en": "carrot leaves",
+      "control_status": null
+    },
+    {
+      "row": 680,
+      "code": "22-428",
+      "name_th": "ฟักทองใบไม้",
+      "name_en": "pumpkin leaves",
+      "control_status": null
+    },
+    {
+      "row": 681,
+      "code": "22-429",
+      "name_th": "แตงกวาใบไม้",
+      "name_en": "Courgettes/cucumber",
+      "control_status": null
+    },
+    {
+      "row": 682,
+      "code": "22-430",
+      "name_th": "บีทรูท ดอกไม้",
+      "name_en": "Beetroot (Flower cut)",
+      "control_status": null
+    },
+    {
+      "row": 683,
+      "code": "22-431",
+      "name_th": "แก้วมังกร ดอกไม้",
+      "name_en": "Dragon fruit flower",
+      "control_status": null
+    },
+    {
+      "row": 684,
+      "code": "22-432",
+      "name_th": "ฝรั่งใบไม้",
+      "name_en": "Guava Leaves",
+      "control_status": null
+    },
+    {
+      "row": 685,
+      "code": "22-433",
+      "name_th": "แตงโมแกะสลัก ตัวอักษร",
+      "name_en": "Water melon with letter",
+      "control_status": null
+    },
+    {
+      "row": 686,
+      "code": "22-434",
+      "name_th": "แรดิซ ดอกไม้",
+      "name_en": "Radish (Flower cut)",
+      "control_status": null
+    },
+    {
+      "row": 687,
+      "code": "22-435",
+      "name_th": "เงาะ+มังคุด",
+      "name_en": "Ramtuban+Mangosteen",
+      "control_status": null
+    },
+    {
+      "row": 688,
+      "code": "22-436",
+      "name_th": "ลองกอง+มังคุด",
+      "name_en": "Longkong+Mangosteen",
+      "control_status": null
+    },
+    {
+      "row": 689,
+      "code": "22-437",
+      "name_th": "ลองกอง+เงาะ",
+      "name_en": "Longkong+Rambutan",
+      "control_status": null
+    },
+    {
+      "row": 690,
+      "code": "22-438",
+      "name_th": "เงาะ+ลิ้นจี่",
+      "name_en": "Lychee+Rambutan",
+      "control_status": null
+    },
+    {
+      "row": 691,
+      "code": "22-439",
+      "name_th": "เงาะ+ลำไย",
+      "name_en": "Ramtuban+Longan",
+      "control_status": null
+    },
+    {
+      "row": 692,
+      "code": "22-440",
+      "name_th": "เงาะ ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 693,
+      "code": "22-441",
+      "name_th": "ลองกอง+เงาะ+ลำไย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 694,
+      "code": "22-442",
+      "name_th": "ฝรั่งแป้นพิรุณ",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 695,
+      "code": "22-443",
+      "name_th": "ฝรั่งแป้นพิรุณ ยกกล่อง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 696,
+      "code": "22-444",
+      "name_th": "ชุดเงาะ+มังคุด+ลองกอง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 697,
+      "code": "22-445",
+      "name_th": "ดอกจำปา",
+      "name_en": "Champaka",
+      "control_status": null
+    },
+    {
+      "row": 698,
+      "code": "22-446",
+      "name_th": "กล้วยน้ำว้า (เครือ)",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 699,
+      "code": "22-447",
+      "name_th": "มะม่วงงาช้าง",
+      "name_en": "Red Ivory Mango",
+      "control_status": null
+    },
+    {
+      "row": 700,
+      "code": "22-448",
+      "name_th": "ชุดเงาะ+มังคุด+ลำไย",
+      "name_en": "Ramtuban+Mangosteen+Longan",
+      "control_status": null
+    },
+    {
+      "row": 701,
+      "code": "22-449",
+      "name_th": "ชุดตะไคร้+ ใบมะกรูด",
+      "name_en": "LEMON GLASS+LEECH LIME LEAF",
+      "control_status": null
+    },
+    {
+      "row": 702,
+      "code": "22-450",
+      "name_th": "ชุดผักชี +  ต้นหอม",
+      "name_en": "CORIANDER+SPRING ONION",
+      "control_status": null
+    },
+    {
+      "row": 703,
+      "code": "22-451",
+      "name_th": "ชุดตะไคร้+ข่า",
+      "name_en": "LEECH LIME LEAF+YOUNG GALANGAL",
+      "control_status": null
+    },
+    {
+      "row": 704,
+      "code": "22-452",
+      "name_th": "มะม่วงเขียวเสวย ยกกล่อง",
+      "name_en": "SWEET GREEN MANGO",
+      "control_status": null
+    },
+    {
+      "row": 705,
+      "code": "22-453",
+      "name_th": "กระท้อน ยกกล่อง",
+      "name_en": "WOOD APPLE",
+      "control_status": null
+    },
+    {
+      "row": 709,
+      "code": "44-071",
+      "name_th": "ถั่วต้ม(กก)W",
+      "name_en": "BOILED THAI PEANUT (KG)",
+      "control_status": null
+    },
+    {
+      "row": 710,
+      "code": "44-492",
+      "name_th": "ขีเหล็กต้มNN",
+      "name_en": "BOILED CASSOD TREE LEAF",
+      "control_status": null
+    },
+    {
+      "row": 711,
+      "code": "55-811",
+      "name_th": "พวงมาลัยมะลิ+กุหลาบ ใหญ่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 712,
+      "code": "55-812",
+      "name_th": "พวงมาลัยกุหลาบ",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 713,
+      "code": "55-813",
+      "name_th": "พวงมาลัยพุดใหญ่",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 714,
+      "code": "55-814",
+      "name_th": "พวงมาลัยดาวเรืองแบบยาว",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 715,
+      "code": "55-815",
+      "name_th": "หมากพลู+ปูนแดง",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 716,
+      "code": "55-816",
+      "name_th": "ใบมอนสเตอร่า",
+      "name_en": "monstera leaves",
+      "control_status": null
+    },
+    {
+      "row": 717,
+      "code": "55-817",
+      "name_th": "ฟิโลเดนดรอน พลูจีบ",
+      "name_en": "Philodendron leaves",
+      "control_status": null
+    },
+    {
+      "row": 718,
+      "code": "55-818",
+      "name_th": "ใบทางหมาก",
+      "name_en": "betel palm leaves",
+      "control_status": null
+    },
+    {
+      "row": 719,
+      "code": "55-819",
+      "name_th": "ใบปานามา",
+      "name_en": "Panama  leaves",
+      "control_status": null
+    },
+    {
+      "row": 720,
+      "code": "55-820",
+      "name_th": "เฟรินข้าหลวง",
+      "name_en": "bird  nest fern leaves",
+      "control_status": null
+    },
+    {
+      "row": 721,
+      "code": "55-821",
+      "name_th": "ปักษาสวรรค์",
+      "name_en": "bird of paradise",
+      "control_status": null
+    },
+    {
+      "row": 722,
+      "code": "55-822",
+      "name_th": "ดอกขิงแดง",
+      "name_en": "Alipnia purpurata flower set",
+      "control_status": null
+    },
+    {
+      "row": 723,
+      "code": "55-823",
+      "name_th": "ดอกก้ามปู",
+      "name_en": "Samanea saman flower set",
+      "control_status": null
+    },
+    {
+      "row": 724,
+      "code": "55-824",
+      "name_th": "ดอกสแตติส",
+      "name_en": "Static flower set",
+      "control_status": null
+    },
+    {
+      "row": 725,
+      "code": "55-825",
+      "name_th": "ใบเตยลาย",
+      "name_en": "",
+      "control_status": null
+    },
+    {
+      "row": 726,
+      "code": "55-826",
+      "name_th": "ชุดดอกดาหลา",
+      "name_en": "Samanea saman flower set",
+      "control_status": null
+    },
+    {
+      "row": 727,
+      "code": "55-827",
+      "name_th": "ดอกไม้",
+      "name_en": "FLOWER",
+      "control_status": null
+    }
+  ]
+}

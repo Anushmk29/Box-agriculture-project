@@ -1,0 +1,31 @@
+{
+  "name": "fresh-produce-operations",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test:unit": "node --experimental-strip-types --test tests/unit/*.test.mjs",
+    "test:container": "node scripts/smoke-container.mjs"
+  },
+  "dependencies": {
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "jsqr": "^1.4.0",
+    "lucide-react": "^0.542.0",
+    "next": "^16.0.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.9.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/qrcode": "^1.5.6",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^16.0.0"
+  }
+}

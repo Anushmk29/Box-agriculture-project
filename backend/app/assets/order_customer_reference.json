@@ -1,0 +1,15 @@
+{
+  "source_root": "documents/new docs-mail",
+  "routes": ["CD", "DTD", "ITM", "JCT", "LYT", "MLD", "NGA", "PARIS", "PRD", "TETE"],
+  "customers": [
+    {"code": "CD-MAIN", "name": "CD", "route": "CD", "aliases": ["CD"], "source_folder": "CD 14.09.26", "customer_in_pdf": "CD."},
+    {"code": "DTD-MAIN", "name": "DAN", "route": "DTD", "aliases": ["DAN", "DTD"], "source_folder": "DTD 31.08.26", "customer_in_pdf": "DAN"},
+    {"code": "ITM-MAIN", "name": "ITM", "route": "ITM", "aliases": ["ITM"], "source_folder": "ITM 06.09.26", "customer_in_pdf": "ITM"},
+    {"code": "JCT-MAIN", "name": "JCT", "route": "JCT", "aliases": ["JCT"], "source_folder": "JCT 29.08.26", "customer_in_pdf": "JCT"},
+    {"code": "LYT-MAIN", "name": "LYT", "route": "LYT", "aliases": ["LYT"], "source_folder": "LYT 06.09.26", "customer_in_pdf": "LYT"},
+    {"code": "MLD-MAIN", "name": "PINTO THAI/AHMED ALMAN", "route": "MLD", "aliases": ["MLD", "PINTO THAI/AHMED ALMAN", "PINTO THAI/AHMED ALMAN."], "source_folder": "MLD 05.09.26", "customer_in_pdf": "PINTO THAI/AHMED ALMAN."},
+    {"code": "NGA-MAIN", "name": "NGA", "route": "NGA", "aliases": ["NGA"], "source_folder": "NGA 05.09.26", "customer_in_pdf": "NGA"},
+    {"code": "PARIS-MAIN", "name": "Paris Store", "route": "PARIS", "aliases": ["PARIS", "Paris Store", "Paris Stroe"], "source_folder": "Paris 05.09.26", "customer_in_pdf": "Paris Stroe", "name_note": "Spelling confirmed by the Sub: Paris Store field and box register."},
+    {"code": "TETE-MAIN", "name": "TETE", "route": "TETE", "aliases": ["TETE", "TONIO-MAIN"], "source_folder": "TETE 07.08.26", "customer_in_pdf": "TETE."}
+  ]
+}

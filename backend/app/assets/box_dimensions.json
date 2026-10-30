@@ -1,0 +1,145 @@
+{
+  "source_file": "100726 Dimention (1).xlsx",
+  "source_sha256": "51b2d195bc5bc5bef364a4f1553bf76d88a98db8d70356214a8d9839a89e39c4",
+  "sheet": "Packing Report",
+  "range": "A4:O18",
+  "dimension_basis": "EXTERNAL",
+  "units": "cm",
+  "rows": [
+    {
+      "row": 4,
+      "size_name": "Small",
+      "name_th": "เล็ก",
+      "box_type": "CARDBOARD",
+      "length_cm": 38,
+      "width_cm": 32,
+      "height_cm": 18
+    },
+    {
+      "row": 5,
+      "size_name": "Flat",
+      "name_th": "แบน",
+      "box_type": "CARDBOARD",
+      "length_cm": 50,
+      "width_cm": 32,
+      "height_cm": 18
+    },
+    {
+      "row": 6,
+      "size_name": "Small",
+      "name_th": "เล็ก",
+      "box_type": "FOAM",
+      "length_cm": 38,
+      "width_cm": 28,
+      "height_cm": 34
+    },
+    {
+      "row": 7,
+      "size_name": "Flat",
+      "name_th": "แบน",
+      "box_type": "FOAM",
+      "length_cm": 54,
+      "width_cm": 42,
+      "height_cm": 21
+    },
+    {
+      "row": 8,
+      "size_name": "Large",
+      "name_th": "ใหญ่",
+      "box_type": "FOAM",
+      "length_cm": 46,
+      "width_cm": 34,
+      "height_cm": 36
+    },
+    {
+      "row": 9,
+      "size_name": "Giant",
+      "name_th": "ยักษ์",
+      "box_type": "FOAM",
+      "length_cm": 60,
+      "width_cm": 44,
+      "height_cm": 30
+    },
+    {
+      "row": 10,
+      "size_name": "Tiny",
+      "name_th": "เล็กจิ๋ว",
+      "box_type": "FOAM",
+      "length_cm": 30,
+      "width_cm": 20,
+      "height_cm": 24
+    },
+    {
+      "row": 11,
+      "size_name": "Medium",
+      "name_th": "กลาง",
+      "box_type": "FOAM",
+      "length_cm": 30,
+      "width_cm": 40,
+      "height_cm": 30
+    },
+    {
+      "row": 12,
+      "size_name": "Special",
+      "name_th": "พิเศษ",
+      "box_type": "FOAM",
+      "length_cm": 31,
+      "width_cm": 40,
+      "height_cm": 30
+    },
+    {
+      "row": 13,
+      "size_name": "Small-tiny",
+      "name_th": "ฟ เล็กจิ๋ว",
+      "box_type": "FOAM",
+      "length_cm": 22,
+      "width_cm": 30,
+      "height_cm": 25
+    },
+    {
+      "row": 14,
+      "size_name": "Flat-tiny",
+      "name_th": "แบนจิ๋ว",
+      "box_type": "FOAM",
+      "length_cm": 15,
+      "width_cm": 38,
+      "height_cm": 54
+    },
+    {
+      "row": 15,
+      "size_name": "Special",
+      "name_th": "พิเศษ",
+      "box_type": "CARDBOARD",
+      "length_cm": 34,
+      "width_cm": 40,
+      "height_cm": 28
+    },
+    {
+      "row": 16,
+      "size_name": "Tall",
+      "name_th": "สูง",
+      "box_type": "CARDBOARD",
+      "length_cm": 35,
+      "width_cm": 29,
+      "height_cm": 36
+    },
+    {
+      "row": 17,
+      "size_name": "Mini",
+      "name_th": "จิ๋ว",
+      "box_type": "CARDBOARD",
+      "length_cm": 26,
+      "width_cm": 32,
+      "height_cm": 14
+    },
+    {
+      "row": 18,
+      "size_name": "Special (2)",
+      "name_th": "พิเศษ",
+      "box_type": "FOAM",
+      "length_cm": 36,
+      "width_cm": 24,
+      "height_cm": 32
+    }
+  ]
+}

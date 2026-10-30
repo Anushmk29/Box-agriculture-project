@@ -11,15 +11,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "users",
-        sa.Column(
-            "must_change_password",
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.false(),
-        ),
-    )
+    if "must_change_password" not in {column["name"] for column in sa.inspect(op.get_bind()).get_columns("users")}:
+        op.add_column(
+            "users",
+            sa.Column(
+                "must_change_password",
+                sa.Boolean(),
+                nullable=False,
+                server_default=sa.false(),
+            ),
+        )
     if op.get_bind().dialect.name != "postgresql":
         op.execute(
             """
@@ -34,6 +35,13 @@ def upgrade() -> None:
         )
         return
 
+    # The bootstrap migration uses current models on a fresh database.
+    labels = set(op.get_bind().execute(sa.text(
+        "SELECT enumlabel FROM pg_enum JOIN pg_type ON enumtypid = pg_type.oid "
+        "WHERE pg_type.oid = 'userrole'::regtype"
+    )).scalars())
+    if labels == {"GENERAL", "GENERAL_ACCOUNTING", "OWNER_ADMIN", "AI_AGENT_1", "AI_AGENT_2"}:
+        return
     op.execute("ALTER TYPE userrole RENAME TO userrole_legacy")
     op.execute(
         "CREATE TYPE userrole AS ENUM "

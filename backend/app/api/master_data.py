@@ -1,12 +1,16 @@
 import unicodedata
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import or_
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from sqlalchemy import func, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, require_access
+from app.core.dependencies import get_current_user, require_access, require_action
+from app.core.policy import Action, require
+from app.core.values import MONEY_MAX, PackLabel, UnicodeText
 from app.models.master_data import (
     BoxCatalogue,
     BoxMaterial,
@@ -18,6 +22,9 @@ from app.models.master_data import (
     WeightClass,
 )
 from app.models.user import User, UserRole
+from app.modules.orders.reconciliation import merge_products
+from app.modules.packing.catalogue import reference_for
+from app.services.order_customer_reference import order_routes
 
 router = APIRouter(
     prefix="/master-data",
@@ -27,23 +34,31 @@ router = APIRouter(
 
 
 class ProductCreate(BaseModel):
-    t_code: str = Field(min_length=1, max_length=32)
-    numeric_code: str | None = None
-    name_vi: str | None = None
-    name_en: str | None = None
-    name_th: str | None = None
-    produce_type: ProduceType = ProduceType.LEAFY
+    t_code: UnicodeText = Field(min_length=1, max_length=32)
+    numeric_code: UnicodeText | None = Field(default=None, max_length=32)
+    name_vi: UnicodeText | None = Field(default=None, max_length=256)
+    name_en: UnicodeText | None = Field(default=None, max_length=256)
+    name_th: UnicodeText | None = Field(default=None, max_length=256)
+    produce_type: ProduceType = ProduceType.OTHER
     box_material: BoxMaterial = BoxMaterial.FOAM
     temperature: TemperatureZone = TemperatureZone.COLD
     control_status: ControlStatus = ControlStatus.COMBINABLE
     weight_class: WeightClass = WeightClass.LIGHT
-    default_pack_sizes: list[str] = Field(default_factory=lambda: ["100g", "200g"])
-    default_unit_volume_cm3: float = 1000.0
-    tare_weight_allowance_g: float = 15.0
-    default_buffer_percentage: float = 0.0
-    botanical_family: str | None = None
-    barcode: str | None = None
-    norway_code: str | None = None
+    default_pack_sizes: list[PackLabel] = Field(default_factory=lambda: ["100g", "200g"])
+    default_unit_volume_cm3: Decimal = Field(default=Decimal("1000"), gt=0, le=MONEY_MAX,
+                                            max_digits=10, decimal_places=2, allow_inf_nan=False)
+    tare_weight_allowance_g: Decimal = Field(default=Decimal("15"), ge=0, le=Decimal("999999.99"),
+                                            max_digits=8, decimal_places=2, allow_inf_nan=False)
+    default_buffer_percentage: Decimal = Field(default=Decimal("0"), ge=0, le=100,
+                                               max_digits=5, decimal_places=2, allow_inf_nan=False)
+    botanical_family: UnicodeText | None = Field(default=None, max_length=128)
+    barcode: UnicodeText | None = Field(default=None, max_length=32)
+    norway_code: UnicodeText | None = Field(default=None, max_length=32)
+
+    @field_validator("t_code", mode="before")
+    @classmethod
+    def normalize_code(cls, value):
+        return value.strip().upper() if isinstance(value, str) else value
 
 
 class ProductOut(BaseModel):
@@ -87,6 +102,54 @@ class CustomerOut(BaseModel):
     is_main_customer: bool
 
 
+class MainCustomerCreate(BaseModel):
+    client_code: UnicodeText = Field(min_length=1, max_length=64)
+    company_name: UnicodeText = Field(min_length=1, max_length=256)
+    route_group: UnicodeText = Field(min_length=1, max_length=32)
+    destination_country: UnicodeText = Field(min_length=1, max_length=64)
+    billing_email: UnicodeText = Field(default="", max_length=255)
+
+    @field_validator("client_code", mode="before")
+    @classmethod
+    def normalize_client_code(cls, value):
+        return value.strip().upper() if isinstance(value, str) else value
+
+    @field_validator("client_code", "company_name", "route_group", "destination_country")
+    @classmethod
+    def strip_required(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("This field cannot be blank")
+        return value
+
+
+@router.post("/customers", response_model=CustomerOut, status_code=status.HTTP_201_CREATED)
+def create_main_customer(
+    payload: MainCustomerCreate,
+    db: Session = Depends(get_db, scope="function"),
+    _actor: User = Depends(require_action(Action.VALIDATE_ORDERS)),
+):
+    code = payload.client_code.upper()
+    if db.query(Customer).filter(func.upper(Customer.client_code) == code).first():
+        raise HTTPException(409, "Customer code already exists. Select the existing account or use a different code.")
+    customer = Customer(
+        client_code=code,
+        company_name=payload.company_name,
+        route_group=payload.route_group,
+        destination_country=payload.destination_country,
+        billing_email=payload.billing_email.strip(),
+        is_main_customer=True,
+    )
+    db.add(customer)
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(409, "Customer code already exists. Select the existing account or use a different code.") from exc
+    db.refresh(customer)
+    return customer
+
+
 def _strip_accents(text: str) -> str:
     return "".join(
         c for c in unicodedata.normalize("NFD", text)
@@ -99,7 +162,7 @@ def list_products(
     q: str | None = None,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ):
     query = db.query(Product).filter(Product.is_active.is_(True))
     if q and q.strip():
@@ -146,9 +209,11 @@ def list_products(
 @router.post("/products", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
 def create_product(
     payload: ProductCreate,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     actor: User = Depends(get_current_user),
 ):
+    if payload.default_buffer_percentage:
+        require(actor, Action.EDIT_BUFFERS)
     clean_code = payload.t_code.strip().upper()
     if not clean_code:
         raise HTTPException(status_code=422, detail="Product code (t_code) cannot be empty")
@@ -199,21 +264,41 @@ def create_product(
         is_active=True,
     )
     db.add(product)
-    db.commit()
+    db.flush()
     db.refresh(product)
     return product
 
 
+class ProductMergeRequest(BaseModel):
+    source_id: str
+    target_id: str
+
+
+@router.post("/products/merge")
+def merge_master_products(payload: ProductMergeRequest, db: Session = Depends(get_db, scope="function"),
+                         actor: User = Depends(require_action(Action.MERGE_PRODUCTS))):
+    try:
+        return merge_products(db, actor=actor, **payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
 @router.get("/boxes", response_model=list[BoxOut])
-def list_boxes(db: Session = Depends(get_db)):
-    return db.query(BoxCatalogue).filter(BoxCatalogue.is_active.is_(True)).all()
+def list_boxes(db: Session = Depends(get_db, scope="function")):
+    return [box for box in db.query(BoxCatalogue).filter(BoxCatalogue.is_active.is_(True)).all()
+            if reference_for(box)]
+
+
+@router.get("/order-routes", response_model=list[str])
+def list_order_routes(db: Session = Depends(get_db, scope="function")):
+    return order_routes(db)
 
 
 @router.get("/customers", response_model=list[CustomerOut])
 def list_customers(
     route: str | None = None,
     main_only: bool = False,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ):
     q = db.query(Customer)
     if route:

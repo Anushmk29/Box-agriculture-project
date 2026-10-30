@@ -1,13 +1,17 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, undefer
 
+from app.core.policy import Action, require
 from app.models.order import OrderStatus, RawOrderFile
-from app.models.user import HUMAN_ROLES, User, UserRole
+from app.models.user import User
+from app.modules.orders.acknowledgment import order_drafts
+from app.modules.orders.quantity_review import quantity_review_data, quantity_rows
+from app.modules.orders.templates import recognize_saved_formats, template_issues
 from app.modules.workflow.service import WorkflowService
-from app.services.matrix_parser import MatrixOrderParser
+from app.services.canonical_schema import ActionType
 from app.services.name_matcher import NameFirstMatcher
 
 
@@ -17,6 +21,7 @@ class ProductResolutionIssue:
     name_vi: str
     name_en: str
     pack_size: str
+    suggestions: list[dict] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -27,10 +32,12 @@ class MatrixValidationResult:
     total_product_rows: int
     resolved_product_rows: int
     unresolved: list[ProductResolutionIssue]
+    quantity_issues: list[dict] = field(default_factory=list)
+    quantity_review: dict = field(default_factory=dict)
 
     @property
     def can_split(self) -> bool:
-        return not self.unresolved
+        return not self.unresolved and not self.quantity_issues
 
 
 class OrderValidationService:
@@ -40,22 +47,40 @@ class OrderValidationService:
         self.db = db
 
     def validate(self, *, raw_file_id: str, actor: User) -> MatrixValidationResult:
-        if actor.role not in {*HUMAN_ROLES, UserRole.AI_AGENT_1}:
-            raise PermissionError("Order validation requires Agent 1 or an operations manager")
-        raw_file = self.db.query(RawOrderFile).filter_by(id=raw_file_id).first()
+        require(actor, Action.VALIDATE_ORDERS)
+        raw_file = (
+            self.db.query(RawOrderFile)
+            .options(undefer(RawOrderFile.acknowledgment_summary))
+            .filter_by(id=raw_file_id)
+            .with_for_update()
+            .populate_existing()
+            .first()
+        )
         if not raw_file:
             raise ValueError(f"Raw order file {raw_file_id} not found")
         if raw_file.status not in {OrderStatus.UPLOADED, OrderStatus.PARSED}:
             raise ValueError("Only an uploaded or parsed matrix can be validated")
 
-        parsed = MatrixOrderParser(raw_file.storage_url).parse_all_clients()
+        drafts = order_drafts(raw_file)
+        recognize_saved_formats(self.db, raw_file, drafts)
+        catalog = {
+            (
+                item.product_code or "",
+                item.product_name or item.raw_text,
+                item.pack_size or "std",
+            ): item
+            for draft in drafts
+            for item in draft.items
+            if item.action != ActionType.CANCEL and item.quantity > 0
+        }
         matcher = NameFirstMatcher(self.db)
         unresolved = []
         resolved = 0
-        for product in parsed["products_catalog"].values():
-            match, _, _ = matcher.resolve_product_names(
-                [product["name_vi"], product["name_en"]],
-                raw_code=product["code"],
+        for item in catalog.values():
+            names = [item.product_name or item.raw_text, *item.alt_names]
+            match = matcher.reviewed_product(
+                names,
+                raw_code=item.product_code,
                 main_customer_id=raw_file.main_customer_id,
             )
             if match:
@@ -63,10 +88,11 @@ class OrderValidationService:
             else:
                 unresolved.append(
                     ProductResolutionIssue(
-                        product_code=product["code"],
-                        name_vi=product["name_vi"],
-                        name_en=product["name_en"],
-                        pack_size=product["pack_size"],
+                        product_code=item.product_code or "",
+                        name_vi=item.product_name or item.raw_text,
+                        name_en=next(iter(item.alt_names), item.product_name or item.raw_text),
+                        pack_size=item.pack_size or "std",
+                        suggestions=matcher.suggestions(names, item.product_code),
                     )
                 )
 
@@ -79,18 +105,32 @@ class OrderValidationService:
             )
         raw_file.acknowledgment_summary = {
             **(raw_file.acknowledgment_summary or {}),
+            # Older uploads only kept the source file. Retain the parsed rows
+            # under this validation lock so subsequent reviews need no reparse.
+            "drafts": [draft.model_dump(mode="json") for draft in drafts],
             "validation": {
                 "resolved_product_rows": resolved,
                 "unresolved_product_rows": len(unresolved),
                 "can_split": not unresolved,
             },
         }
-        self.db.commit()
+        rows = quantity_rows(self.db, raw_file, drafts, resolver=matcher)
+        issues = [row for row in rows if row["issue"]]
+        issues.extend({"issue": issue} for issue in template_issues(drafts))
+        raw_file.acknowledgment_summary["validation"].update(
+            {"can_split": not unresolved and not issues, "quantity_issue_count": len(issues)}
+        )
+        self.db.flush()
         return MatrixValidationResult(
             raw_file_id=raw_file.id,
-            sheets=parsed["sheets_processed"],
-            total_customers=parsed["total_clients_found"],
-            total_product_rows=len(parsed["products_catalog"]),
+            sheets=[
+                row["sheet_name"]
+                for row in (raw_file.acknowledgment_summary or {}).get("sheets_processed", [])
+            ],
+            total_customers=len({draft.client_code for draft in drafts}),
+            total_product_rows=len(catalog),
             resolved_product_rows=resolved,
             unresolved=unresolved,
+            quantity_issues=issues,
+            quantity_review=quantity_review_data(drafts, rows, issues_only=True),
         )

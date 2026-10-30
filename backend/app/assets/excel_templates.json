@@ -1,0 +1,1154 @@
+[
+  {
+    "key": "19T",
+    "main_customer_code": "NGA",
+    "client_code": "19T",
+    "identity_tokens": [
+      "19T",
+      "003319"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Item",
+          "6": "Product Name",
+          "9": "Packge",
+          "11": "Order",
+          "12": "Unit"
+        },
+        "fields": {
+          "code": 4,
+          "supplier_code": 5,
+          "name": 6,
+          "alt": [
+            7,
+            8
+          ],
+          "pack": 9,
+          "adjacent": 10,
+          "quantity": 11,
+          "unit": 12
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "19T.xlsx",
+    "sha256": "54fe40d0e1ea236327a4a1e1ba01dd15a6889ca8a18997672910146a5e6c80ad"
+  },
+  {
+    "key": "20T",
+    "main_customer_code": "NGA",
+    "client_code": "20T",
+    "identity_tokens": [
+      "20T"
+    ],
+    "kind": "text",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "1": "Prod. No. Product Name               Quantity"
+        },
+        "fields": {
+          "name": 1,
+          "quantity": 1
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "20T.xlsx",
+    "sha256": "acbb066802f7668a68148b8ba559a7d6a99eaf2baabb2dd1cb2427174f069367"
+  },
+  {
+    "key": "40T",
+    "main_customer_code": "NGA",
+    "client_code": "40T",
+    "identity_tokens": [
+      "40T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "5": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "alt": [
+            3,
+            4
+          ],
+          "quantity": 6,
+          "unit": 5
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "40T.xlsx",
+    "sha256": "ccce2a09f5baf296ba27fd3558d8ae29f6ea15e896206822193fe182210fb40c"
+  },
+  {
+    "key": "412T",
+    "main_customer_code": "NGA",
+    "client_code": "412T",
+    "identity_tokens": [
+      "412T",
+      "003306"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Item",
+          "6": "Product Name",
+          "9": "Packge",
+          "11": "Order",
+          "12": "Unit"
+        },
+        "fields": {
+          "code": 4,
+          "supplier_code": 5,
+          "name": 6,
+          "alt": [
+            7,
+            8
+          ],
+          "pack": 9,
+          "adjacent": 10,
+          "quantity": 11,
+          "unit": 12
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "412T.xlsx",
+    "sha256": "2a67aa46b9d30b51303f6b71bc6a1f68f73d4c972385b318d2fab3ff279ba3c7"
+  },
+  {
+    "key": "50H",
+    "main_customer_code": "NGA",
+    "client_code": "50H",
+    "identity_tokens": [
+      "50H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Packing",
+          "6": "Unit",
+          "7": "Order"
+        },
+        "fields": {
+          "name": 2,
+          "alt": [
+            3,
+            4
+          ],
+          "pack": 5,
+          "unit": 6,
+          "quantity": 7
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "kg",
+    "sample": "50H.xlsx",
+    "sha256": "124b435d772fbdff451986e2dc310127eede132e329de47ba44c551e069bbd28"
+  },
+  {
+    "key": "66H",
+    "main_customer_code": "NGA",
+    "client_code": "66H",
+    "identity_tokens": [
+      "66H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "2": "Item",
+          "1": "Item",
+          "3": "Description (English)",
+          "4": "Description Thai",
+          "6": "ORDER"
+        },
+        "fields": {
+          "code": 2,
+          "customer_product_code": 1,
+          "name": 3,
+          "alt": [
+            4
+          ],
+          "description_pack": 4,
+          "quantity": 6,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "66H.xlsx",
+    "sha256": "de809ff642c3a89cc5892fceda91cbf1a3a6c7a7e909a028dc679abf5e4e045a"
+  },
+  {
+    "key": "68H",
+    "main_customer_code": "NGA",
+    "client_code": "68H",
+    "identity_tokens": [
+      "68H",
+      "003468"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Item",
+          "6": "Product Name",
+          "9": "Packge",
+          "11": "Order",
+          "12": "Unit"
+        },
+        "fields": {
+          "code": 4,
+          "supplier_code": 5,
+          "name": 6,
+          "alt": [
+            7,
+            8
+          ],
+          "pack": 9,
+          "adjacent": 10,
+          "quantity": 11,
+          "unit": 12
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "68H.xlsx",
+    "sha256": "3600ac721de91733ccde5ed1cd41b36ee0bc5ee4cd1aaa22697a20df322dbe36"
+  },
+  {
+    "key": "76H",
+    "main_customer_code": "NGA",
+    "client_code": "76H",
+    "identity_tokens": [
+      "76H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "2": "Item",
+          "1": "Item",
+          "3": "Description (English)",
+          "4": "Description Thai",
+          "6": "ORDER"
+        },
+        "fields": {
+          "code": 2,
+          "customer_product_code": 1,
+          "name": 3,
+          "alt": [
+            4
+          ],
+          "description_pack": 4,
+          "quantity": 6,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "76H.xlsx",
+    "sha256": "dea0902ed974fd7e3416c6b91a96214c3676e6441a44b4a6d63abc439eeb1688"
+  },
+  {
+    "key": "77H",
+    "main_customer_code": "NGA",
+    "client_code": "77H",
+    "identity_tokens": [
+      "77H",
+      "003477"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "1": "Product No.",
+          "2": "Product Name",
+          "4": "Order"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "quantity": 4
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "77H.xlsx",
+    "sha256": "e9d8081c553f8fa1be6dde35e8e5c5f95452ee6409b168021a3dcb01010f494e"
+  },
+  {
+    "key": "87L",
+    "main_customer_code": "NGA",
+    "client_code": "87L",
+    "identity_tokens": [
+      "87L",
+      "hoang asiamat"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "กู้คืน_Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Packing",
+          "6": "HAM 1"
+        },
+        "fields": {
+          "name": 2,
+          "alt": [
+            3,
+            4
+          ],
+          "pack": 5,
+          "quantity": 6
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "87L.xlsx",
+    "sha256": "63bb4df258be83364679ffe602bd05ba46af717069020b3daad24ede71e4a771"
+  },
+  {
+    "key": "928L",
+    "main_customer_code": "NGA",
+    "client_code": "928L",
+    "identity_tokens": [
+      "928L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "7": "Packge",
+          "9": "Order",
+          "10": "Unit"
+        },
+        "fields": {
+          "code": 2,
+          "supplier_code": 3,
+          "name": 4,
+          "alt": [
+            5,
+            6
+          ],
+          "pack": 7,
+          "adjacent": 8,
+          "quantity": 9,
+          "unit": 10
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "928L.xlsx",
+    "sha256": "0993131f6c6a08c400550a16278860f822149bb2b16efcaba2b9e0ef119aaaee"
+  },
+  {
+    "key": "931L",
+    "main_customer_code": "NGA",
+    "client_code": "931L",
+    "identity_tokens": [
+      "931L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "2": "Item",
+          "1": "Item",
+          "3": "Description (English)",
+          "4": "Description Thai",
+          "5": "ORDER"
+        },
+        "fields": {
+          "code": 2,
+          "customer_product_code": 1,
+          "name": 3,
+          "alt": [
+            4
+          ],
+          "description_pack": 4,
+          "quantity": 5,
+          "unit": 6
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "931L (1).xlsx",
+    "sha256": "0a8ed7d88025c4bd0f0e44f645715acc15d0aa0f18aeccb7cef201ee0f9e7e49"
+  },
+  {
+    "key": "LY-FRIBOURG",
+    "main_customer_code": "LY-THANH",
+    "client_code": "LY-FRIBOURG",
+    "identity_tokens": [
+      "FRIBOURG"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Order form",
+        "anchors": {
+          "2": "CODE",
+          "4": "ENGLISH NAME",
+          "6": "VEVEY",
+          "7": "QUANTITY",
+          "8": "UNIT"
+        },
+        "fields": {
+          "code": 2,
+          "name": 4,
+          "alt": [
+            3,
+            5
+          ],
+          "pack": 6,
+          "quantity": 7,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "FRIBOURG_Ly-Thanh-Sarl-Order-Vegetable-for-07.09.2026 FINAL.xls",
+    "sha256": "38bf4152009494eb41c82f23e44b50a74aa1d8235029cc2b71fde2dcab6c5b41"
+  },
+  {
+    "key": "LY-MORGES",
+    "main_customer_code": "LY-THANH",
+    "client_code": "LY-MORGES",
+    "identity_tokens": [
+      "MORGES"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Order form",
+        "anchors": {
+          "2": "CODE",
+          "4": "ENGLISH NAME",
+          "6": "PACK",
+          "7": "QUANTITY",
+          "8": "UNIT"
+        },
+        "fields": {
+          "code": 2,
+          "name": 4,
+          "alt": [
+            3,
+            5
+          ],
+          "pack": 6,
+          "quantity": 7,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "Ly-Thanh-Sarl Order Vegetable for Monday 07-09-2026.xlsx",
+    "sha256": "77d793782880eb15105f205eb4cc567b72ddb6682632159b4066e3fda608cde8"
+  },
+  {
+    "key": "CHAOTHAI-JCT",
+    "main_customer_code": "CHAOTHAI",
+    "client_code": "CHAOTHAI-JCT",
+    "identity_tokens": [
+      "JCT"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "CHAOTHAI",
+        "anchors": {
+          "1": "รหัส",
+          "2": "รายการ",
+          "4": "น้ำหนัก"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4,
+          "quantity": 5
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "Order (JCT) CHAOTHAI CO.,LTD 29-08-2026 .xlsx",
+    "sha256": "6d0ea6fb49e9f396f512229a5ec1dfa865c53f48ec805d60fa4e94ec229d00a5"
+  },
+  {
+    "key": "CHAOTHAI-JCT1",
+    "main_customer_code": "CHAOTHAI",
+    "client_code": "CHAOTHAI-JCT1",
+    "identity_tokens": [
+      "JCT1"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "CHAOTHAI",
+        "anchors": {
+          "1": "รหัส",
+          "2": "รายการ",
+          "4": "น้ำหนัก"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4,
+          "quantity": 5
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "Order (JCT1) CHAOTHAI CO.,LTD 29-08-2026 .xlsx",
+    "sha256": "bffeff9cb13a31267997931e928f378fc49c9ca4522ed8a06678d02db7be9832"
+  },
+  {
+    "key": "HUNGFAT-MATRIX",
+    "main_customer_code": "HUNGFAT",
+    "client_code": null,
+    "identity_tokens": [
+      "hungfat"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "New Order",
+        "anchors": {
+          "1": "code no",
+          "2": "Name Eng",
+          "5": "Packing",
+          "6": "Order-101",
+          "7": "Order -103",
+          "8": "Order-110",
+          "9": "Order-116"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3,
+            4
+          ],
+          "pack": 5
+        },
+        "customers": {
+          "6": "HUNGFAT-101",
+          "7": "HUNGFAT-103",
+          "8": "HUNGFAT-110",
+          "9": "HUNGFAT-116"
+        }
+      }
+    ],
+    "default_unit": "kg",
+    "numeric_pack_unit": "g",
+    "sample": "Order Hungfat 2026-W32.xlsx",
+    "sha256": "964f6538f6b4c0a20621c08845011431c243cecac60ff15e6c1186679925e052"
+  },
+  {
+    "key": "P-PUI",
+    "main_customer_code": "P-PUI",
+    "client_code": "P-PUI",
+    "identity_tokens": [
+      "P-PUI"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Order for",
+        "anchors": {
+          "2": "Product Codes",
+          "3": "Name Eng",
+          "6": "Packing / ขนาดแพค",
+          "7": "Amont to order",
+          "8": "Weight"
+        },
+        "fields": {
+          "code": 2,
+          "name": 3,
+          "alt": [
+            4,
+            5
+          ],
+          "pack": 6,
+          "quantity": 7,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "Order P-PUI shipment ETD 07.08.2026.xlsx",
+    "sha256": "030c874c99c0c4229f45a4cdb0543b1d86ac138042c593790d419c4e604324e2"
+  },
+  {
+    "key": "PINTO-MLD",
+    "main_customer_code": "PINTO-THAI",
+    "client_code": "PINTO-MLD",
+    "identity_tokens": [
+      "MLD"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "KUNG",
+        "anchors": {
+          "1": "รหัส",
+          "2": "รายการ",
+          "4": "น้ำหนัก",
+          "5": "Agrisen (Kg)"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4,
+          "quantity": 5
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": "kg",
+    "numeric_pack_unit": "g",
+    "sample": "Order PINTO THAIAHMED ALMAN(MLD) 05-09-2026.xlsx",
+    "sha256": "97ea9eb8787ee242d63323dc1c375a4eb06194664f53787269fcfa7505ba8bdd"
+  },
+  {
+    "key": "TONIO-MATRIX",
+    "main_customer_code": "TONIO",
+    "client_code": null,
+    "identity_tokens": [
+      "tonio"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "31.07.26",
+        "anchors": {
+          "1": "Code",
+          "3": "ENGLISH DESCRIPTION",
+          "4": "Packing",
+          "5": "CT-Trung",
+          "6": "CT-Abbadi",
+          "7": "CT-Lydia",
+          "8": "CT-Liên",
+          "9": "CT-Rasel",
+          "10": "CT-Cần",
+          "11": "CT-Mạnh",
+          "12": "CT-Tít",
+          "13": "CT-Lưu",
+          "14": "CT-Lê Na",
+          "15": "CT-Phương",
+          "16": "CT-Hồng",
+          "17": "CT-Tu",
+          "18": "CT-Tuyên",
+          "19": "Thanh Cheb",
+          "20": "Son SL",
+          "21": "TeTe",
+          "22": "Fuda",
+          "23": "c. Phong",
+          "24": "TH SL",
+          "25": "Hưng",
+          "26": "TMF1",
+          "27": "TMF2",
+          "28": "TL",
+          "29": "HH",
+          "30": "TM",
+          "31": "Thúy Sapa",
+          "32": "Linh Chi",
+          "33": "SapaF",
+          "34": "SNN",
+          "35": "CG",
+          "36": "Helen",
+          "37": "Trần Hường",
+          "38": "Chú Đạt",
+          "39": "Thái Lý",
+          "40": "Gia Linh",
+          "41": "Kim Chi",
+          "42": "TA",
+          "43": "Tôm-23",
+          "44": "Tôm-28",
+          "45": "Tuấn-23",
+          "46": "Tuấn-31",
+          "47": "W3",
+          "48": "AU7",
+          "49": "W10",
+          "50": "W16",
+          "51": "KHO",
+          "52": "PTT",
+          "53": "PTT-LÊ",
+          "54": "PTT-PC",
+          "55": "PTT-HV",
+          "56": "L-1",
+          "57": "L-2",
+          "58": "L-3",
+          "59": "L-4",
+          "60": "L-6",
+          "61": "L-7",
+          "62": "L-8",
+          "63": "L-9",
+          "64": "L-10",
+          "65": "L-11",
+          "66": "L-12",
+          "67": "L-13",
+          "68": "L-14",
+          "69": "L-16",
+          "70": "HA-Sen",
+          "71": "HA-Thanh Phong",
+          "72": "HA-A Chau",
+          "73": "SW-Viet",
+          "74": "QB LIVS",
+          "75": "Saigon City",
+          "76": "Saigon Food",
+          "77": "HF-101",
+          "78": "HF-103",
+          "79": "HF-104",
+          "80": "HF-105",
+          "81": "HF-106",
+          "82": "HF-107",
+          "83": "HF-108",
+          "84": "HF-110",
+          "85": "HF-116",
+          "86": "HF-118",
+          "87": "HF-119",
+          "88": "HF-120",
+          "89": "BE-A24",
+          "90": "BE-H8",
+          "91": "BE-HP",
+          "92": "BE-VD",
+          "93": "BE-HẰNG",
+          "94": "BE-NAM",
+          "95": "BE-GIANG",
+          "96": "BE-HUNG",
+          "97": "BE-BÍCH",
+          "98": "BE-SUONG",
+          "99": "BE-AB",
+          "100": "BE-CƯỜNG",
+          "101": "BE-Hello Asia",
+          "102": "BE-PHUONG",
+          "103": "BE-NHU",
+          "104": "BE-LOAN",
+          "105": "BE-HA",
+          "106": "BE-ANH",
+          "107": "BE-THUY",
+          "108": "BE-VAN",
+          "109": "PL-TP",
+          "110": "PL-TN",
+          "111": "PL-DOM1",
+          "112": "PL-DOM2",
+          "113": "PL-DOM3",
+          "114": "PL-DOM4",
+          "115": "PL-WOA",
+          "116": "PL-HT",
+          "117": "ST-DREY",
+          "118": "ST-NGOC"
+        },
+        "fields": {
+          "code": 1,
+          "name": 3,
+          "alt": [
+            2
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "5": "CT-Trung",
+          "6": "CT-Abbadi",
+          "7": "CT-Lydia",
+          "8": "CT-Liên",
+          "9": "CT-Rasel",
+          "10": "CT-Cần",
+          "11": "CT-Mạnh",
+          "12": "CT-Tít",
+          "13": "CT-Lưu",
+          "14": "CT-Lê Na",
+          "15": "CT-Phương",
+          "16": "CT-Hồng",
+          "17": "CT-Tu",
+          "18": "CT-Tuyên",
+          "19": "Thanh Cheb",
+          "20": "Son SL",
+          "21": "TeTe",
+          "22": "Fuda",
+          "23": "c. Phong",
+          "24": "TH SL",
+          "25": "Hưng",
+          "26": "TMF1",
+          "27": "TMF2",
+          "28": "TL",
+          "29": "HH",
+          "30": "TM",
+          "31": "Thúy Sapa",
+          "32": "Linh Chi",
+          "33": "SapaF",
+          "34": "SNN",
+          "35": "CG",
+          "36": "Helen",
+          "37": "Trần Hường",
+          "38": "Chú Đạt",
+          "39": "Thái Lý",
+          "40": "Gia Linh",
+          "41": "Kim Chi",
+          "42": "TA",
+          "43": "Tôm-23",
+          "44": "Tôm-28",
+          "45": "Tuấn-23",
+          "46": "Tuấn-31",
+          "47": "W3",
+          "48": "AU7",
+          "49": "W10",
+          "50": "W16",
+          "51": "KHO",
+          "52": "PTT",
+          "53": "PTT-LÊ",
+          "54": "PTT-PC",
+          "55": "PTT-HV",
+          "56": "L-1",
+          "57": "L-2",
+          "58": "L-3",
+          "59": "L-4",
+          "60": "L-6",
+          "61": "L-7",
+          "62": "L-8",
+          "63": "L-9",
+          "64": "L-10",
+          "65": "L-11",
+          "66": "L-12",
+          "67": "L-13",
+          "68": "L-14",
+          "69": "L-16",
+          "70": "HA-Sen",
+          "71": "HA-Thanh Phong",
+          "72": "HA-A Chau",
+          "73": "SW-Viet",
+          "74": "QB LIVS",
+          "75": "Saigon City",
+          "76": "Saigon Food",
+          "77": "HF-101",
+          "78": "HF-103",
+          "79": "HF-104",
+          "80": "HF-105",
+          "81": "HF-106",
+          "82": "HF-107",
+          "83": "HF-108",
+          "84": "HF-110",
+          "85": "HF-116",
+          "86": "HF-118",
+          "87": "HF-119",
+          "88": "HF-120",
+          "89": "BE-A24",
+          "90": "BE-H8",
+          "91": "BE-HP",
+          "92": "BE-VD",
+          "93": "BE-HẰNG",
+          "94": "BE-NAM",
+          "95": "BE-GIANG",
+          "96": "BE-HUNG",
+          "97": "BE-BÍCH",
+          "98": "BE-SUONG",
+          "99": "BE-AB",
+          "100": "BE-CƯỜNG",
+          "101": "BE-Hello Asia",
+          "102": "BE-PHUONG",
+          "103": "BE-NHU",
+          "104": "BE-LOAN",
+          "105": "BE-HA",
+          "106": "BE-ANH",
+          "107": "BE-THUY",
+          "108": "BE-VAN",
+          "109": "PL-TP",
+          "110": "PL-TN",
+          "111": "PL-DOM1",
+          "112": "PL-DOM2",
+          "113": "PL-DOM3",
+          "114": "PL-DOM4",
+          "115": "PL-WOA",
+          "116": "PL-HT",
+          "117": "ST-DREY",
+          "118": "ST-NGOC"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "Order Tonio 07.08.26.xlsx",
+    "sha256": "1878bcd1c78f6f06bc1f1e161385a333cc78b9fe2fd112173891127e8109c5da"
+  },
+  {
+    "key": "YACHI",
+    "main_customer_code": "YACHI",
+    "client_code": "YACHI",
+    "identity_tokens": [
+      "YACHI"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Order for",
+        "anchors": {
+          "2": "Product Codes",
+          "3": "Name Eng",
+          "6": "Packing / ขนาดแพค",
+          "7": "Amont to order",
+          "8": "Weight"
+        },
+        "fields": {
+          "code": 2,
+          "name": 3,
+          "alt": [
+            4,
+            5
+          ],
+          "pack": 6,
+          "quantity": 7,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "Order YACHI shipment ETD 07.08.2026.xlsx",
+    "sha256": "fe3411bff8824314b9abe06926945d1c9700939b90b8f056849cad8307deb927"
+  },
+  {
+    "key": "LY-VEVEY",
+    "main_customer_code": "LY-THANH",
+    "client_code": "LY-VEVEY",
+    "identity_tokens": [
+      "VEVEY"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Order form",
+        "anchors": {
+          "2": "CODE",
+          "4": "ENGLISH NAME",
+          "6": "VEVEY",
+          "7": "QUANTITY",
+          "8": "UNIT"
+        },
+        "fields": {
+          "code": 2,
+          "name": 4,
+          "alt": [
+            3,
+            5
+          ],
+          "pack": 6,
+          "quantity": 7,
+          "unit": 8
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "VEVEY_Ly-Thanh-Sarl-Order-Vegetable-for-07.09.2026.xls",
+    "sha256": "d4faf21f964edb6e38b9a22e9713fb94d7e7446c8d2d3a31a8dcca1bf4896678"
+  },
+  {
+    "key": "NGA-REGIONAL",
+    "main_customer_code": "NGA",
+    "client_code": null,
+    "identity_tokens": [
+      "nga"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "L.",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "61L",
+          "7": "86L",
+          "8": "915L",
+          "9": "928L",
+          "10": "993L"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "61L",
+          "7": "86L",
+          "8": "915L",
+          "9": "928L",
+          "10": "993L"
+        }
+      },
+      {
+        "reference_sheet": "H",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "65H",
+          "7": "66H",
+          "8": "68H"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "65H",
+          "7": "66H",
+          "8": "68H"
+        }
+      },
+      {
+        "reference_sheet": "T",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "06T",
+          "7": "19T",
+          "8": "20T",
+          "9": "40T",
+          "10": "418T",
+          "11": "412T",
+          "12": "424T",
+          "13": "434T",
+          "14": "440T"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "06T",
+          "7": "19T",
+          "8": "20T",
+          "9": "40T",
+          "10": "418T",
+          "11": "412T",
+          "12": "424T",
+          "13": "434T",
+          "14": "440T"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "ราการขนม NGA 07-09-2026.xlsx",
+    "sha256": "b13040f3bca887a8bfe839a254dafdf5fbf7ef245e394b6edaed6ab387913cb4"
+  },
+  {
+    "key": "LY-REGIONAL",
+    "main_customer_code": "LY-THANH",
+    "client_code": null,
+    "identity_tokens": [
+      "ly-thanh"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "รายการขนม",
+        "anchors": {
+          "1": "No.",
+          "2": "English Name",
+          "4": "Gross Weight",
+          "6": "Morges",
+          "7": "Vevey"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "LY-MORGES",
+          "7": "LY-VEVEY"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "รายการขนม LY 06-09-2026.xlsx",
+    "sha256": "4d7c6d3e781fae98474a9d4591da6920ff7ec8c1bc968af12fc57ada98bb59d3"
+  }
+]

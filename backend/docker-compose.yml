@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: .
+    container_name: agriculture_api
+    restart: unless-stopped
+    environment:
+      SUPABASE_DATABASE_URL: ${SUPABASE_DATABASE_URL}
+      ENVIRONMENT: production
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be configured}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:?PUBLIC_APP_URL must be the deployed HTTPS web URL}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS must list the deployed frontend origin}
+      PACKING_PROFILES_ENABLED: ${PACKING_PROFILES_ENABLED:-false}
+      FILE_STORAGE_PROVIDER: supabase
+      SUPABASE_URL: ${SUPABASE_URL:?SUPABASE_URL must identify the database project}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-order-sources}
+      SUPABASE_STORAGE_KEY: ${SUPABASE_STORAGE_KEY:?A server-only Storage secret is required}
+      STORAGE_GC_ENABLED: "false"
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    ports:
+      - '8000:8000'
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole } from "lucide-react";
 import { StatusMessage } from "@/components/status-message";
+import { PageHeader } from "@/components/page-header";
+import { PasswordInput } from "@/components/password-input";
 import { api } from "@/lib/api";
+import { safeDestination } from "@/lib/workflow";
 
 export default function ChangePasswordPage() {
   const router = useRouter();
@@ -12,9 +15,14 @@ export default function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const passwordLength = Array.from(newPassword).length;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
+    if (passwordLength < 12 || passwordLength > 128) {
+      setError("Choose a password with 12 to 128 characters.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -22,7 +30,8 @@ export default function ChangePasswordPage() {
         method: "POST",
         body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
       });
-      router.replace("/");
+      const next = safeDestination(new URLSearchParams(window.location.search).get("next"));
+      router.replace(`/login?next=${encodeURIComponent(next)}`);
       router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to change password");
@@ -33,19 +42,16 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <p className="eyebrow">Account security</p>
-        <h1>Choose a new password</h1>
-        <p>Your temporary password must be replaced before you can use the platform.</p>
-      </header>
+      <PageHeader eyebrow="Account security" title="Choose a new password" description="Replace your temporary password to start using the platform." />
       <form className="panel form-panel" style={{ maxWidth: "520px" }} onSubmit={submit}>
         <label>
           Temporary password
-          <input type="password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
+          <PasswordInput aria-label="Temporary password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
         </label>
         <label>
           New password
-          <input type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={event => setNewPassword(event.target.value)} required />
+          <PasswordInput aria-label="New password" autoComplete="new-password" minLength={12} value={newPassword} onChange={event => setNewPassword(event.target.value)} required aria-describedby="new-password-hint" />
+          <small id="new-password-hint" className={`password-hint${passwordLength >= 12 && passwordLength <= 128 ? " is-ok" : ""}`} aria-live="polite">{passwordLength > 128 ? "Use 128 characters or fewer" : passwordLength >= 12 ? "Long enough" : `At least 12 characters · ${12 - passwordLength} to go`}</small>
         </label>
         <StatusMessage error={error} />
         <button className="primary-button" disabled={busy}><LockKeyhole size={17} /> {busy ? "Saving…" : "Save password"}</button>

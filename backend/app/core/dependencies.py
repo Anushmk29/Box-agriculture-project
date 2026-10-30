@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.policy import POLICY, Action
 from app.core.security import decode_access_token
 from app.models.user import HUMAN_ROLE_RANK, User, UserRole
 
@@ -13,7 +14,7 @@ bearer = HTTPBearer(auto_error=False)
 def get_current_user(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
 ) -> User:
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -28,6 +29,8 @@ def get_current_user(
         raise unauthorized
     user = db.query(User).filter(User.id == payload["sub"]).first()
     if not user or not user.is_active:
+        raise unauthorized
+    if payload.get("session_version", 0) != user.session_version:
         raise unauthorized
     return user
 
@@ -56,3 +59,9 @@ def require_access(
         return user
 
     return dependency
+
+
+def require_action(action: Action) -> Callable[..., User]:
+    """Route gate for a policy action; same table the module-level `require` uses."""
+    minimum, services = POLICY[action]
+    return require_access(minimum, *services, detail=None)

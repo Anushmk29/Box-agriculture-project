@@ -1,0 +1,384 @@
+/* Compact operating density. Desktop work uses space for records; phones keep
+   their 44px touch controls. No browser zoom, transforms or clipped page content. */
+:root {
+  --workspace-gutter: 20px;
+  --control-height: 34px;
+  --table-cell-space: 8px 10px;
+}
+
+@media screen and (min-width: 861px) {
+  body { font-size: 14px; line-height: 1.4; }
+  .app-frame { grid-template-columns: 210px minmax(0, 1fr); }
+  .app-frame > .sidebar { padding: 20px 12px 12px; gap: 20px; }
+  .sidebar .brand { padding: 0 2px 16px; font-size: 14px; gap: 8px; }
+  .sidebar .brand-mark { width: 32px; height: 32px; }
+  .sidebar .brand small { margin-top: 3px; }
+  .sidebar nav { gap: 3px; }
+  .sidebar-section-label { padding: 0 10px 4px; }
+  .sidebar .nav-link { min-height: 36px; padding: 7px 10px; }
+  .sidebar .nav-link-left { gap: 8px; }
+  .sidebar-foot { gap: 8px; }
+  .sidebar .user-card-sidebar { padding: 8px; }
+  .sidebar .user-avatar-badge { width: 28px; height: 28px; }
+  .workspace-topbar { min-height: 44px; padding: 0 var(--workspace-gutter); }
+  .main-content > .workspace-topbar, .main-content > .workspace-guide,
+  .main-content > .message { flex-shrink: 0; }
+  .main-content > .page { max-width: none; padding: 16px var(--workspace-gutter) 20px; }
+  .main-content > .message { margin: 12px var(--workspace-gutter) 0; }
+
+  /* The next task is a utility strip, rather than a second page header. */
+  .workspace-guide { flex-wrap: nowrap; gap: 12px; margin: 12px var(--workspace-gutter) 0; padding: 10px 14px; }
+  .workspace-guide-copy { flex: 1 1 auto; }
+  .workspace-guide-copy > span { float: left; margin: 1px 10px 0 0; font-size: 11px; }
+  .workspace-guide-copy p { margin: 0; }
+  .workspace-guide-copy strong { font-size: 13px; line-height: 1.4; }
+  .workspace-guide-copy small { margin-top: 2px; font-size: 12px; line-height: 1.35; max-width: none; }
+  .workspace-guide-actions { flex-shrink: 0; gap: 6px; }
+  .workspace-guide-actions > button { min-height: 32px; font-size: 12px; }
+  .workspace-guide-actions .guidance-pause { padding: 6px; font-size: 12px; }
+  .workspace-guide-dialog { margin: 0 0 12px; padding: 0 0 10px; }
+
+  .main-content .page h1 { font-size: 26px; line-height: 1.2; margin-top: 0; }
+  .main-content .page h2 { font-size: 18px; line-height: 1.3; }
+  .main-content .page h3 { font-size: 15px; }
+  .page-header, .page-header-bar, .register-heading, .dashboard-heading { margin-bottom: 14px; gap: 12px; }
+  .page-header h1, .page-header-bar h1, .register-heading h1 { margin-bottom: 4px; }
+  .page-header p, .page-header-description, .register-heading p { font-size: 13px; line-height: 1.4; }
+  .page-header-back { margin-bottom: 3px; }
+  .main-content .page .eyebrow { font-size: 12px !important; }
+  .main-content .page input:not([type=checkbox]):not([type=radio]):not([type=file]),
+  .main-content .page select, .task-dialog input:not([type=checkbox]):not([type=radio]), .task-dialog select {
+    min-height: var(--control-height); padding: 6px 10px; font-size: 13px;
+  }
+  .main-content .page textarea, .task-dialog textarea { padding: 8px 10px; font-size: 13px; }
+  .main-content .page .product-match-dialog .mapping-search-control input[type="search"] { min-height: 40px; padding-left: 38px; }
+  .main-content .page .primary-button, .main-content .page .invoice-secondary-button,
+  .main-content .page .secondary-button, .main-content .page .danger-button,
+  .task-dialog .primary-button, .task-dialog .invoice-secondary-button {
+    min-height: var(--control-height); padding: 6px 12px; font-size: 13px;
+  }
+  .main-content .page label { gap: 4px; }
+  .panel { padding: 16px; }
+  .form-panel { gap: 12px; }
+  .field-row { gap: 12px; }
+  .section-heading { margin-bottom: 12px; }
+  .section-heading h2 { margin: 0 0 4px; }
+  .section-heading p { margin: 0; font-size: 13px; }
+  .empty-state { padding: 24px 16px; gap: 6px; }
+  .empty-state-icon { width: 40px; height: 40px; margin: 0; }
+
+  /* Register chrome stays in the viewport; only a long table scrolls. */
+  .main-content:has(> .page > .record-register) { height: 100dvh; min-height: 0; }
+  .main-content:has(> .page > .record-register) > .page {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  }
+  .main-content > .page > .record-register {
+    display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+  }
+  .main-content > .page > .record-register > :not(.register-table-scroll) { flex-shrink: 0; }
+  .main-content > .page > .record-register > .register-table-scroll { flex: 0 1 auto; min-height: 100px; max-height: none; }
+  .register-heading { margin-bottom: 12px; }
+  .register-views { margin-bottom: 12px; }
+  .register-views button, .register-filters > button, .register-pagination button,
+  .register-selection button:not(.primary-button) { min-height: 32px; padding: 5px 10px; font-size: 13px; }
+  .register-filters { gap: 8px; margin-bottom: 12px; }
+  .register-filters label { gap: 4px; font-size: 12px; }
+  .register-selection { gap: 10px; padding: 8px 10px; margin-bottom: 10px; }
+  .register-table { font-size: 13px; }
+  .register-table th, .register-table td { padding: var(--table-cell-space); }
+  .register-table .register-identity { min-width: 150px; max-width: 300px; }
+  .register-table a.invoice-secondary-button { min-height: 30px; padding: 4px 9px; font-size: 12px; }
+  .register-table .register-empty { padding: 22px 12px !important; }
+  .register-pagination { gap: 8px; margin-top: 10px; font-size: 12px; }
+  .register-pagination label, .register-page-jump { gap: 6px; }
+  .register-page-jump input { width: 54px; }
+  .orders-section-tabs { margin-bottom: 12px; }
+  .orders-section-tabs a { min-height: 32px; padding: 6px 12px; font-size: 13px; }
+  .chip { padding: 2px 7px; font-size: 11px; }
+  .table-skeleton-row > td { height: 44px; }
+  .users-workspace .record-register { padding: 12px; }
+  .users-workspace .users-row-actions button { min-height: 30px; padding: 5px 8px; }
+
+  /* Working records use the same compact spacing as the queues. */
+  .workflow-progress { margin: 8px 0 12px; }
+  .workflow-progress ol { gap: 6px 20px; }
+  .workflow-progress li { padding: 2px 0; grid-template-columns: 24px auto; font-size: 13px; }
+  .workflow-step-number { width: 24px; height: 24px; }
+  .workflow-progress li small { font-size: 11px; }
+  .task-guidance { padding: 12px 16px; gap: 16px; margin: 8px 0 14px; }
+  .task-guidance p { margin: 3px 0; font-size: 13px; }
+  .task-guidance h2 { margin: 0 0 4px; }
+  .task-guidance-actions { gap: 8px; padding: 0; }
+  .task-toolbar { gap: 12px; padding-block: 10px; }
+  .task-toolbar p { margin: 3px 0; font-size: 12px; }
+  .supporting-tools { padding: 12px 16px; margin-block: 12px; }
+  .supporting-tools[open] > summary { margin-bottom: 10px; }
+  .packing-setup-actions { margin: 10px 0; gap: 8px; }
+
+  .orders-workspace { --control-height: 40px; gap: 24px; }
+  .main-content > .page.orders-workspace { padding: 24px 28px 40px; }
+  .orders-workspace .page-header-back { margin-bottom: 12px; }
+  .order-overview-heading { padding: 20px 20px 16px; }
+  .order-file-icon { width: 36px; height: 36px; }
+  .order-intake-progress { padding: 8px 20px; }
+  .order-intake-progress li { font-size: 12px; gap: 6px; }
+  .order-next-step { padding: 20px; gap: 20px; }
+  .order-next-step h3 { font-size: 15px; margin: 8px 0; }
+  .order-next-step p, .order-hints-control p { font-size: 12px; }
+  .order-hints-control { padding: 12px 20px; }
+  .order-stage-layout { gap: 12px; }
+  .orders-workspace .order-entry-tools { gap: 20px; }
+  .order-disclosure > summary { padding: 16px 20px; gap: 12px; }
+  .order-disclosure-icon { width: 30px; height: 30px; }
+  .order-disclosure-copy > span { font-size: 12px; }
+  .order-disclosure-body { padding: 24px; }
+  .order-stage-layout .form-panel { max-width: none; }
+  .orders-workspace .file-drop { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; min-height: 100px; padding: 20px; gap: 8px 12px; text-align: left; justify-items: start; }
+  .orders-workspace .file-drop > svg { grid-column: 1; grid-row: 1 / span 2; width: 22px; }
+  .orders-workspace .file-drop > strong { grid-column: 2; grid-row: 1; min-width: 0; overflow-wrap: anywhere; }
+  .orders-workspace .file-drop > span:not(.order-file-choose) { grid-column: 2; grid-row: 2; }
+  .orders-workspace .file-drop .order-file-choose { grid-column: 3; grid-row: 1 / span 2; align-self: center; margin: 0; padding: 6px 10px; }
+  .orders-workspace .result-panel { min-height: 0; padding: 16px; }
+  .order-entry-tools { gap: 12px; }
+  .order-intake-fields { gap: 16px; }
+  .orders-workspace .order-intake-fields .field-row { gap: 20px; }
+  .main-content .orders-workspace label { gap: 8px; }
+  .order-intake-fields input, .order-intake-fields select { height: var(--control-height); }
+  .customer-account-add { min-height: 32px; padding: 6px 10px; }
+  .orders-workspace .task-toolbar { padding: 10px 12px; }
+  .order-intake-fields .register-pagination { margin-top: 0; }
+  .unmatched-products li { padding: 8px 12px; }
+
+  .purchase-export-toolbar { gap: 12px; margin: 12px 0; }
+  .purchase-source-files { padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  .purchase-source-files[open] { flex-basis: 100%; overflow: auto; }
+  .purchase-workspace { --purchase-toolbar-padding: 8px 12px; }
+  .purchase-summary .task-guidance { margin: 0; padding: 10px 12px; }
+  .purchase-summary .task-guidance-copy { max-width: none; }
+  .purchase-summary .task-guidance p { font-size: 12px; line-height: 1.35; margin: 2px 0; }
+  .purchase-summary .task-guidance h2 { font-size: 16px; margin: 0 0 2px; }
+  .purchase-summary .task-guidance .task-progress-text, .purchase-summary .task-guidance .task-next-team { display: inline-block; margin: 2px 12px 0 0; font-size: 12px; }
+  .purchase-summary .task-guidance-actions { max-width: 150px; }
+  .purchase-summary .task-guidance-actions .primary-button { padding: 6px 10px; font-size: 12px; white-space: normal; }
+  .purchase-workspace .page-header-copy { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 12px; align-items: baseline; }
+  .purchase-workspace .page-header-back, .purchase-workspace .page-header-copy > .eyebrow { margin: 0; }
+  .purchase-workspace .page-header-copy > h1, .purchase-workspace .page-header-description { grid-column: 1 / -1; }
+  .purchase-workspace .purchase-export-toolbar label { display: flex; align-items: center; gap: 8px; }
+  .purchase-workspace .purchase-export-toolbar { margin: 10px 0; }
+  .purchase-workspace .page-header-back .invoice-secondary-button { min-height: 22px; padding: 0; border: 0; background: transparent; }
+  .purchase-workspace .worksheet-table { min-width: 1080px; }
+  .purchase-workspace .worksheet-table th { width: auto !important; font-size: 11px; }
+  .purchase-workspace .worksheet-table th:first-child { width: 18% !important; }
+  .purchase-workspace .worksheet-table .col-confirmed { width: 22% !important; }
+  .purchase-workspace .worksheet-table td { font-size: 12px; }
+  .purchase-workspace .purchase-table-scroll { max-height: min(46dvh, 500px); }
+  .purchase-workspace .purchase-entry-help { padding: 6px 12px; font-size: 12px; }
+  .purchase-workspace .purchase-scroll-hint { margin: 0; }
+  .purchase-totals { gap: 16px 32px; margin: 12px 0; padding-bottom: 10px; }
+  .purchase-totals dd { font-size: 20px; margin-top: 2px; }
+  .purchase-entry-help { padding: 8px 12px; gap: 10px; }
+  .purchase-scroll-hint { padding: 6px 12px; font-size: 12px; }
+  .worksheet-table th, .worksheet-table td { padding: 8px 10px; font-size: 13px; }
+  .packing-desk .packing-workspace-heading { margin-bottom: 12px; }
+  .packing-desk .packing-order-overview { margin-bottom: 14px; }
+  .packing-desk .packing-order-context { padding-block: 12px; }
+  .packing-desk .packing-order-footer { padding-block: 8px; }
+  .packing-desk .packing-mode-start { margin: 12px 0; padding: 12px 16px; }
+  .packing-desk .packing-list-head { margin-bottom: 10px; }
+  .main-content .page .packing-box-search input { padding-left: 34px; }
+  .packing-desk details.packing-mode-start:not([open]) { margin: 8px 0 12px; padding: 8px 0; }
+  .packing-desk .packing-box-main { min-height: 60px; padding: 10px 16px; gap: 12px; grid-template-columns: 30px 95px minmax(0, 1fr) 80px 120px 16px; }
+  .packing-desk .packing-box-number { width: 30px; height: 30px; }
+  .packing-desk .packing-box-content { padding-inline: 16px; }
+  .packing-desk .packing-contents-heading { padding: 12px 0; }
+  .packing-desk .packing-items-table td { padding: 8px 10px; }
+  .packing-desk .packing-box-foot { padding: 10px 0; }
+  .packing-desk .packing-action-bar { bottom: 8px; padding: 8px 12px; gap: 12px; margin-top: 10px; }
+
+  .billing-header { gap: 16px; }
+  .billing-workspace .register-heading { margin-bottom: 8px; }
+  .billing-workspace .register-selection { padding-block: 6px; margin-bottom: 8px; }
+  .billing-workspace .register-selection .hinted-button small { max-width: none; font-size: 11px; }
+  .billing-header .billing-tabs button { min-height: 32px; padding: 6px 10px; font-size: 12px; }
+  .billing-order-topbar, .invoice-record-header { padding: 12px 16px; }
+  .billing-order-content { padding: 20px 16px; gap: 20px; }
+  .billing-order-reference { margin-top: 12px; gap: 4px; }
+  .billing-order-actions { padding: 12px 16px; }
+  .invoice-paper { margin: 12px; padding: 18px; }
+  .invoice-paper-parties { padding-bottom: 12px; gap: 16px; }
+  .invoice-line-table { margin-top: 12px; }
+  .invoice-line-row { min-height: 44px; padding: 6px 8px; }
+  .invoice-paper-bottom { margin-top: 14px; gap: 16px; }
+  .invoice-modal-actions { padding: 12px 16px; }
+
+  .task-dialog-heading { padding: 14px 16px; gap: 12px; }
+  .task-dialog-body { padding: 16px; }
+  .task-dialog-heading h2 { font-size: 18px; }
+  .task-dialog-heading p { margin-top: 4px; font-size: 13px; }
+  .task-dialog .task-dialog-actions, .task-dialog-pad { padding: 12px 16px; }
+  .scan-entry-card { padding: 20px; gap: 12px; }
+  .scan-entry-mark { width: 48px; height: 48px; }
+}
+
+@media screen and (min-width: 1100px) {
+  .purchase-summary { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: center; }
+  .purchase-summary .purchase-totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .purchase-summary .purchase-totals dt { font-size: 12px; }
+  .purchase-summary .purchase-totals dd { font-size: 18px; }
+  .orders-workspace[data-order-state="upload"]:not(:has([aria-label="Pending upload"])) { grid-template-columns: minmax(250px, .65fr) minmax(0, 1.35fr); align-items: start; }
+  .orders-workspace[data-order-state="upload"] > .page-header-bar,
+  .orders-workspace[data-order-state="upload"] > .workflow-progress,
+  .orders-workspace[data-order-state="upload"] > .message { grid-column: 1 / -1; }
+  .orders-workspace[data-order-state="upload"]:not(:has([aria-label="Pending upload"])) > .order-overview { grid-column: 1; grid-row: 3; }
+  .orders-workspace[data-order-state="upload"]:not(:has([aria-label="Pending upload"])) > .order-stage-layout { grid-column: 2; grid-row: 3 / span 3; }
+  .orders-workspace[data-order-state="upload"] .order-next-step { flex-direction: column; align-items: flex-start; }
+}
+
+@media screen and (max-width: 860px) {
+  .main-content > .page { padding: 20px 16px 28px; }
+  .workspace-guide { margin: 12px 16px 0; padding: 12px; gap: 10px; }
+  .workspace-guide-copy small { margin-top: 2px; }
+  .page-header, .page-header-bar, .register-heading { margin-bottom: 16px; }
+  .orders-section-tabs { margin-bottom: 16px; }
+  .register-compact .register-table .register-empty { display: block; width: 100%; grid-column: 1 / -1; padding: 20px 14px !important; }
+}
+
+/* Saved orders are a working desk: checks and matching beside supporting tools. */
+@media screen and (min-width: 1100px) {
+  .main-content > .orders-workspace[data-order-state="review"] { --control-height: 34px; padding: 16px 20px; gap: 12px; }
+  .orders-workspace[data-order-state="review"] .order-review-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .order-review-heading .page-header-copy { display: grid; gap: 4px; }
+  .order-review-heading .eyebrow { display: none; }
+  .order-review-heading .page-header-bar h1 { font-size: 22px; margin: 0; }
+  .order-review-heading .page-header-description { margin: 0; }
+  .order-review-heading .workflow-progress { width: auto; flex-shrink: 0; }
+  .order-review-heading .workflow-progress ol { gap: 16px; }
+  .order-review-heading .workflow-progress small { display: none; }
+  .orders-workspace[data-order-state="review"] .order-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; border-top-width: 2px; }
+  .orders-workspace[data-order-state="review"] .order-overview-heading { padding: 12px 16px; flex-wrap: nowrap; gap: 12px; }
+  .orders-workspace[data-order-state="review"] .order-overview-heading > .chip { flex-shrink: 0; }
+  .orders-workspace[data-order-state="review"] .order-file-icon { width: 30px; height: 30px; }
+  .orders-workspace[data-order-state="review"] .order-file-heading { gap: 10px; }
+  .orders-workspace[data-order-state="review"] .order-overview h2 { font-size: 15px; }
+  .orders-workspace[data-order-state="review"] .order-file-name { font-size: 12px; }
+  .orders-workspace[data-order-state="review"] .order-intake-progress { align-self: center; padding: 0 16px; gap: 12px; }
+  .orders-workspace[data-order-state="review"] .order-intake-progress li { padding: 8px 0; }
+  .orders-workspace[data-order-state="review"] .order-summary-bottom { grid-column: 1 / -1; flex-wrap: nowrap; padding: 10px 16px; }
+  .orders-workspace[data-order-state="review"] .order-summary-actions { flex-shrink: 0; flex-wrap: nowrap; }
+  .orders-workspace[data-order-state="review"] .order-summary-task h3 { font-size: 14px; }
+  .orders-workspace[data-order-state="review"] .order-summary-task p { font-size: 12px; }
+  .orders-workspace[data-order-state="review"] .order-summary-actions > a, .orders-workspace[data-order-state="review"] .order-summary-actions > button { min-height: 34px; font-size: 12px; }
+  .orders-workspace[data-order-state="review"] .order-stage-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; min-height: 0; }
+  .orders-workspace[data-order-state="review"] .result-panel { padding: 16px; min-width: 0; }
+  .orders-workspace[data-order-state="review"] .order-entry-tools { gap: 8px; align-content: start; min-height: 0; }
+  .orders-workspace[data-order-state="review"] .order-disclosure > summary { padding: 12px; gap: 8px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-copy { gap: 4px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-copy strong { font-size: 13px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-copy > span { font-size: 11px; line-height: 1.4; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-icon { width: 26px; height: 26px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-icon svg { width: 17px; height: 17px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-state { font-size: 11px; gap: 2px; }
+  .orders-workspace[data-order-state="review"] .order-disclosure-body { padding: 12px; }
+  .order-review-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .order-review-check { grid-template-rows: 36px auto; }
+  .order-review-checks .task-toolbar > button { min-height: 36px; padding: 6px 10px; font-size: 12px; max-width: 100%; }
+  .order-review-actions h2 { padding-top: 4px; }
+  .orders-workspace[data-order-status="pending"] .order-review-actions .order-section-description { display: none; }
+  .order-review-content .unmatched-products { padding: 10px; border-left-width: 1px; min-height: 0; }
+  .order-review-content .unmatched-products h3 { font-size: 13px; }
+  .order-review-content .unmatched-products header { gap: 8px; }
+  .order-review-content .unmatched-products header p { margin-bottom: 6px; font-size: 12px; }
+  .order-review-content .unmatched-products li { padding: 6px 8px; gap: 8px; font-size: 12px; }
+  .order-review-content .unmatched-products li > div { min-width: 0; overflow-wrap: anywhere; }
+  .order-review-content .unmatched-products li > button { flex-shrink: 0; min-height: 30px; padding: 4px 8px; font-size: 12px; }
+  .order-review-content .unmatched-products ul { display: flex; flex-direction: column; gap: 4px; }
+  .order-review-content .unmatched-products li { flex-shrink: 0; }
+}
+@media screen and (min-width: 1100px) and (max-width: 1250px) {
+  .orders-workspace[data-order-state="review"] .order-stage-layout { grid-template-columns: minmax(0, 1fr) 240px; gap: 12px; }
+  .order-review-heading .page-header-description { display: none; }
+  .orders-workspace[data-order-state="review"] .order-summary-bottom { gap: 12px; }
+  .orders-workspace[data-order-state="review"] .order-summary-task p { font-size: 11px; }
+}
+@media screen and (min-width: 1100px) and (min-height: 650px) {
+  .main-content:has(> .orders-workspace[data-order-status="pending"]):not(:has([aria-label="Pending upload"])) { height: 100dvh; min-height: 0; }
+  .main-content > .orders-workspace[data-order-status="pending"]:not(:has([aria-label="Pending upload"])) { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .orders-workspace[data-order-status="pending"] > :not(.order-stage-layout) { flex-shrink: 0; }
+  .orders-workspace[data-order-status="pending"] .order-stage-layout { flex: 1; align-items: stretch; min-height: 0; }
+  .orders-workspace[data-order-status="pending"] .result-panel { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+  .orders-workspace[data-order-status="pending"] .order-review-content { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .orders-workspace[data-order-status="pending"] .order-review-content > :not(.unmatched-products) { flex-shrink: 0; }
+  .orders-workspace[data-order-status="pending"] .unmatched-products { display: flex; flex-direction: column; flex: 1; min-height: 100px; }
+  .orders-workspace[data-order-status="pending"] .unmatched-products header { flex-shrink: 0; }
+  .orders-workspace[data-order-status="pending"] .unmatched-products ul { flex: 1; min-height: 0; max-height: none; }
+  .orders-workspace[data-order-status="pending"] .order-entry-tools { overflow-y: auto; scrollbar-width: thin; padding: 4px; margin: -4px; }
+}
+
+/* Guidance belongs in the task header on table-first workspaces. */
+@media screen {
+  .sidebar .primary-navigation { flex: 1 1 auto; min-height: 0; overflow-y: auto; gap: 16px; padding: 2px; margin: -2px; scrollbar-width: thin; scrollbar-color: #64836e transparent; }
+  .sidebar .brand, .sidebar .sidebar-foot { flex-shrink: 0; }
+  .sidebar-nav-group { display: grid; gap: 4px; flex-shrink: 0; }
+  .sidebar-nav-group + .sidebar-nav-group { padding-top: 14px; border-top: 1px solid #ffffff16; }
+  .sidebar .sidebar-nav-group .sidebar-section-label { margin: 0 0 4px; padding: 0 10px; font-size: 10px; line-height: 1.4; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #b6cbbd; }
+  .sidebar .sidebar-nav-group .nav-link { border-radius: 8px; }
+  .sidebar .sidebar-nav-group .nav-link.active { background: #e9f3eb; color: #1b4a2d; box-shadow: 0 2px 5px #0b25161a; }
+  .mobile-workspace-menu .mobile-nav-group { display: grid; gap: 3px; }
+  .mobile-workspace-menu .mobile-nav-group + .mobile-nav-group { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .mobile-nav-group-label { margin: 0 0 4px; padding: 0 12px; font-size: 11px; font-weight: 650; color: var(--muted); }
+  .workspace-guide.workspace-guide-inline { margin: 0; padding: 0; border: 0; background: transparent; border-radius: 0; }
+  .workspace-guide-inline .workspace-guide-actions { gap: 4px; }
+  .main-content .page .workspace-guide-inline .workspace-guide-actions > button { padding: 8px; }
+  .workspace-guide-inline .workspace-guide-actions > button svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .workspace-guide-inline .workspace-guide-actions > button { width: 34px; height: 34px; min-height: 34px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; }
+  [data-workspace-guide-host] { display: inline-flex; }
+  .product-header-actions { display: flex; align-items: center; gap: 10px; }
+  .product-heading-main { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; }
+  .product-workspace .product-heading-main h1 { margin: 0; }
+  .product-header-actions button { display: inline-flex; align-items: center; gap: 6px; }
+  .product-workspace .product-page-heading { max-width: none; margin-bottom: 18px; align-items: center; }
+  .product-workspace .packing-setup-tabs { margin: 0; }
+  .product-workspace .packing-setup-tabs button { padding: 8px 14px; }
+  .product-workspace .product-table-toolbar { gap: 12px; margin-bottom: 16px; }
+  .product-workspace .product-table-toolbar label { min-width: 130px; font-size: 12px; gap: 5px; }
+  .product-workspace .product-table-toolbar label:first-child { min-width: 200px; }
+  .product-workspace .product-table-toolbar label:nth-child(2) { min-width: 190px; }
+  .product-table-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding-top: 12px; }
+  .product-save-status { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); }
+  .product-save-status button { background: transparent; border: 0; text-decoration: underline; text-underline-offset: 3px; color: var(--leaf-ink); }
+  .product-table-footer .register-pagination { margin: 0; }
+  .product-workspace .product-grid { min-width: 1080px; table-layout: fixed; font-size: 13px; }
+  .product-workspace .product-grid th, .product-workspace .product-grid td { padding: 12px; }
+  .product-workspace .product-grid td { min-width: 0; max-width: none; }
+  .product-workspace .product-grid th:first-child { width: 17%; }
+  .product-workspace .product-grid th:nth-child(2) { width: 23%; }
+  .product-workspace .product-grid th:nth-child(3) { width: 9%; }
+  .product-workspace .product-grid th:nth-child(4) { width: 23%; }
+  .product-workspace .product-grid th:nth-child(5) { width: 12%; }
+  .product-workspace .product-grid th:nth-child(6) { width: 16%; }
+  .product-workspace .product-grid th { background: #f1f4f0; border-bottom: 1px solid #c9d4cb; font-size: 12px; line-height: 1.3; }
+  .product-workspace .product-grid th small { font-size: 11px; font-weight: 400; margin-top: 3px; }
+  .product-workspace .product-grid td { border-color: #e2e7e2; }
+  .product-workspace .product-handling { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .product-workspace .product-handling > select:first-child { grid-column: 1 / -1; }
+  .product-workspace .product-temperature-cell { gap: 8px; }
+  .product-workspace .product-material-badge { padding: 0; border: 0; background: transparent; font-size: 12px; }
+}
+@media screen and (min-width: 861px) {
+  .main-content:has(> .product-workspace) { height: 100dvh; min-height: 0; }
+  .main-content > .product-workspace { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; padding-top: 24px; }
+  .product-workspace > :not(section) { flex-shrink: 0; }
+  .product-workspace > section { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+  .product-workspace > section > :not(.product-grid-scroll):not(.packing-setup-table) { flex-shrink: 0; }
+  .product-workspace .product-grid-scroll, .product-workspace .packing-setup-table { flex: 1 1 auto; min-height: 150px; max-height: none; overflow: auto; }
+  .product-workspace .product-grid-scroll { border-color: #d4ddd5; border-radius: 8px; }
+  .product-workspace .product-table-toolbar button { min-height: 34px; }
+  .product-workspace .product-grid input:not([type=checkbox]), .product-workspace .product-grid select { min-height: 34px; }
+}
+@media screen and (max-width: 860px) {
+  .product-workspace .product-page-heading { align-items: flex-start; gap: 16px; }
+  .product-header-actions { flex-wrap: wrap; }
+  .product-workspace .product-grid-scroll { max-height: 65dvh; }
+  .workspace-guide-inline .workspace-guide-actions > button { width: 44px; height: 44px; min-height: 44px; }
+  .product-table-footer .register-pagination { justify-content: flex-start; }
+}

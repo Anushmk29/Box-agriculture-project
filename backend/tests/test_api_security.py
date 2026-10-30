@@ -3,6 +3,7 @@ from datetime import date
 import jwt
 from fastapi.testclient import TestClient
 
+from app.api.operations import operations_summary
 from app.core.database import get_db
 from app.core.security import decode_access_token, hash_password
 from app.main import app
@@ -15,7 +16,8 @@ from app.models.master_data import (
     TemperatureZone,
     WeightClass,
 )
-from app.models.order import RawOrderFile
+from app.models.order import ClientOrder, OrderStatus, RawOrderFile
+from app.models.procurement import MasterPurchasingList
 from app.models.user import User, UserRole
 
 
@@ -25,6 +27,29 @@ def client_for(db_session, *, raise_server_exceptions: bool = True):
 
     app.dependency_overrides[get_db] = override_db
     return TestClient(app, raise_server_exceptions=raise_server_exceptions)
+
+
+def test_operations_summary_counts_visible_action_queues(db_session):
+    actor = User(
+        email="queue@example.com",
+        password_hash="unused",
+        full_name="Queue User",
+        role=UserRole.GENERAL,
+    )
+    db_session.add(actor)
+    db_session.flush()
+    db_session.add_all([
+        RawOrderFile(file_name="pending.xlsx", storage_url="pending.xlsx", shipment_target_date="2026-09-30", route_line="CT", uploaded_by=actor.id, status=OrderStatus.PARSED),
+        RawOrderFile(file_name="done.xlsx", storage_url="done.xlsx", shipment_target_date="2026-09-30", route_line="CT", uploaded_by=actor.id, status=OrderStatus.PURCHASING_CONSOLIDATED),
+        MasterPurchasingList(batch_reference="PUR-PENDING", total_skus_count=1, status=OrderStatus.PURCHASING_CONSOLIDATED),
+        MasterPurchasingList(batch_reference="PUR-DONE", total_skus_count=1, status=OrderStatus.HANDOFF_01_SENT),
+    ])
+    db_session.commit()
+
+    summary = operations_summary(db_session, actor)
+
+    assert summary["awaiting_intake"] == 1
+    assert summary["awaiting_procurement"] == 1
 
 
 def test_login_returns_standard_signed_jwt(db_session):
@@ -158,7 +183,7 @@ def test_accounting_level_includes_general_procurement_access(db_session):
 
     assert consolidate.status_code == 404
     assert combine.status_code == 400
-    assert buffer_update.status_code == 404
+    assert buffer_update.status_code == 403
     app.dependency_overrides.clear()
 
 
@@ -212,6 +237,7 @@ def test_procurement_auto_reference_does_not_collide_for_different_sources(db_se
         route_line="TETE",
         uploaded_by=manager.id,
         main_customer_id=main_customer.id,
+        status=OrderStatus.SPLIT_AND_VALIDATED,
     )
     second_raw = RawOrderFile(
         file_name="second.xlsx",
@@ -220,8 +246,16 @@ def test_procurement_auto_reference_does_not_collide_for_different_sources(db_se
         route_line="TETE",
         uploaded_by=manager.id,
         main_customer_id=main_customer.id,
+        status=OrderStatus.SPLIT_AND_VALIDATED,
     )
     db_session.add_all([first_raw, second_raw])
+    db_session.flush()
+    db_session.add_all([
+        ClientOrder(raw_order_file_id=raw.id, main_customer_id=main_customer.id,
+                    customer_id=main_customer.id, order_ref_id=f"BATCH-REF-{index}",
+                    status=OrderStatus.SPLIT_AND_VALIDATED)
+        for index, raw in enumerate([first_raw, second_raw])
+    ])
     db_session.commit()
     client = client_for(db_session)
     token = client.post(
@@ -446,7 +480,7 @@ def test_manifest_api_does_not_default_to_a_specific_flight(db_session):
     app.dependency_overrides.clear()
 
 
-def test_general_user_has_universal_operational_access(db_session):
+def test_general_user_can_map_skus_but_cannot_edit_buffers(db_session):
     general_user = User(
         email="general-user@example.com",
         password_hash=hash_password("Password123!"),
@@ -470,13 +504,13 @@ def test_general_user_has_universal_operational_access(db_session):
     assert me_resp.status_code == 200
     assert me_resp.json()["role"] == UserRole.GENERAL.value
 
-    # General users can access procurement endpoints without 403
+    # Buffer totals are restricted to Owner/Admin.
     buffer_resp = client.put(
         "/api/v3/procurement/items/dummy-item-id/buffer",
         headers=headers,
-        json={"buffer_kg": 5.0},
+        json={"buffer_percentage": 5.0},
     )
-    assert buffer_resp.status_code != 403
+    assert buffer_resp.status_code == 403
 
     # General users can access SKU mapping endpoints without 403
     sku_resp = client.get("/api/v3/master-data/sku-mappings", headers=headers)

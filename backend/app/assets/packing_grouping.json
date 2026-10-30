@@ -1,0 +1,5384 @@
+{
+  "source": "Rev.1 Grouping List (1).xlsx",
+  "sha256": "2f4a20903682a59e634ecca34138cd442a0ee18ccc362b93a856a266a1c5f46b",
+  "sheet": "Sheet1",
+  "entries": [
+    {
+      "row": 4,
+      "name": "ตะไคร้BB",
+      "notes": "ก.พิเศษ 13 กก ก.แบน 10 กก ก.เล็ก 5 กก ก.จิ๋ว 2 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 5,
+      "name": "ข่าอ่อนBB",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 6,
+      "name": "ใบมะกรูดสดTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 7,
+      "name": "**กระเพรา",
+      "notes": "โฟมใหญ่ 4 กก, โฟมแบน 2.5-3.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": true,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 8,
+      "name": "**โหระพา",
+      "notes": "โฟมใหญ่ 4 กก, โฟมแบน 2.5 - 3.5 กก,",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": true,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 9,
+      "name": "ผักบุ้งจีนBB",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 10,
+      "name": "**  คะน้าNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  5- 6 กก ฟ.แบน 4  กก ฟ.แบนจิ๋ว 2-2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 11,
+      "name": "**  ยอดคะน้าNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  5- 6 กก ฟ.แบน 4  กก ฟ.แบนจิ๋ว 2-2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": null,
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 12,
+      "name": "**  กวางตุ้งNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": null,
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 13,
+      "name": "คื่นช่ายNN",
+      "notes": "ฟ.ยักษ์ 8 กก ฟ.ใหญ่  5- 6 กก ฟ.แบน 4 กก ฟ.แบนจิ๋ว 2-2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 14,
+      "name": "**มะเขือเปราะ",
+      "notes": "ฟ.ยักษ์ 15 กก ฟ.ใหญ่ 10 กก  ฟ.แบน 7 กก  ฟ.เล็ก 5  กก ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 15,
+      "name": "มะเขือพวงNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 16,
+      "name": "บวบเหลี่ยมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 17,
+      "name": "มะระจีน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 18,
+      "name": "ผักแขยงBB",
+      "notes": "ฟ.ยักษ์ 7.5 กก ฟ.ใหญ่  5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2-2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 19,
+      "name": "ผักแพร้วBB",
+      "notes": "ฟ.ยักษ์ 7.5 กก ฟ.ใหญ่  5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2-2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 20,
+      "name": "ผักปลังBB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 21,
+      "name": "ผักหวานป่าTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 22,
+      "name": "ก้านคูนTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 23,
+      "name": "**พริกขี้หนูสวน",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 24,
+      "name": "**พริกหนูแดง",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 25,
+      "name": "**พริกหนูเขียว",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 26,
+      "name": "มะละกอดิบTT",
+      "notes": "ก.พิเศษ 13 กก ก.แบน 10 กก ก.เล็ก 5 กก ก.จิ๋ว 2 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 27,
+      "name": "หัวปลีNN",
+      "notes": "ก.แบน 10 กก ก.เล็ก 5 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 28,
+      "name": "ฟักเขียวNN",
+      "notes": null,
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 29,
+      "name": "เผือกNN",
+      "notes": null,
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 30,
+      "name": "มันแกวNN",
+      "notes": "ก.พิเศษ 13 กก ก.แบน 10 กก ก.เล็ก 5 กก ก.จิ๋ว 2 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 31,
+      "name": "หอมแดงTT",
+      "notes": "ก.พิเศษ 13 กก ก.แบน 10 กก ก.เล็ก 5 กก ก.จิ๋ว 2 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 32,
+      "name": "กระเทียมTT",
+      "notes": "ก.พิเศษ 13 กก ก.แบน 10 กก ก.เล็ก 5 กก ก.จิ๋ว 2 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 33,
+      "name": "**  ผักชีไทย",
+      "notes": "ฟ.ยักษ์ 7.5 กก ฟ.ใหญ่ 6 กก  ฟ.แบน 3.5 กก ฟ.แบนจิ๋ว 2.5  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": true,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 34,
+      "name": "**ผักชีฝรั่ง",
+      "notes": "ฟ.ยักษ์ 8 กก ฟ.ใหญ่ 6 กก  ฟ.แบน 4 กก ฟ.แบนจิ๋ว 2.5  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": true,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 35,
+      "name": "ผักชีลาวNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 36,
+      "name": "ใบกุ่ยช่ายNN",
+      "notes": "ฟ.ยักษ์ 10 กก  ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2.5  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 37,
+      "name": "ดอกกุ่ยช่ายNN",
+      "notes": "ฟ.แบน 10 กก ฟ.แบนจิ๋ว 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 38,
+      "name": "ใบเตยTT",
+      "notes": "ฟ.แบน 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 39,
+      "name": "ใบตองTT",
+      "notes": "ฟ.ใหญ่ 10 กก  ฟ.แบน 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 40,
+      "name": "ขิงอ่อนNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 41,
+      "name": "ขิงแก่NN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 42,
+      "name": "กระเฉดAA",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 43,
+      "name": "ต้นหอมNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 6 กก  ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 44,
+      "name": "**  ถั่วฝักยาวKK",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 10 กก ฟ.แบน 5 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 45,
+      "name": "ผักบุ้งไทยNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 46,
+      "name": "**  สะระแหน่BB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 47,
+      "name": "กระชายNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 48,
+      "name": "ฝักกะถินNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 49,
+      "name": "ยอดกะถินNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 50,
+      "name": "กระเจี๊ยบNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 51,
+      "name": "ดอกแคร์NN",
+      "notes": "ฟ.แบน 5 กก ฟ.เล็ก 3 กก ฟ.เล็กพิเศษ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 52,
+      "name": "ถั่วพูNN",
+      "notes": "ฟ.ยักษ์ 6 กก  ฟ.แบน 4 กก  ฟ.เล็กพิเศษ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 53,
+      "name": "ชะอมNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 54,
+      "name": "ใบแมงลัก",
+      "notes": "ฟ.ยักษ์ 6.5 กก  ฟ.แบน 3 กก ฟ.เล็ก 4 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 55,
+      "name": "ใบบัวบกNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 56,
+      "name": "ใบย่านางNN",
+      "notes": "ฟ.ยักษ์ 4  กก ฟ.ใหญ่ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 57,
+      "name": "ผักหวานบ้านBB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 58,
+      "name": "สะตอฝักTT",
+      "notes": "ฟ.ใหญ่ 10 กก  ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 59,
+      "name": "สะตอแกะTT",
+      "notes": "ฟ.ใหญ่ 2 กก  ฟ.แบน 5 กก ฟ.เล็กพิเศษ  3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 60,
+      "name": "ลูกเนียงTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 61,
+      "name": "สะเดาใบN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 62,
+      "name": "**  ดอกกวางตุ้งNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 63,
+      "name": "ดอกขี้เหล็กสดNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 64,
+      "name": "สายบัวNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 7 กก ฟ.แบน 5 กก ฟ.เล็ก 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 65,
+      "name": "รากบัวTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 66,
+      "name": "ตำลึงNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 67,
+      "name": "ใบชะพลูTT",
+      "notes": "ฟ.ยักษ์ 7 กก ฟ.ใหญ่ 5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 68,
+      "name": "ใบพลูTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 69,
+      "name": "ใบยอNN",
+      "notes": "ฟ.ยักษ์ 7 กก ฟ.ใหญ่ 5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 70,
+      "name": "มะระไทย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 71,
+      "name": "มะรุมNN",
+      "notes": "ฟ.ยักษ์ 15 กก  ฟ.แบน 10 กก ฟ.แบนจิ๋ว 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 72,
+      "name": "ขนุนอ่อนNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 73,
+      "name": "แตงกวาNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 74,
+      "name": "บวบหอมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 75,
+      "name": "ผักบุ้งแดงNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 76,
+      "name": "มะขามอ่อนNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 77,
+      "name": "ใบมะขามอ่อนNN",
+      "notes": "ฟ.ยักษ์ 6 กก  ฟ.แบน 4 กก  ฟ.เล็กพิเศษ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 78,
+      "name": "ขมิ้นเหลืองNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 79,
+      "name": "ขมิ้นขาวNN",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 80,
+      "name": "ถั่วลันเตาNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 81,
+      "name": "พริกไทอ่อนTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 82,
+      "name": "ข้าวโพดอ่อนกิโลBB",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.แบนจิ๋ว 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 83,
+      "name": "หน่อไม้ฝรั่ง A/BB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 84,
+      "name": "มะเขือเหลือง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 85,
+      "name": "มะเขือม่วง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 86,
+      "name": "มะเขือเทศสีดาNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 87,
+      "name": "มะเขือขาว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 88,
+      "name": "มะเขือตอแหล",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 89,
+      "name": "มะอึกNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 90,
+      "name": "ฟักทองเล็กNN",
+      "notes": "ก.แบน 10 กก ก.เล็ก 5 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 91,
+      "name": "**  กะหล่ำปลีNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 92,
+      "name": "มะกอกส้มตำTT",
+      "notes": "ฟ.ยักษ์ 10  กก ฟ.ใหญ่  8 กก ฟ.แบน 5 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 93,
+      "name": "เห็ดเข็มทองTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 94,
+      "name": "มะกอกฝรั่ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 95,
+      "name": "ยอดฟักทองNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 96,
+      "name": "ยอดตำลึง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 97,
+      "name": "ยอดมะพร้าวท่อน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 98,
+      "name": "เห็ดฟางNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 99,
+      "name": "เห็ดหูหนูNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 100,
+      "name": "เห็ดนางฟ้าNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 101,
+      "name": "ผักติ้ว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 102,
+      "name": "ดอกโสนNN",
+      "notes": "ฟ.ยักษ์ 6 กก  ฟ.แบน 4 กก  ฟ.เล็กพิเศษ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 103,
+      "name": "หน่อไม้ไผ่ตงสดNN",
+      "notes": "ฟ.แบน 10 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 104,
+      "name": "ยอดฝรั่งNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 105,
+      "name": "รากผักชีNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 106,
+      "name": "ยอดแค",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 107,
+      "name": "ดอกกระเจียว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 108,
+      "name": "ยอดมะกอก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 109,
+      "name": "บวบงู",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 110,
+      "name": "ก้านจองNN",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 111,
+      "name": "ดอกหอมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 112,
+      "name": "แตงโมอ่อน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 113,
+      "name": "ผักกาดหอม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 114,
+      "name": "ผักปวยเล้ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 115,
+      "name": "ยอดกระโดน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 116,
+      "name": "ใบมะกรูดแช่แข็งTT",
+      "notes": "ฟ.เล็ก 2.5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 117,
+      "name": "ผักชีล้อมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 118,
+      "name": "กระชายซอยNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 119,
+      "name": "**  แขนงNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 120,
+      "name": "ยอดหวายอ่อน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 121,
+      "name": "เห็ดหอมสด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 122,
+      "name": "ผักเสี้ยน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 123,
+      "name": "ผักเสี้ยว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 124,
+      "name": "ผักแว่นNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 125,
+      "name": "สะเดาดิน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 126,
+      "name": "ใบมะม่วง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 127,
+      "name": "ผักสะแล",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 128,
+      "name": "ผักกูด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 129,
+      "name": "ผักขี้ฮูด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 130,
+      "name": "ผักเผ็ดNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 131,
+      "name": "ผักเฮียด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 132,
+      "name": "ลิ้นฟ้าNN",
+      "notes": "ฟ.แบน 10 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 133,
+      "name": "ผักตับ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 134,
+      "name": "ใบมะกอก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 135,
+      "name": "ก้านบอน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 136,
+      "name": "ดอกผักปลัง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 137,
+      "name": "ผักสีเสียด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 138,
+      "name": "เห็ดลม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 139,
+      "name": "ดอกขจรNN",
+      "notes": "ฟ.ยักษ์ 6 กก  ฟ.แบน 4 กก  ฟ.เล็กพิเศษ 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 140,
+      "name": "ยอดฟักแม้วNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 141,
+      "name": "**  ผักกวางตุ้งไต้หวันNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 142,
+      "name": "น้ำเต้าอ่อน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 143,
+      "name": "**  ผักฉ่อย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 144,
+      "name": "พริกรวมหนูแดง+หนูเขียว",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 145,
+      "name": "ต้นกระเทียมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 146,
+      "name": "หน่อข่าNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 147,
+      "name": "มันมือเสือ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 148,
+      "name": "ฟักเขียวลูกใหญ่",
+      "notes": null,
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 149,
+      "name": "มะกอกน้ำNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 150,
+      "name": "ลูกจันทร์",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 151,
+      "name": "มันต่อเผือก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 152,
+      "name": "ใบทองหลาง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 153,
+      "name": "พริกกระเหรี่ยง(พริกลาว)",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 154,
+      "name": "เห็ดเผาะ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 155,
+      "name": "เห็ดโคน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 156,
+      "name": "เห็ดเป๋าฮื้อ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 157,
+      "name": "ดอกกะหล่ำ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 158,
+      "name": "เห็ดกระด้างNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 159,
+      "name": "**  ผักกาดเขียวปลี",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 160,
+      "name": "ผักกาดแก้ว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 161,
+      "name": "เห็ดผึ่ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 162,
+      "name": "พริกหนูแดงเด็ดก้าน",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.ใหญ่ 8 กก  ฟ.แบน 5 กก  ฟ.เล็กพิเศษ 3  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 163,
+      "name": "มะเขือพวงเด็ดก้าน",
+      "notes": "ฟ.เล็กพิเศษ 6.5  กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 164,
+      "name": "ลูกหว้า",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 165,
+      "name": "ยอดมันสัมปะหลังTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 166,
+      "name": "ผักแพงพวย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 167,
+      "name": "ยอดมะละกอBB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 168,
+      "name": "ใบชะมวง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 169,
+      "name": "เห็ดนางรมNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 170,
+      "name": "ยอดกระเจี๊ยบ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 171,
+      "name": "ดอกกระเจี๊ยบ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 172,
+      "name": "ไหลบัว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 173,
+      "name": "ลูกยอ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 174,
+      "name": "ผักสะเหม็ด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 175,
+      "name": "ข้าวโพดฝัก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 176,
+      "name": "ผักชี+ต้นหอม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 177,
+      "name": "ตีโต้BB",
+      "notes": "ฟ.ยักษ์ 7 กก ฟ.ใหญ่ 5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 178,
+      "name": "หยวกกล้วย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 179,
+      "name": "มะแว้ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 180,
+      "name": "ลูกฟักแม้ว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 181,
+      "name": "สะเดาดอกNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 182,
+      "name": "หลดบัว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 183,
+      "name": "ยอดผักหวาน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 184,
+      "name": "ยับก๊าBB",
+      "notes": "ฟ.ยักษ์ 7 กก ฟ.ใหญ่ 5 กก ฟ.แบน 3 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 185,
+      "name": "ผักลาวดายBB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 186,
+      "name": "เห็ดขอน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 187,
+      "name": "ยอดมะรุม",
+      "notes": "ฟ.ยักษ์ 10 กก ฟ.แบน 5 กก ฟ.แบนจิ๋ว 2 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 188,
+      "name": "ฟักทองใหญ่",
+      "notes": "ก.เล็ก 1 ลูก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 189,
+      "name": "ชุดผัดผักรวม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 190,
+      "name": "ลูกเนียงแกะเปลือก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 191,
+      "name": "หน่อไม้ไผ่ตงไม่ปลอกเปลือก",
+      "notes": "ฟ.แบน 10 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 192,
+      "name": "มะเขือม่วงลูกเล็ก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 193,
+      "name": "กิงกอย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 194,
+      "name": "ผักอีนูน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 195,
+      "name": "ลูกดอกสลิด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 196,
+      "name": "มะกอกส้มตำสุก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 197,
+      "name": "มะเขือเปราะ ลายใหญ่",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 198,
+      "name": "กิมเย้ย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 199,
+      "name": "มะยงฃิด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 200,
+      "name": "ผักเม็ก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 201,
+      "name": "เห็ดหลินดำ (ชิมิจิ)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 202,
+      "name": "เห็ดหลินขาว (ชิมิจิ)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 203,
+      "name": "ถาดกาบหมาก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 204,
+      "name": "ตะลิงปลิง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 205,
+      "name": "ลูกตะคร้อ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 206,
+      "name": "มะม่วงเขียวเสวย",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 207,
+      "name": "มะม่วงดิบปลาตะเพียน",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 208,
+      "name": "มะม่วงสุกน้ำดอกไม้TT เกรด A",
+      "notes": "ก.เล็ก 5 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 209,
+      "name": "เงาะTT",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 8 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 210,
+      "name": "มังคุดTT",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 8 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 211,
+      "name": "ทุเรียนแกะเนื้อBB",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 212,
+      "name": "ทุเรียนBB",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 213,
+      "name": "ฝรั่ง",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็กพิเศษ 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 214,
+      "name": "กล้วยน้ำว้าNN",
+      "notes": "ก.พิเศษ 4 หวี ก.แบน 3 หวี ก.เล็ก 2 หวี",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 215,
+      "name": "มะละกอสุกNN",
+      "notes": "ฟ.เล็ก 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 216,
+      "name": "ลิ้นจี่TT",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 8 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 217,
+      "name": "ลำใยNN",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 8 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 218,
+      "name": "ลองกองNN",
+      "notes": "ฟ.ยักษ์ 13 กก ฟ.ใหญ่ 8 กก ฟ.เล็ก 4 กก ฟ.เล็กพิเศษ 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 219,
+      "name": "มะม่วงสุก อกร่องTT",
+      "notes": "ก.เล็ก 5 กก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 220,
+      "name": "กล้วยไข่NN",
+      "notes": "ก.พิเศษ 5 หวี ก.แบน 4 หวี ก.เล็ก 3 หวี",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 221,
+      "name": "มะพร้าวอ่อนNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 222,
+      "name": "พุทรานมสด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 223,
+      "name": "ละมุดTT",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 224,
+      "name": "ขนุนสุกลูกNN",
+      "notes": "ก.สูง 1 ลูก",
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 225,
+      "name": "สัปปะรดNN",
+      "notes": null,
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 226,
+      "name": "น้อยหน่าNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 227,
+      "name": "ชมพู่เขียวแดงเพชรAA",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 228,
+      "name": "ระกำNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 229,
+      "name": "มะขามหวานNN",
+      "notes": null,
+      "box_material": "CARDBOARD",
+      "temperature": "NORMAL",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        null,
+        "/",
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 230,
+      "name": "ลางสาด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 231,
+      "name": "มะปราง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 232,
+      "name": "มะยมสดNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 233,
+      "name": "มะขามเทศ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 234,
+      "name": "กระท้อนNN",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 235,
+      "name": "มะเฟือง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 236,
+      "name": "มะพร้าวทึนทึกNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 237,
+      "name": "มะดันNN",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 238,
+      "name": "แก้วมังกรเนื้อขาว",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 239,
+      "name": "มะไฟ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 240,
+      "name": "ขนุนสุกแกะถาด",
+      "notes": "ฟ.ใหญ่ 4 กก ฟ.เล็ก 3 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 241,
+      "name": "สละ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 242,
+      "name": "แตงไทย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 243,
+      "name": "ทับทิม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 244,
+      "name": "มะม่วงดิบลูกเล็ก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 245,
+      "name": "มะม่วงแก้ว",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 246,
+      "name": "มะม่วงสุกโชคอนันต์",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 247,
+      "name": "มะยงชิด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 248,
+      "name": "มะม่วงมหาชนก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 249,
+      "name": "มะม่วงดิบโชคนันต์",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 250,
+      "name": "เสาวรส",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 251,
+      "name": "แก้วมังกรเนื้อแดง",
+      "notes": "ฟ.ใหญ่ 10 กก ฟ.เล็ก 5 กก",
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 252,
+      "name": "มะม่วงแก้วขมิ้น",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 253,
+      "name": "พุทราไทย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "EL",
+      "weight_class": "HEAVY",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        "/",
+        null,
+        null,
+        "/"
+      ]
+    },
+    {
+      "row": 257,
+      "name": "เห็ดเข็มทอง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 258,
+      "name": "เห็ดฟาง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 259,
+      "name": "เห็ดหูหนู",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 260,
+      "name": "เห็ดนางฟ้า",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 261,
+      "name": "เห็ดหอมสด",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 262,
+      "name": "เห็ดลม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 263,
+      "name": "เห็ดเผาะ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 264,
+      "name": "เห็ดโคน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 265,
+      "name": "เห็ดเป๋าฮื้อ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 266,
+      "name": "เห็ดกระด้าง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 267,
+      "name": "เห็ดผึ่ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 268,
+      "name": "เห็ดนางรม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 269,
+      "name": "เห็ดโคนญี่ปุ่น",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 270,
+      "name": "เห็ดขอน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 271,
+      "name": "เห็ดแชมปิยอง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 272,
+      "name": "เห็ดโคนน้อยสีขาว(pack150g)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 273,
+      "name": "เห็ดออรินจิ(pack 200g)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 274,
+      "name": "เห็ดโคนน้อยสีน้ำตาล(pack150g)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 275,
+      "name": "เห็ดโคนหิมะ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 276,
+      "name": "เห็ดหลินจือ/เห็ดถ้วย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 277,
+      "name": "ชุดเห็ดรวม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 278,
+      "name": "เห็ดชิทาเกะ",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 279,
+      "name": "เห็ดเข็มทองดอกใหญ่",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 280,
+      "name": "เห็ดออริจิใหญ่",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 281,
+      "name": "เห็ดหลินดำ (ชิมิจิ)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 282,
+      "name": "เห็ดหลินขาว (ชิมิจิ)",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 283,
+      "name": "เห็ดภูฎาน",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 284,
+      "name": "เห็ดหอมลาย",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 285,
+      "name": "เห็ดผึ้ง",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 286,
+      "name": "เห็ดระโงก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 287,
+      "name": "เห็ดตะไค",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 288,
+      "name": "เห็ดปลวก",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    },
+    {
+      "row": 289,
+      "name": "เห็ดเผาะต้ม",
+      "notes": null,
+      "box_material": "FOAM",
+      "temperature": "COLD",
+      "control_status": "COMBINABLE",
+      "weight_class": "LIGHT",
+      "conflicts": [],
+      "special": false,
+      "source_flags": [
+        "/",
+        null,
+        null,
+        "/",
+        "/",
+        null
+      ]
+    }
+  ]
+}

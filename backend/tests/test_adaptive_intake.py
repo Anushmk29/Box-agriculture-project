@@ -17,7 +17,6 @@ from app.services.canonical_schema import ActionType, IngestionChannel
 from app.services.matrix_parser import MatrixOrderParser
 from app.services.pdf_order_parser import PdfOrderParser
 from app.services.unified_excel_parser import UnifiedExcelParser
-from app.services.vision_chat_parser import VisionChatParser
 
 
 def test_matrix_header_detection_recovers_missing_dimensions():
@@ -104,17 +103,36 @@ def test_unified_excel_unstructured_text(docs_dir):
         assert len(cancels) >= 2
 
 
-def test_vision_chat_parser(docs_dir):
-    img_path = os.path.join(docs_dir, "68H.png")
-    if os.path.exists(img_path):
-        parser = VisionChatParser(img_path)
-        draft = parser.parse()
-        assert draft.channel == IngestionChannel.EMAIL_SCREENSHOT
-        assert draft.client_code == "68H"
-        cancels = [i for i in draft.items if i.action == ActionType.CANCEL]
-        orders = [i for i in draft.items if i.action == ActionType.ORDER]
-        assert len(cancels) == 4
-        assert len(orders) == 2
+@pytest.mark.parametrize("filename", ["68H.png", "993L.png", "order.jpg", "order.jpeg", "order.PNG", "order.webp"])
+def test_image_intake_is_rejected_before_persistence(db_session, tmp_path, filename):
+    from app.models.order import RawOrderFile
+
+    path = tmp_path / filename
+    path.write_bytes(b"image")
+    with pytest.raises(ValueError, match="Unsupported file format"):
+        AdaptiveOrderOrchestrator(db_session).ingest_file(str(path), "2026-10-09", actor=None)
+    assert db_session.query(RawOrderFile).count() == 0
+
+
+@pytest.mark.parametrize("filename", ["993L.png", "order.jpg", "order.jpeg", "order.PNG", "order.webp"])
+def test_image_upload_api_is_rejected_before_reading_file(db_session, filename):
+    from io import BytesIO
+
+    from fastapi import HTTPException, UploadFile
+
+    from app.api.orders import upload_order_file_universal
+    from app.models.order import RawOrderFile
+
+    stream = BytesIO(b"image")
+    with pytest.raises(HTTPException) as error:
+        upload_order_file_universal(
+            file=UploadFile(filename=filename, file=stream), shipment_date="2026-10-09",
+            route_line="GENERAL", main_customer_id=None, db=db_session, actor=None,
+        )
+    assert error.value.status_code == 422
+    assert error.value.detail.endswith("Supported: .xlsx, .xlsm, .xls, .pdf")
+    assert stream.tell() == 0
+    assert db_session.query(RawOrderFile).count() == 0
 
 
 def test_adaptive_orchestrator_end_to_end(db_session, docs_dir):
@@ -131,25 +149,30 @@ def test_adaptive_orchestrator_end_to_end(db_session, docs_dir):
         produce_type=ProduceType.HERB,
         weight_class=WeightClass.LIGHT,
     )
-    db_session.add(p)
+    from app.models.user import User, UserRole
+
+    actor = User(email="intake@example.com", password_hash="x", full_name="Intake", role=UserRole.GENERAL)
+    db_session.add_all([p, actor])
     db_session.commit()
 
     itm_path = os.path.join(docs_dir, "Order ITM ETD 06-09-2026.pdf")
     if os.path.exists(itm_path):
         orchestrator = AdaptiveOrderOrchestrator(db_session)
-        res = orchestrator.ingest_file(itm_path, shipment_date="2026-09-06")
+        res = orchestrator.ingest_file(itm_path, shipment_date="2026-09-06", actor=actor)
         assert res["channel"] == IngestionChannel.PDF_TABLE.value
         assert res["total_items_processed"] > 0
         assert res["matched_items_count"] > 0
-        assert len(res["created_orders"]) > 0
+        assert res["created_orders"] == []  # All channels wait for SKU review.
+        from app.models.order import RawOrderFile
+        assert db_session.get(RawOrderFile, res["raw_file_id"]).acknowledgment_summary["drafts"]
 
 
 def test_fast_track_template_pack_and_invoicing(db_session):
     from app.models.master_data import BoxCatalogue, Customer, PriceList
     from app.models.order import ClientOrder, ClientOrderItem, OrderStatus, RawOrderFile
     from app.models.user import User, UserRole
+    from app.modules.packing.floor import FloorPackingService
     from app.services.on_behalf_invoicing_service import OnBehalfInvoicingService
-    from app.services.packing_override_service import PackingOverrideService
 
     admin = User(
         email="lead@freshflow.io",
@@ -177,10 +200,10 @@ def test_fast_track_template_pack_and_invoicing(db_session):
         box_type=BoxMaterial.CARDBOARD,
         size_name="Standard Cardboard",
         length_cm=50,
-        width_cm=30,
-        height_cm=20,
+        width_cm=32,
+        height_cm=18,
         rated_weight_kg=12,
-        volume_m3=0.03,
+        volume_m3=0.0288,
         max_safe_net_weight_kg=15,
         is_active=True,
     )
@@ -245,7 +268,7 @@ def test_fast_track_template_pack_and_invoicing(db_session):
     db_session.commit()
 
     # 1. Execute Template Fast-Track Packing
-    pack_service = PackingOverrideService(db_session)
+    pack_service = FloorPackingService(db_session)
     res = pack_service.fast_track_template_pack_order(order.id, actor=admin)
 
     assert res["status"] == OrderStatus.HANDOFF_02_RETURNED.value
@@ -261,5 +284,16 @@ def test_fast_track_template_pack_and_invoicing(db_session):
     assert float(invoice.total_amount_eur) == 18.00  # 10 packs * 1.80 EUR
     assert len(invoice.items) == 1
     assert invoice.items[0].billed_pack_count == 10
+
+    from app.models.audit import AuditLog
+
+    events = {e.event_type for e in db_session.query(AuditLog).filter_by(target_id=order.id)}
+    assert {"WORKFLOW_FAST_TRACK", "WORKFLOW_TRANSITION"} <= events
+
+    # A handed-off order cannot be fast-tracked again
+    import pytest
+
+    with pytest.raises(ValueError, match="Cannot fast-track"):
+        pack_service.fast_track_template_pack_order(order.id, actor=admin)
 
 

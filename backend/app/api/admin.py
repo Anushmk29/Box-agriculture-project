@@ -1,14 +1,17 @@
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import require_access
+from app.core.dependencies import require_action
+from app.core.policy import Action, allows
 from app.core.security import hash_password
+from app.core.values import UnicodeText
 from app.models.audit import AuditLog
-from app.models.user import HumanRole, User, UserRole
+from app.models.user import HUMAN_ROLE_RANK, HumanRole, User, UserRole
 
 router = APIRouter(
     prefix="/admin/users",
@@ -25,10 +28,15 @@ class UserOut(BaseModel):
     is_active: bool
     must_change_password: bool
 
+    @computed_field
+    @property
+    def permissions(self) -> list[str]:
+        return [action.value for action in Action if allows(self.role, False, action)]
+
 
 class UserCreate(BaseModel):
-    email: str = Field(min_length=3, max_length=255)
-    full_name: str = Field(min_length=1, max_length=255)
+    email: UnicodeText = Field(min_length=3, max_length=255)
+    full_name: UnicodeText = Field(min_length=1, max_length=255)
     role: HumanRole
 
     @field_validator("email")
@@ -42,7 +50,10 @@ class UserCreate(BaseModel):
     @field_validator("full_name")
     @classmethod
     def normalize_name(cls, value: str) -> str:
-        return value.strip()
+        value = value.strip()
+        if not value:
+            raise ValueError("Full name cannot be blank")
+        return value
 
 
 class UserCreateResponse(BaseModel):
@@ -99,10 +110,20 @@ def get_user_or_404(db: Session, user_id: str) -> User:
     return user
 
 
+@router.get("/access-levels")
+def access_levels(_actor: User = Depends(require_action(Action.MANAGE_USERS))):
+    return [
+        {"role": role.value, "permissions": [
+            action.value for action in Action if allows(role, False, action)
+        ]}
+        for role in HUMAN_ROLE_RANK
+    ]
+
+
 @router.get("", response_model=list[UserOut])
 def list_users(
-    db: Session = Depends(get_db),
-    _actor: User = Depends(require_access(UserRole.OWNER_ADMIN)),
+    db: Session = Depends(get_db, scope="function"),
+    _actor: User = Depends(require_action(Action.MANAGE_USERS)),
 ):
     return (
         db.query(User)
@@ -116,8 +137,8 @@ def list_users(
 def create_user(
     payload: UserCreate,
     request: Request,
-    db: Session = Depends(get_db),
-    actor: User = Depends(require_access(UserRole.OWNER_ADMIN)),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.MANAGE_USERS)),
 ):
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already in use")
@@ -142,7 +163,7 @@ def create_user(
         None,
         {"email": user.email, "role": user.role.value, "is_active": True},
     )
-    db.commit()
+    db.flush()
     db.refresh(user)
     return UserCreateResponse(user=user, temporary_password=password)
 
@@ -152,8 +173,8 @@ def update_user(
     user_id: str,
     payload: UserUpdate,
     request: Request,
-    db: Session = Depends(get_db),
-    actor: User = Depends(require_access(UserRole.OWNER_ADMIN)),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.MANAGE_USERS)),
 ):
     user = get_user_or_404(db, user_id)
     before = {"role": user.role.value, "is_active": user.is_active}
@@ -187,22 +208,74 @@ def update_user(
         user.is_active = payload.is_active
     after = {"role": user.role.value, "is_active": user.is_active}
     audit_user_change(db, request, actor, "USER_UPDATED", user, before, after)
-    db.commit()
+    db.flush()
     db.refresh(user)
     return user
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(
+    user_id: str,
+    request: Request,
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.MANAGE_USERS)),
+):
+    user = get_user_or_404(db, user_id)
+    if user.id == actor.id:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="You cannot delete your own account",
+        )
+    if user.role == UserRole.OWNER_ADMIN and user.is_active:
+        active_owners = (
+            db.query(User)
+            .filter(
+                User.role == UserRole.OWNER_ADMIN,
+                User.is_active.is_(True),
+                User.is_service_principal.is_(False),
+            )
+            .with_for_update()
+            .all()
+        )
+        if len(active_owners) <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="At least one active owner administrator is required",
+            )
+
+    before = {
+        "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role.value,
+        "is_active": user.is_active,
+    }
+    db.delete(user)
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This account has historical records and cannot be deleted. Deactivate it instead.",
+        ) from exc
+    audit_user_change(db, request, actor, "USER_DELETED", user, before, None)
+    db.flush()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/{user_id}/reset-password", response_model=PasswordResetResponse)
 def reset_password(
     user_id: str,
     request: Request,
-    db: Session = Depends(get_db),
-    actor: User = Depends(require_access(UserRole.OWNER_ADMIN)),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.MANAGE_USERS)),
 ):
     user = get_user_or_404(db, user_id)
     password = temporary_password()
+    db.query(User).filter_by(id=user.id).with_for_update().populate_existing().one()
     user.password_hash = hash_password(password)
+    user.session_version += 1
     user.must_change_password = True
     audit_user_change(db, request, actor, "USER_PASSWORD_RESET", user, None, None)
-    db.commit()
+    db.flush()
     return PasswordResetResponse(temporary_password=password)

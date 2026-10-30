@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Literal
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String
+from sqlalchemy import Boolean, Column, DateTime, Enum, Integer, String
 
 from app.core.database import Base, uuid_pk
 
@@ -40,4 +40,5 @@ class User(Base):
     is_service_principal = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     must_change_password = Column(Boolean, nullable=False, default=False)
+    session_version = Column(Integer, nullable=False, default=0, server_default="0")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))

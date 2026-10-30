@@ -1,0 +1,54 @@
+[project]
+name = "fresh-produce-platform"
+version = "0.1.0"
+description = "Fresh Produce order, procurement, and packing modular monolith"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.141,<1",
+  "uvicorn[standard]>=0.46,<1",
+  "sqlalchemy>=2.0,<3",
+  "xlrd>=2,<3",
+  "pydantic>=2.12,<3",
+  "pydantic-settings>=2.12,<3",
+  "openpyxl>=3.1,<4",
+  "pypdf>=6,<7",
+  "PyJWT>=2.13,<3",
+  "bcrypt>=5,<6",
+  "python-multipart>=0.0.20,<1",
+  "psycopg2-binary>=2.9,<3",
+  "alembic>=1.17,<2",
+  "argon2-cffi>=25.1,<26",
+  "httpx>=0.28,<1",
+]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+app = ["assets/*"]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.4,<9",
+  "ruff>=0.14,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402"]

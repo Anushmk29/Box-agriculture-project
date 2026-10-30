@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { LockKeyhole } from "lucide-react";
 import { api } from "@/lib/api";
 import { StatusMessage } from "@/components/status-message";
+import { PasswordInput } from "@/components/password-input";
+import { safeDestination } from "@/lib/workflow";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,11 +27,8 @@ export default function LoginPage() {
       const requestedPath = new URLSearchParams(window.location.search).get(
         "next",
       );
-      const destination = session.must_change_password
-        ? "/change-password"
-        : requestedPath?.startsWith("/") && !requestedPath.startsWith("//")
-          ? requestedPath
-          : "/";
+      const next = safeDestination(requestedPath);
+      const destination = session.must_change_password ? `/change-password?next=${encodeURIComponent(next)}` : next;
       router.replace(destination);
       router.refresh();
     } catch (reason) {
@@ -42,7 +41,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="login-page">
+    <main className="login-page" id="workspace-content">
       <aside className="login-aside">
         <div className="brand">
           <span className="brand-mark">
@@ -58,6 +57,7 @@ export default function LoginPage() {
         <div>
           <h1>Sign in</h1>
           <p>Use the account your administrator created for you.</p>
+          <p>Forgot your password? Ask the owner to reset it. A temporary password must be changed at first sign-in.</p>
         </div>
 
         <form onSubmit={submit}>
@@ -73,8 +73,8 @@ export default function LoginPage() {
           </label>
           <label>
             Password
-            <input
-              type="password"
+            <PasswordInput
+              aria-label="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

@@ -1,6 +1,8 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.core.database import get_db
+from app.core.policy import permissions
 from app.core.security import hash_password
 from app.main import app
 from app.models.audit import AuditLog
@@ -52,7 +54,8 @@ def test_human_access_levels_are_hierarchical(db_session):
     login(accounting_client, accounting)
     accounting_summary = accounting_client.get("/api/v3/operations/summary")
     assert accounting_summary.status_code == 200
-    assert "open_balance_eur" in accounting_summary.json()
+    assert accounting_summary.json()["billing_scope"] == "INVOICE_ONLY"
+    assert "open_balance_eur" not in accounting_summary.json()
     assert accounting_client.get("/api/v3/invoicing/work-queue").status_code == 200
     assert accounting_client.get("/api/v3/admin/users").status_code == 403
 
@@ -108,6 +111,10 @@ def test_owner_creates_user_with_one_time_password_and_user_must_replace_it(db_s
         json={"current_password": temporary_password, "new_password": "NewPassword456!"},
     )
     assert changed.status_code == 204
+    assert user_client.get("/api/v3/master-data/products").status_code == 401
+    assert user_client.post("/api/v3/auth/login", json={
+        "email": "new-person@example.com", "password": "NewPassword456!",
+    }).status_code == 200
     assert user_client.get("/api/v3/master-data/products").status_code == 200
     app.dependency_overrides.clear()
 
@@ -167,4 +174,71 @@ def test_owner_cannot_disable_self_or_remove_final_owner(db_session):
 
     assert disable_self.status_code == 409
     assert demote_final_owner.status_code == 409
+    app.dependency_overrides.clear()
+
+
+def test_owner_can_permanently_delete_an_unused_user(db_session):
+    owner = make_user("owner@example.com", UserRole.OWNER_ADMIN)
+    person = make_user("unused@example.com", UserRole.GENERAL)
+    db_session.add_all([owner, person])
+    db_session.commit()
+    client = client_for(db_session)
+    login(client, owner)
+
+    deleted = client.delete(f"/api/v3/admin/users/{person.id}")
+
+    assert deleted.status_code == 204
+    assert db_session.get(User, person.id) is None
+    event = db_session.query(AuditLog).filter(AuditLog.event_type == "USER_DELETED").one()
+    assert event.before_state["email"] == "unused@example.com"
+    assert client.delete(f"/api/v3/admin/users/{owner.id}").status_code == 409
+    app.dependency_overrides.clear()
+
+
+@pytest.mark.parametrize("role", [UserRole.GENERAL, UserRole.GENERAL_ACCOUNTING, UserRole.OWNER_ADMIN])
+def test_created_accounts_receive_category_permissions(db_session, role):
+    owner = make_user("category-owner@example.com", UserRole.OWNER_ADMIN)
+    db_session.add(owner)
+    db_session.commit()
+    owner_client = client_for(db_session)
+    login(owner_client, owner)
+    levels = owner_client.get("/api/v3/admin/users/access-levels")
+    assert levels.status_code == 200
+    expected = next(level["permissions"] for level in levels.json() if level["role"] == role)
+    created = owner_client.post("/api/v3/admin/users", json={
+        "email": "category-person@example.com", "full_name": "Category Person", "role": role,
+    })
+    assert created.status_code == 201
+    assert created.json()["user"]["permissions"] == expected
+    person = db_session.get(User, created.json()["user"]["id"])
+    assert expected == permissions(person)
+    person_client = client_for(db_session)
+    login(person_client, person, created.json()["temporary_password"])
+    assert person_client.post("/api/v3/auth/change-password", json={
+        "current_password": created.json()["temporary_password"], "new_password": "ChangedPassword123!",
+    }).status_code == 204
+    login(person_client, person, "ChangedPassword123!")
+    assert person_client.get("/api/v3/auth/me").json()["permissions"] == expected
+    assert person_client.get("/api/v3/invoicing/work-queue").status_code == (403 if role == UserRole.GENERAL else 200)
+    assert person_client.get("/api/v3/admin/users/access-levels").status_code == (200 if role == UserRole.OWNER_ADMIN else 403)
+    app.dependency_overrides.clear()
+
+
+def test_category_downgrade_revokes_existing_session_permissions(db_session):
+    owner = make_user("downgrade-owner@example.com", UserRole.OWNER_ADMIN)
+    person = make_user("downgrade-person@example.com", UserRole.OWNER_ADMIN)
+    db_session.add_all([owner, person])
+    db_session.commit()
+    owner_client = client_for(db_session)
+    login(owner_client, owner)
+    person_client = client_for(db_session)
+    login(person_client, person)
+    assert person_client.get("/api/v3/admin/users").status_code == 200
+    updated = owner_client.patch(f"/api/v3/admin/users/{person.id}", json={"role": "GENERAL"})
+    assert updated.status_code == 200
+    assert "manage_users" not in updated.json()["permissions"]
+    assert "manage_billing" not in person_client.get("/api/v3/auth/me").json()["permissions"]
+    assert person_client.get("/api/v3/admin/users").status_code == 403
+    assert person_client.get("/api/v3/invoicing/work-queue").status_code == 403
+    assert person_client.get("/api/v3/operations/summary").status_code == 200
     app.dependency_overrides.clear()

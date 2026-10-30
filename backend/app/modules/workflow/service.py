@@ -1,0 +1,148 @@
+from __future__ import annotations
+
+from typing import Protocol
+
+from sqlalchemy.orm import Session
+
+from app.core.policy import Action, require
+from app.models.audit import AuditLog
+from app.models.order import OrderStatus
+from app.models.user import User
+
+
+class WorkflowTarget(Protocol):
+    id: str
+    status: OrderStatus
+
+
+class WorkflowTransitionError(ValueError):
+    """Raised when an operation attempts to bypass the order lifecycle."""
+
+
+NEXT_STATUS: dict[OrderStatus, frozenset[OrderStatus]] = {
+    OrderStatus.UPLOADED: frozenset({OrderStatus.PARSED}),
+    OrderStatus.PARSED: frozenset({OrderStatus.SPLIT_AND_VALIDATED}),
+    OrderStatus.SPLIT_AND_VALIDATED: frozenset({OrderStatus.PURCHASING_CONSOLIDATED}),
+    OrderStatus.PURCHASING_CONSOLIDATED: frozenset({OrderStatus.PROCUREMENT_CONFIRMED}),
+    OrderStatus.PROCUREMENT_CONFIRMED: frozenset({OrderStatus.HANDOFF_01_SENT}),
+    OrderStatus.HANDOFF_01_SENT: frozenset({OrderStatus.PACKING_DESIGNED}),
+    OrderStatus.PACKING_DESIGNED: frozenset({OrderStatus.FLOOR_PACKING}),
+    OrderStatus.FLOOR_PACKING: frozenset({OrderStatus.FINAL_PACK_LOCKED}),
+    OrderStatus.FINAL_PACK_LOCKED: frozenset({OrderStatus.HANDOFF_02_RETURNED}),
+    OrderStatus.HANDOFF_02_RETURNED: frozenset({OrderStatus.INVOICES_DRAFTED}),
+    OrderStatus.INVOICES_DRAFTED: frozenset({OrderStatus.INVOICES_SENT}),
+    OrderStatus.INVOICES_SENT: frozenset({OrderStatus.CONFIRMED_PAID}),
+    OrderStatus.CONFIRMED_PAID: frozenset({OrderStatus.RECEIPTS_ISSUED}),
+    OrderStatus.RECEIPTS_ISSUED: frozenset({OrderStatus.ORDER_CLOSED}),
+    OrderStatus.ORDER_CLOSED: frozenset(),
+    OrderStatus.CANCELLED: frozenset(),
+    OrderStatus.UNAVAILABLE: frozenset(),
+}
+
+# Template packing skips normal procurement and floor packing; it is the only sanctioned shortcut.
+FAST_TRACK_SOURCES = frozenset(
+    {
+        OrderStatus.SPLIT_AND_VALIDATED,
+        OrderStatus.PURCHASING_CONSOLIDATED,
+        OrderStatus.PROCUREMENT_CONFIRMED,
+        OrderStatus.HANDOFF_01_SENT,
+        OrderStatus.PACKING_DESIGNED,
+        OrderStatus.FLOOR_PACKING,
+    }
+)
+
+
+class WorkflowService:
+    """Single authority for lifecycle transitions and their audit events.
+
+    Nothing else may assign `status` on an existing order, raw file, or batch;
+    rows may only be *created* at their initial status.
+    """
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def terminate(self, *, target, to_status, actor, target_table, reason):
+        require(actor, Action.RESOLVE_ORDERS)
+        current = OrderStatus(target.status)
+        if to_status not in {OrderStatus.CANCELLED, OrderStatus.UNAVAILABLE}:
+            raise WorkflowTransitionError("Unsupported order resolution")
+        if to_status == OrderStatus.CANCELLED:
+            if current not in {OrderStatus.SPLIT_AND_VALIDATED, OrderStatus.PURCHASING_CONSOLIDATED}:
+                require(actor, Action.RESOLVE_LATE_CANCELLATION)
+        elif current not in {OrderStatus.HANDOFF_01_SENT, OrderStatus.PACKING_DESIGNED, OrderStatus.FLOOR_PACKING}:
+            raise WorkflowTransitionError("Unavailable closure requires confirmed procurement allocation")
+        if current in {OrderStatus.CANCELLED, OrderStatus.UNAVAILABLE, OrderStatus.INVOICES_DRAFTED,
+                       OrderStatus.INVOICES_SENT, OrderStatus.CONFIRMED_PAID, OrderStatus.RECEIPTS_ISSUED, OrderStatus.ORDER_CLOSED}:
+            raise WorkflowTransitionError("This record is already resolved or invoiced")
+        self._write(target, current, to_status, actor, target_table, "ORDER_EXCEPTION_RESOLVED", reason=reason)
+
+    def transition(
+        self,
+        *,
+        target: WorkflowTarget,
+        to_status: OrderStatus,
+        actor: User,
+        target_table: str,
+    ) -> None:
+        from_status = OrderStatus(target.status)
+        if to_status not in NEXT_STATUS[from_status]:
+            raise WorkflowTransitionError(
+                f"Illegal workflow transition: {from_status.value} -> {to_status.value}"
+            )
+        self._write(target, from_status, to_status, actor, target_table, "WORKFLOW_TRANSITION")
+
+    def ensure(
+        self,
+        *,
+        target: WorkflowTarget,
+        to_status: OrderStatus,
+        actor: User,
+        target_table: str,
+    ) -> None:
+        """Transition unless already there; lets idempotent re-runs pass without a second audit row."""
+        if OrderStatus(target.status) != to_status:
+            self.transition(
+                target=target, to_status=to_status, actor=actor, target_table=target_table
+            )
+
+    def fast_track_to_final_pack(
+        self, *, target: WorkflowTarget, actor: User, target_table: str
+    ) -> None:
+        from_status = OrderStatus(target.status)
+        if from_status not in FAST_TRACK_SOURCES:
+            raise WorkflowTransitionError(
+                f"Cannot fast-track from {from_status.value}; order is already past packing"
+            )
+        self._write(
+            target,
+            from_status,
+            OrderStatus.FINAL_PACK_LOCKED,
+            actor,
+            target_table,
+            "WORKFLOW_FAST_TRACK",
+        )
+
+    def _write(
+        self,
+        target: WorkflowTarget,
+        from_status: OrderStatus,
+        to_status: OrderStatus,
+        actor: User,
+        target_table: str,
+        event_type: str,
+        reason: str | None = None,
+    ) -> None:
+        target.status = to_status
+        self.db.add(
+            AuditLog(
+                event_type=event_type,
+                actor_id=actor.id,
+                actor_role=actor.role.value,
+                target_table=target_table,
+                target_id=target.id,
+                before_state={"status": from_status.value},
+                after_state={"status": to_status.value, **({"reason": reason} if reason else {})},
+            )
+        )
+        self.db.flush()

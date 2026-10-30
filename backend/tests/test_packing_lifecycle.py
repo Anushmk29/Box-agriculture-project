@@ -1,9 +1,10 @@
 from fastapi.testclient import TestClient
 
+from app.api.packing import scan_box
 from app.core.database import get_db
 from app.core.security import create_access_token
 from app.main import app
-from app.models.audit import AgentHandoff
+from app.models.audit import AgentHandoff, AuditLog
 from app.models.master_data import (
     BoxCatalogue,
     BoxMaterial,
@@ -18,8 +19,8 @@ from app.models.order import ClientOrder, ClientOrderItem, OrderStatus, RawOrder
 from app.models.packing import Box, BoxItem
 from app.models.user import User, UserRole
 from app.modules.handoffs.service import HandoffService
+from app.modules.packing.floor import FloorPackingService
 from app.modules.packing.service import FinalPackingService, PackingPlanningService
-from app.services.packing_override_service import PackingOverrideService
 
 
 def setup_order(db_session):
@@ -65,11 +66,11 @@ def setup_order(db_session):
     catalogue = BoxCatalogue(
         box_type=BoxMaterial.FOAM,
         size_name="Small",
-        length_cm=40,
-        width_cm=30,
-        height_cm=20,
+        length_cm=30,
+        width_cm=20,
+        height_cm=24,
         rated_weight_kg=5,
-        volume_m3=0.024,
+        volume_m3=0.0144,
         max_safe_net_weight_kg=5,
     )
     db_session.add_all([agent, packer, manager, customer, product, catalogue])
@@ -124,7 +125,8 @@ def test_design_persists_deterministic_boxes_and_starts_floor_work(db_session):
 
 
 def test_final_pack_lock_is_immutable_and_produces_handoff_02(db_session):
-    agent, packer, _, order = setup_order(db_session)
+    agent, packer, manager, order = setup_order(db_session)
+    manager.role = UserRole.OWNER_ADMIN
     boxes = PackingPlanningService(db_session).design_order(order_id=order.id, actor=agent)
     PackingPlanningService(db_session).start_floor_packing(order_id=order.id, actor=packer)
     for box in boxes:
@@ -132,7 +134,8 @@ def test_final_pack_lock_is_immutable_and_produces_handoff_02(db_session):
         box.actual_gross_weight_kg = float(box.actual_net_weight_kg) + 0.5
     db_session.commit()
 
-    FinalPackingService(db_session).lock_order(order_id=order.id, actor=packer)
+    FinalPackingService(db_session).request_approval(order_id=order.id, actor=packer)
+    FinalPackingService(db_session).lock_order(order_id=order.id, actor=manager)
     handoff = HandoffService(db_session).return_handoff_02(order_id=order.id, actor=agent)
 
     assert all(box.is_locked for box in db_session.query(Box).all())
@@ -140,14 +143,15 @@ def test_final_pack_lock_is_immutable_and_produces_handoff_02(db_session):
     assert handoff.handoff_type == "HANDOFF_02_FINAL_PACKING"
     assert handoff.payload_json["total_boxes_count"] == 1
     assert db_session.query(AgentHandoff).count() == 1
+    assert scan_box(boxes[0].qr_code_uid, db_session)["can_edit"] is False
 
 
-def test_floor_staff_can_record_verified_box_weights_through_api(db_session):
+def test_floor_staff_can_finalize_without_scale_weights_through_api(db_session):
     agent, packer, _, order = setup_order(db_session)
     boxes = PackingPlanningService(db_session).design_order(order_id=order.id, actor=agent)
     PackingPlanningService(db_session).start_floor_packing(order_id=order.id, actor=packer)
     box = boxes[0]
-    expected_net = round(sum(float(item.final_net_weight_kg) for item in box.items), 2)
+    measured_net = round(sum(float(item.final_net_weight_kg) for item in box.items), 2)
 
     def override_db():
         yield db_session
@@ -155,19 +159,22 @@ def test_floor_staff_can_record_verified_box_weights_through_api(db_session):
     app.dependency_overrides[get_db] = override_db
     client = TestClient(app)
     token = create_access_token({"sub": packer.id, "role": packer.role.value})
-    response = client.patch(
-        f"/api/v3/packing/boxes/{box.id}/weights",
+    response = client.post(
+        f"/api/v3/packing/orders/{order.id}/finalize",
         headers={"Authorization": f"Bearer {token}"},
-        json={
-            "actual_net_weight_kg": expected_net,
-            "actual_gross_weight_kg": expected_net + 0.5,
-            "capture_source": "MANUAL",
-        },
+        json={"expected_revision": order.packing_revision},
     )
-
     assert response.status_code == 200
-    assert response.json()["ready_for_lock"] is True
-    assert response.json()["actual_net_weight_kg"] == expected_net
+    assert float(box.actual_net_weight_kg) == measured_net
+    assert float(box.actual_gross_weight_kg) == measured_net + 0.5
+    packing_list = client.get(
+        f"/api/v3/packing/orders/{order.id}/packing-list",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert packing_list.status_code == 200
+    assert packing_list.json()["status"] == OrderStatus.HANDOFF_02_RETURNED.value
+    assert packing_list.json()["boxes"][0]["box_material"] == box.box_type.box_type.value
+    assert packing_list.json()["boxes"][0]["safe_net_capacity_kg"] == float(box.box_type.max_safe_net_weight_kg)
     scan = client.get(
         f"/api/v3/packing/scan/{box.qr_code_uid}",
         headers={"Authorization": f"Bearer {token}"},
@@ -175,6 +182,9 @@ def test_floor_staff_can_record_verified_box_weights_through_api(db_session):
     assert scan.status_code == 200
     assert scan.json()["box_id"] == box.id
     assert scan.json()["order_ref_id"] == order.order_ref_id
+    assert scan.json()["order_status"] == OrderStatus.HANDOFF_02_RETURNED.value
+    assert scan.json()["can_edit"] is False
+    assert not any(event["event_type"] == "BOX_WEIGHT_RECORDED" for event in scan.json()["change_history"])
     app.dependency_overrides.clear()
 
 
@@ -230,7 +240,7 @@ def test_box_transfer_rejects_cross_order_and_capacity_overflow(db_session):
     )
     db_session.commit()
 
-    service = PackingOverrideService(db_session)
+    service = FloorPackingService(db_session)
     try:
         service.transfer_box_contents(source.id, cross_order_target.id, actor=packer)
     except ValueError as exc:
@@ -255,3 +265,39 @@ def test_packing_design_uses_sub_customer_route_group(db_session):
 
     assert boxes[0].route_code == "NGA"
     assert boxes[0].qr_code_uid.startswith("BOX-NGA-")
+
+
+def test_floor_move_derives_weight_clears_scale_and_audits(db_session):
+    agent, packer, _, order = setup_order(db_session)
+    (source,) = PackingPlanningService(db_session).design_order(order_id=order.id, actor=agent)
+    PackingPlanningService(db_session).start_floor_packing(order_id=order.id, actor=packer)
+    floor = FloorPackingService(db_session)
+    target = floor.add_extra_box_to_order(order.id, source.box_catalogue_id, actor=packer)
+    assert target.box_number == 2
+    assert target.qr_code_uid.startswith("BOX-TETE-20260910-002-")
+    source.actual_net_weight_kg = 4
+    source.actual_gross_weight_kg = 4.5
+    db_session.commit()
+
+    result = floor.move_items_between_boxes(
+        source.id, target.id, source.items[0].product_id, "1kg", 1, actor=packer
+    )
+
+    assert result["moved_net_kg"] == 1.0
+    assert source.actual_net_weight_kg is None
+    events = {e.event_type for e in db_session.query(AuditLog).filter_by(target_table="boxes")}
+    assert {"BOX_ADDED", "BOX_ITEMS_MOVED"} <= events
+
+
+def test_floor_changes_rejected_after_final_lock(db_session):
+    agent, packer, _, order = setup_order(db_session)
+    (box,) = PackingPlanningService(db_session).design_order(order_id=order.id, actor=agent)
+    order.status = OrderStatus.HANDOFF_02_RETURNED
+    db_session.commit()
+
+    import pytest
+
+    with pytest.raises(ValueError, match="cannot be changed"):
+        FloorPackingService(db_session).add_extra_box_to_order(
+            order.id, box.box_catalogue_id, actor=packer
+        )

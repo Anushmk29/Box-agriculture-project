@@ -1,17 +1,32 @@
+from decimal import Decimal
 from html import escape
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.core.database import get_db
-from app.core.dependencies import require_access
-from app.models.order import RawOrderFile
+from app.core.dependencies import require_access, require_action
+from app.core.policy import Action
+from app.core.read_models import (
+    MAX_DETAIL_LINES,
+    LegacyPage,
+    bounded_headers,
+    purchase_file_links,
+    raw_headers,
+)
+from app.core.registers import RegisterQuery
+from app.core.values import INT32_MAX, PURCHASE_WEIGHT_MAX
+from app.core.work_limits import WorkLimit
+from app.models.master_data import ProduceType, Product
+from app.models.order import ClientOrder, ClientOrderItem, OrderStatus, RawOrderFile
 from app.models.procurement import MasterPurchasingList, PurchasingItem
 from app.models.user import User, UserRole
+from app.modules.procurement.batch import PurchasingBatchService
 from app.modules.procurement.service import ProcurementConfirmation, ProcurementConfirmationService
-from app.services.purchasing_aggregator import PurchasingAggregator
 
 router = APIRouter(
     prefix="/procurement",
@@ -39,17 +54,16 @@ class PurchasingItemOut(BaseModel):
     confirmed_purchased_pack_count: int | None = None
     confirmed_purchased_weight_kg: float | None = None
     shortage_reason: str | None = None
+    replacement_product_id: str | None = None
+    replacement_product_code: str | None = None
+    replacement_product_name: str | None = None
 
 
-def _to_purchasing_item_out(it) -> PurchasingItemOut:
+def _to_purchasing_item_out(it: PurchasingItem, ordered_packs: int) -> PurchasingItemOut:
     tot_packs = it.total_required_pack_count or 0
     buf_pct = float(it.buffer_percentage or 0.0)
-    if buf_pct > 0:
-        ord_packs = max(1, int(round(tot_packs / (1.0 + buf_pct / 100.0))))
-        buf_packs = max(0, tot_packs - ord_packs)
-    else:
-        ord_packs = tot_packs
-        buf_packs = 0
+    ord_packs = ordered_packs
+    buf_packs = max(0, tot_packs - ord_packs)
 
     ord_wt = float(it.ordered_net_weight_kg or 0.0)
     buf_wt = float(it.buffer_weight_kg or 0.0)
@@ -84,6 +98,9 @@ def _to_purchasing_item_out(it) -> PurchasingItemOut:
         if it.confirmed_purchased_weight_kg is not None
         else None,
         shortage_reason=it.shortage_reason,
+        replacement_product_id=it.replacement_product_id,
+        replacement_product_code=it.replacement_product.t_code if it.replacement_product else None,
+        replacement_product_name=it.replacement_product.name_en if it.replacement_product else None,
     )
 
 
@@ -91,31 +108,66 @@ class MasterPurchasingResponse(BaseModel):
     batch_id: str
     batch_reference: str
     status: str | None = None
+    substitutions_supported: bool = True
     created_at: str | None = None
     total_skus: int
     total_ordered_weight_kg: float
     total_buffer_weight_kg: float
     total_required_weight_kg: float
     items: list[PurchasingItemOut]
+    source_files: list[dict] = Field(default_factory=list)
+
+
+def _batch_response(db: Session, mpl: MasterPurchasingList) -> MasterPurchasingResponse:
+    count = db.query(func.count(PurchasingItem.id)).filter(PurchasingItem.purchasing_list_id == mpl.id).scalar() or 0
+    if count > MAX_DETAIL_LINES:
+        raise WorkLimit("This retained purchase list exceeds its detail budget; arrange a controlled split or review")
+    links = purchase_file_links()
+    sources = bounded_headers(db.query(RawOrderFile).join(links, links.c.file_id == RawOrderFile.id)
+        .filter(links.c.batch_id == mpl.id).options(raw_headers(), joinedload(RawOrderFile.main_customer))
+        .order_by(RawOrderFile.file_name, RawOrderFile.id))
+    items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).options(
+        joinedload(PurchasingItem.product), joinedload(PurchasingItem.replacement_product)).all()
+    ordered = PurchasingBatchService(db).ordered_packs(mpl)
+    return MasterPurchasingResponse(
+        batch_id=mpl.id,
+        batch_reference=mpl.batch_reference,
+        status=mpl.status.value if mpl.status else None,
+        created_at=mpl.created_at.isoformat() if mpl.created_at else None,
+        total_skus=mpl.total_skus_count,
+        source_files=[{"file_id": raw.id, "file_name": raw.file_name,
+                       "customer": raw.main_customer.company_name if raw.main_customer else "General",
+                       "shipment_date": raw.shipment_target_date, "route": raw.route_line} for raw in sources],
+        total_ordered_weight_kg=round(sum(float(it.ordered_net_weight_kg or 0) for it in items), 4),
+        total_buffer_weight_kg=round(sum(float(it.buffer_weight_kg or 0) for it in items), 4),
+        total_required_weight_kg=round(
+            sum(float(it.total_required_weight_kg or 0) for it in items), 4
+        ),
+        items=[
+            _to_purchasing_item_out(it, ordered.get((it.product_id, it.pack_size), 0))
+            for it in items
+        ],
+    )
 
 
 class CombineOrdersRequest(BaseModel):
     raw_file_ids: list[str] = Field(default_factory=list, max_length=500)
-    client_order_ids: list[str] | None = None
+    client_order_ids: list[str] | None = Field(default=None, max_length=500)
     batch_reference: str | None = None
     shipment_date: str | None = None
     route_code: str | None = None
 
 
 class BufferUpdateRequest(BaseModel):
-    buffer_percentage: float = Field(ge=0, le=100)
+    buffer_percentage: Decimal = Field(ge=0, le=100, max_digits=5, decimal_places=2, allow_inf_nan=False)
     save_as_default: bool = True
 
 
 class ProcurementItemConfirmationRequest(BaseModel):
     item_id: str
-    purchased_pack_count: int = Field(ge=0)
-    purchased_weight_kg: float = Field(ge=0)
+    purchased_pack_count: int = Field(ge=0, le=INT32_MAX, strict=True)
+    purchased_weight_kg: Decimal = Field(ge=0, le=PURCHASE_WEIGHT_MAX,
+                                        max_digits=12, decimal_places=4, allow_inf_nan=False)
     shortage_reason: str | None = None
     replacement_product_id: str | None = None
 
@@ -124,20 +176,41 @@ class ProcurementBatchConfirmationRequest(BaseModel):
     items: list[ProcurementItemConfirmationRequest] = Field(min_length=1, max_length=2000)
 
 
+@router.get("/source-orders")
+def procurement_source_orders(response: Response, page: LegacyPage = Depends(), db: Session = Depends(get_db, scope="function")):
+    query = (db.query(RawOrderFile).options(raw_headers(), selectinload(RawOrderFile.main_customer)).filter(
+        RawOrderFile.status == OrderStatus.PURCHASING_CONSOLIDATED,
+        RawOrderFile.client_orders.any(ClientOrder.status == OrderStatus.PURCHASING_CONSOLIDATED), ~RawOrderFile.client_orders.any((ClientOrder.status != OrderStatus.PURCHASING_CONSOLIDATED) & (ClientOrder.status != OrderStatus.CANCELLED)))
+        .order_by(RawOrderFile.created_at.desc(), RawOrderFile.id))
+    files, _ = page.rows(query, response, replacement="/procurement/source-files")
+    ids = [raw.id for raw in files]
+    stats = {identity: (count, weight) for identity, count, weight in db.query(ClientOrder.raw_order_file_id,
+        func.count(ClientOrder.id), func.sum(ClientOrder.total_estimated_net_weight_kg)).filter(
+        ClientOrder.raw_order_file_id.in_(ids), ClientOrder.status != OrderStatus.CANCELLED).group_by(ClientOrder.raw_order_file_id)} if ids else {}
+    category_rows = db.query(ClientOrder.raw_order_file_id, Product.produce_type).join(ClientOrderItem,
+        ClientOrderItem.client_order_id == ClientOrder.id).join(Product, Product.id == ClientOrderItem.product_id).filter(
+        ClientOrder.raw_order_file_id.in_(ids), ClientOrder.status != OrderStatus.CANCELLED).distinct().all() if ids else []
+    categories = {}
+    for identity, category in category_rows:
+        categories.setdefault(identity, []).append(category.value)
+    return [{"raw_file_id": raw.id, "file_name": raw.file_name,
+        "main_customer": raw.main_customer.company_name if raw.main_customer else "General",
+        "shipment_date": raw.shipment_target_date, "route_code": raw.route_line,
+        "order_count": stats[raw.id][0], "categories": sorted(categories.get(raw.id, [])),
+        "weight_kg": round(float(stats[raw.id][1] or 0), 2)} for raw in files]
+
+
 @router.put("/batches/{batch_id}/confirm")
 def confirm_procurement_batch(
     batch_id: str,
     payload: ProcurementBatchConfirmationRequest,
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db, scope="function"),
     actor: User = Depends(
-        require_access(
-            UserRole.GENERAL,
-            detail="A human procurement role must confirm purchases",
-        )
+        require_action(Action.CONFIRM_PROCUREMENT)
     ),
 ):
     try:
-        batch = ProcurementConfirmationService(db).confirm_batch(
+        batch = ProcurementConfirmationService(db).confirm_and_dispatch(
             batch_id=batch_id,
             confirmations=[
                 ProcurementConfirmation(
@@ -162,110 +235,74 @@ def confirm_procurement_batch(
     }
 
 
-@router.get("/latest-batch", response_model=MasterPurchasingResponse)
-def get_latest_procurement_batch(db: Session = Depends(get_db)):
-    """Fetches the latest master purchasing batch for frontend workstation view."""
-    mpl = db.query(MasterPurchasingList).order_by(MasterPurchasingList.created_at.desc()).first()
-    if not mpl:
-        raise HTTPException(status_code=404, detail="No procurement batches found")
-
-    items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).all()
-    tot_ordered = sum(float(it.ordered_net_weight_kg or 0.0) for it in items)
-    tot_buffer = sum(float(it.buffer_weight_kg or 0.0) for it in items)
-    tot_required = sum(float(it.total_required_weight_kg or 0.0) for it in items)
-
-    return MasterPurchasingResponse(
-        batch_id=mpl.id,
-        batch_reference=mpl.batch_reference,
-        status=mpl.status.value if mpl.status else None,
-        created_at=mpl.created_at.isoformat() if mpl.created_at else None,
-        total_skus=mpl.total_skus_count,
-        total_ordered_weight_kg=round(tot_ordered, 2),
-        total_buffer_weight_kg=round(tot_buffer, 2),
-        total_required_weight_kg=round(tot_required, 2),
-        items=[_to_purchasing_item_out(it) for it in items],
-    )
-
-
-@router.get("/batches/{batch_id}", response_model=MasterPurchasingResponse)
-def get_procurement_batch(batch_id: str, db: Session = Depends(get_db)):
-    """Fetches specific master purchasing batch by ID or reference."""
+@router.get("/latest-batch", response_model=MasterPurchasingResponse | None)
+def get_latest_procurement_batch(db: Session = Depends(get_db, scope="function")):
+    """Fetches actionable work first, falling back to the latest completed batch."""
     mpl = (
         db.query(MasterPurchasingList)
         .filter(
-            (MasterPurchasingList.id == batch_id)
-            | (MasterPurchasingList.batch_reference == batch_id)
+            MasterPurchasingList.status.in_(
+                {OrderStatus.PURCHASING_CONSOLIDATED, OrderStatus.PROCUREMENT_CONFIRMED}
+            )
         )
+        .order_by(MasterPurchasingList.created_at.desc())
         .first()
     )
     if not mpl:
-        raise HTTPException(status_code=404, detail="Procurement batch not found")
+        mpl = db.query(MasterPurchasingList).order_by(MasterPurchasingList.created_at.desc()).first()
+    return _batch_response(db, mpl) if mpl else None
 
-    items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).all()
-    tot_ordered = sum(float(it.ordered_net_weight_kg or 0.0) for it in items)
-    tot_buffer = sum(float(it.buffer_weight_kg or 0.0) for it in items)
-    tot_required = sum(float(it.total_required_weight_kg or 0.0) for it in items)
 
-    return MasterPurchasingResponse(
-        batch_id=mpl.id,
-        batch_reference=mpl.batch_reference,
-        status=mpl.status.value if mpl.status else None,
-        created_at=mpl.created_at.isoformat() if mpl.created_at else None,
-        total_skus=mpl.total_skus_count,
-        total_ordered_weight_kg=round(tot_ordered, 2),
-        total_buffer_weight_kg=round(tot_buffer, 2),
-        total_required_weight_kg=round(tot_required, 2),
-        items=[_to_purchasing_item_out(it) for it in items],
-    )
+@router.get("/batches")
+def list_procurement_batches(
+    params: RegisterQuery = Depends(),
+    db: Session = Depends(get_db, scope="function"),
+    view: Literal["pending", "completed", "all"] = "all",
+    limit: int = Query(50, ge=1, le=100),
+    raw_file_id: str | None = None,
+):
+    from app.api.registers import procurement_batches
+    params.view, params.limit = view, limit
+    return procurement_batches(db, params, raw_file_id=raw_file_id)
+
+
+@router.get("/batches/{batch_id}", response_model=MasterPurchasingResponse)
+def get_procurement_batch(batch_id: str, db: Session = Depends(get_db, scope="function")):
+    """Fetches specific master purchasing batch by ID or reference."""
+    try:
+        return _batch_response(db, PurchasingBatchService(db).get(batch_id))
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
 @router.post("/{raw_file_id}/consolidate", response_model=MasterPurchasingResponse)
 def consolidate_purchasing_list(
     raw_file_id: str,
-    db: Session = Depends(get_db),
-    _actor: User = Depends(
-        require_access(UserRole.GENERAL, UserRole.AI_AGENT_1)
-    ),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_access(UserRole.GENERAL, UserRole.AI_AGENT_1)),
 ):
-    raw_file = db.query(RawOrderFile).filter(RawOrderFile.id == raw_file_id).first()
-    if not raw_file:
-        raise HTTPException(status_code=404, detail="Raw order file not found")
-
-    aggregator = PurchasingAggregator(db)
-    mpl = aggregator.consolidate_demand(raw_file.id)
-
-    items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).all()
-    tot_ordered = sum(float(it.ordered_net_weight_kg or 0.0) for it in items)
-    tot_buffer = sum(float(it.buffer_weight_kg or 0.0) for it in items)
-    tot_required = sum(float(it.total_required_weight_kg or 0.0) for it in items)
-
-    return MasterPurchasingResponse(
-        batch_id=mpl.id,
-        batch_reference=mpl.batch_reference,
-        total_skus=mpl.total_skus_count,
-        total_ordered_weight_kg=round(tot_ordered, 2),
-        total_buffer_weight_kg=round(tot_buffer, 2),
-        total_required_weight_kg=round(tot_required, 2),
-        items=[_to_purchasing_item_out(it) for it in items],
-    )
+    try:
+        mpl = PurchasingBatchService(db).consolidate_raw_file(raw_file_id, actor=actor)
+    except ValueError as exc:
+        status = 404 if "not found" in str(exc) else 400
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
+    return _batch_response(db, mpl)
 
 
 @router.post("/combine-and-consolidate", response_model=MasterPurchasingResponse)
 def combine_orders_for_procurement(
     payload: CombineOrdersRequest,
-    db: Session = Depends(get_db),
-    _actor: User = Depends(
-        require_access(UserRole.GENERAL, UserRole.AI_AGENT_1)
-    ),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_access(UserRole.GENERAL, UserRole.AI_AGENT_1)),
 ):
     """
     Master Purchase Generation: Manual merge tool allowing staff to combine
     different main customer orders or order files for streamlined bulk purchasing.
     """
-    aggregator = PurchasingAggregator(db)
     try:
-        mpl = aggregator.combine_and_consolidate(
+        mpl = PurchasingBatchService(db).consolidate(
             raw_file_ids=payload.raw_file_ids,
+            actor=actor,
             client_order_ids=payload.client_order_ids,
             batch_ref=payload.batch_reference,
             shipment_date=payload.shipment_date,
@@ -273,77 +310,84 @@ def combine_orders_for_procurement(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).all()
-    tot_ordered = sum(float(it.ordered_net_weight_kg or 0.0) for it in items)
-    tot_buffer = sum(float(it.buffer_weight_kg or 0.0) for it in items)
-    tot_required = sum(float(it.total_required_weight_kg or 0.0) for it in items)
-
-    return MasterPurchasingResponse(
-        batch_id=mpl.id,
-        batch_reference=mpl.batch_reference,
-        total_skus=mpl.total_skus_count,
-        total_ordered_weight_kg=round(tot_ordered, 2),
-        total_buffer_weight_kg=round(tot_buffer, 2),
-        total_required_weight_kg=round(tot_required, 2),
-        items=[_to_purchasing_item_out(it) for it in items],
-    )
+    return _batch_response(db, mpl)
 
 
 @router.put("/items/{item_id}/buffer")
 def adjust_purchasing_buffer(
     item_id: str,
     payload: BufferUpdateRequest,
-    db: Session = Depends(get_db),
-    _actor: User = Depends(
-        require_access(
-            UserRole.GENERAL,
-            detail="A human user with an authorized role is required",
-        )
-    ),
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.EDIT_BUFFERS)),
 ):
-    """
-    Buffer Addition:
-    Staff manually inputs a yield or buffer percentage for products,
-    which the system remembers and defaults to for future identical orders.
-    """
-    item = db.query(PurchasingItem).filter(PurchasingItem.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="PurchasingItem not found")
+    """Set one line's buffer %; optionally remembered as the product default."""
+    try:
+        item = PurchasingBatchService(db).set_item_buffer(
+            item_id,
+            payload.buffer_percentage,
+            actor=actor,
+            save_as_default=payload.save_as_default,
+        )
+    except ValueError as exc:
+        status = 404 if "not found" in str(exc) else 409
+        raise HTTPException(status_code=status, detail=str(exc)) from exc
+    return {
+        "message": "Buffer updated",
+        "details": {
+            "product_id": item.product_id,
+            "default_buffer_percentage": float(item.product.default_buffer_percentage or 0),
+            "updated_item": {
+                "item_id": item.id,
+                "buffer_percentage": float(item.buffer_percentage),
+                "buffer_weight_kg": float(item.buffer_weight_kg),
+                "total_required_weight_kg": float(item.total_required_weight_kg),
+            },
+        },
+    }
 
-    aggregator = PurchasingAggregator(db)
-    result = aggregator.update_product_buffer(
-        product_id=item.product_id,
-        new_buffer_pct=payload.buffer_percentage,
-        purchasing_item_id=item.id,
-        save_as_default=payload.save_as_default,
-    )
-    return {"message": "Buffer updated successfully and remembered as default", "details": result}
+
+class BatchBufferRequest(BaseModel):
+    buffer_percentage: Decimal = Field(ge=0, le=100, max_digits=5, decimal_places=2, allow_inf_nan=False)
+
+
+@router.put("/batches/{batch_id}/buffer", response_model=MasterPurchasingResponse)
+def adjust_batch_buffer(
+    batch_id: str,
+    payload: BatchBufferRequest,
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.EDIT_BUFFERS)),
+):
+    """Apply one buffer % to every line in the batch, atomically."""
+    try:
+        mpl = PurchasingBatchService(db).set_batch_buffer(
+            batch_id, payload.buffer_percentage, actor=actor
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _batch_response(db, mpl)
 
 
 @router.get("/batches/{batch_id}/buyer-sheet")
 def export_talad_thai_buyer_sheet(
-    batch_id: str, format: str = "json", db: Session = Depends(get_db)
+    batch_id: str, format: str = "json", category: ProduceType | None = None, db: Session = Depends(get_db, scope="function")
 ):
     """
     Talad Thai Market Buyer Sheet:
     Generates a clean procurement sheet sorted by Thai produce names with target weights
     (including sticky trimming buffers) for morning market buyers.
     """
-    mpl = (
-        db.query(MasterPurchasingList)
-        .filter(
-            (MasterPurchasingList.id == batch_id)
-            | (MasterPurchasingList.batch_reference == batch_id)
-        )
-        .first()
-    )
-    if not mpl:
-        raise HTTPException(status_code=404, detail="Procurement batch not found")
+    try:
+        mpl = PurchasingBatchService(db).get(batch_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     items_data = []
     for it in sorted(mpl.items, key=lambda x: (x.product.name_th or x.product.name_vi or "")):
         p = it.product
+        if category and p.produce_type != category:
+            continue
         items_data.append(
             {
                 "t_code": p.t_code if p else "",
@@ -367,9 +411,9 @@ def export_talad_thai_buyer_sheet(
             <td style="padding: 8px; border: 1px solid #ddd; font-size: 1.1em; color: #15803d; font-weight: bold;">{escape(str(item["name_th"]))}</td>
             <td style="padding: 8px; border: 1px solid #ddd;">{escape(str(item["name_vi"]))} / {escape(str(item["name_en"]))}</td>
             <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">{escape(str(item["pack_size"] or ""))}</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{item["ordered_weight_kg"]:.2f} kg</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right; color: #b45309;">+{item["buffer_pct"]:.0f}% ({item["buffer_weight_kg"]:.2f} kg)</td>
-            <td style="padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold; font-size: 1.1em; background-color: #f0fdf4;">{item["target_purchase_weight_kg"]:.2f} kg</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{item["ordered_weight_kg"]:.4f} kg</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right; color: #b45309;">+{item["buffer_pct"]:.2f}% ({item["buffer_weight_kg"]:.4f} kg)</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right; font-weight: bold; font-size: 1.1em; background-color: #f0fdf4;">{item["target_purchase_weight_kg"]:.4f} kg</td>
         </tr>
         """
             for item in items_data
@@ -434,6 +478,8 @@ def export_talad_thai_buyer_sheet(
         "shipment_date": mpl.shipment_date,
         "route_code": mpl.route_code,
         "total_skus": len(items_data),
-        "total_required_weight_kg": float(mpl.total_required_weight_kg or 0.0),
+        "total_required_weight_kg": round(
+            sum(item["target_purchase_weight_kg"] for item in items_data), 4
+        ),
         "items": items_data,
     }
