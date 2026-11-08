@@ -98,10 +98,31 @@ class OrderQuantity:
     weight_source: str
 
 
+def quantity_snapshot(item):
+    """Bind an unchanged review to the values staff actually saw."""
+    return {"quantity": item.quantity, "unit": item.unit, "pack_size": item.pack_size,
+            "net_weight_kg": item.net_weight_kg, "quantity_issues": list(item.quantity_issues),
+            "requires_packing_review": bool(item.source.get("requires_packing_review"))}
+
+
+def kept_as_ordered(item):
+    review = item.source.get("quantity_review") or {}
+    return (review.get("decision") == "KEEP_AS_ORDERED" and bool(review.get("reviewed_by"))
+            and review.get("values") == quantity_snapshot(item))
+
+
+def weight_only_line(item):
+    """Zero requested packs means unknown, only for explicitly reviewed weight orders."""
+    lines = (item.quantity_source or {}).get("lines", [])
+    return (item.ordered_pack_count == 0 and item.estimated_net_weight_kg > 0 and bool(lines)
+            and all(line.get("weight_source") == "REVIEWED_ORDER_WEIGHT" for line in lines))
+
+
 def derive_quantity(item, product=None) -> OrderQuantity:
     if item.quantity_issues:
         raise ValueError("; ".join(item.quantity_issues))
-    if item.source.get("requires_packing_review") and not item.source.get("reviewed_by"):
+    reviewed = kept_as_ordered(item)
+    if item.source.get("requires_packing_review") and not item.source.get("reviewed_by") and not reviewed:
         raise ValueError("Packing details required: staff must complete and confirm this row before Purchasing")
     amount = decimal_value(item.quantity)
     if amount <= 0:
@@ -113,7 +134,9 @@ def derive_quantity(item, product=None) -> OrderQuantity:
     except ValueError:
         raise ValueError("Packing needs an explicit unit, for example 100g") from None
     source = "ORDER_LABEL" if nominal else "REVIEWED_PROFILE"
-    profile = profile_for(product, size, strict=False) if product else None
+    profile = profile_for(product, size, strict=False) if product and not (
+        reviewed and unit in {"kg", "g"} and nominal is None
+    ) else None
     if nominal is None and profile and profile.reviewed and profile.net_weight_kg is not None:
         nominal = decimal_value(profile.net_weight_kg)
     declared = decimal_value(item.net_weight_kg) if item.net_weight_kg is not None else None
@@ -124,6 +147,10 @@ def derive_quantity(item, product=None) -> OrderQuantity:
         if declared is not None and abs(declared - net) > Decimal("0.0001"):
             raise ValueError("Declared net weight conflicts with the order amount and unit")
         if nominal is None or nominal <= 0:
+            if reviewed and nominal is None and Decimal("0.0001") <= net <= Decimal("99999999"):
+                # Preserve the customer's kg and packing label. The buyer supplies
+                # actual counts; never manufacture a nominal pack size or count.
+                return OrderQuantity(pack_key(size), 0, net, "REVIEWED_ORDER_WEIGHT")
             raise ValueError(
                 "Enter the physical pack size or a reviewed piece/bunch weight for this weight order"
             )
@@ -146,6 +173,10 @@ def derive_quantity(item, product=None) -> OrderQuantity:
             "Select the order quantity unit: kg, g, packs, pieces, boxes, bags, bunches or trays"
         )
     if abs(count - count.to_integral_value()) > Decimal("0.000001"):
+        if reviewed and unit in {"kg", "g"} and Decimal("0.0001") <= net <= Decimal("99999999"):
+            # A weight order may not divide into whole nominal packs. Keep its
+            # weight and packing label; purchasing records the actual count.
+            return OrderQuantity(pack_key(size), 0, net, "REVIEWED_ORDER_WEIGHT")
         raise ValueError(
             f"{count.normalize()} packs is not a whole number; correct the amount or pack size"
         )

@@ -105,13 +105,61 @@ def test_workflow_scope_includes_direct_combined_and_explicit_orders(db_session,
     db_session.flush()
     result = client.get(f"/api/v3/packing/orders?batch_id={batch.id}").json()
     assert result["total"] == 3
+    assert result["scope_label"] == "scope-0.xlsx, scope-1.xlsx, scope-2.xlsx"
     assert {row["order_id"] for row in result["items"]} == {order.id for order in orders[:3]}
+    grouped = client.get(f"/api/v3/packing/files?batch_id={batch.id}").json()
+    assert grouped["total"] == 3
+    assert grouped["scope_label"] == result["scope_label"]
+    assert all(row["order_count"] == 1 for row in grouped["items"])
+    selected = client.get(f"/api/v3/packing/orders?batch_id={batch.id}&raw_file_id={files[2].id}").json()
+    assert [row["order_id"] for row in selected["items"]] == [orders[2].id]
     for raw in files[:3]:
         result = client.get(f"/api/v3/procurement/batches?raw_file_id={raw.id}").json()
         assert result["total"] == 1 and result["items"][0]["batch_id"] == batch.id
+        assert result["scope_label"] == raw.file_name
+        assert result["items"][0]["file_name"] == "scope-0.xlsx, scope-1.xlsx, scope-2.xlsx"
+        empty = client.get(f"/api/v3/procurement/batches?raw_file_id={raw.id}&q=Missing").json()
+        assert empty["total"] == 0 and empty["scope_label"] == raw.file_name
+        empty = client.get(f"/api/v3/packing/orders?raw_file_id={raw.id}&q=Missing").json()
+        assert empty["total"] == 0 and empty["scope_label"] == raw.file_name
     assert client.get(f"/api/v3/procurement/batches?raw_file_id={files[3].id}").json()["total"] == 0
     assert client.get("/api/v3/packing/orders?batch_id=missing").status_code == 404
+    assert client.get("/api/v3/packing/files?batch_id=missing").status_code == 404
     assert client.get("/api/v3/procurement/batches?raw_file_id=missing").status_code == 404
+
+
+def test_packing_groups_by_upload_and_keeps_file_counts_across_pages_and_search(db_session, register_client):
+    client, actor = register_client
+    files = [make_file(db_session, actor, name) for name in ["shipment.xlsx", "shipment.xlsx", "complete.xlsx", "not-sent.xlsx"]]
+    customers = [Customer(client_code=f"SHOP-{i:03}", company_name=f"Shop {i}", billing_email="unused",
+                          destination_country="TH", route_group="BKK") for i in range(33)]
+    db_session.add_all(customers)
+    db_session.flush()
+    orders = [ClientOrder(raw_order_file_id=files[0].id, customer_id=customer.id,
+                         order_ref_id=f"FILE-1-{i}", status=OrderStatus.HANDOFF_02_RETURNED if i == 0 else OrderStatus.HANDOFF_01_SENT)
+              for i, customer in enumerate(customers[:31])]
+    db_session.add_all([*orders,
+        ClientOrder(raw_order_file_id=files[1].id, customer_id=customers[31].id, order_ref_id="ONE", status=OrderStatus.HANDOFF_01_SENT),
+        ClientOrder(raw_order_file_id=files[2].id, customer_id=customers[32].id, order_ref_id="DONE", status=OrderStatus.HANDOFF_02_RETURNED),
+        ClientOrder(raw_order_file_id=files[3].id, customer_id=customers[0].id, order_ref_id="NOT-SENT", status=OrderStatus.SPLIT_AND_VALIDATED)])
+    db_session.flush()
+    result = client.get("/api/v3/packing/files?view=all").json()
+    assert result["total"] == 3
+    assert {row["raw_file_id"] for row in result["items"]} == {raw.id for raw in files[:3]}
+    group = next(row for row in result["items"] if row["raw_file_id"] == files[0].id)
+    assert group["order_count"] == 31 and group["pending_count"] == 30 and group["completed_count"] == 1
+    assert group["subcustomers"] == [f"SHOP-{i:03}" for i in range(4)]
+    searched = client.get("/api/v3/packing/files?q=SHOP-029").json()
+    assert searched["total"] == 1 and searched["items"][0]["order_count"] == 31
+    assert client.get("/api/v3/packing/files?view=completed").json()["items"][0]["raw_file_id"] == files[2].id
+    assert client.get("/api/v3/packing/files?limit=1").json()["has_more"]
+    page = client.get(f"/api/v3/packing/orders?raw_file_id={files[0].id}&view=all&offset=25").json()
+    assert page["total"] == 31 and len(page["items"]) == 6
+    assert all(row["raw_file_id"] == files[0].id and row["file_name"] == "shipment.xlsx" for row in page["items"])
+    detail = client.get(f"/api/v3/packing/orders/{orders[0].id}/packing-list").json()
+    assert detail["raw_file_id"] == files[0].id and detail["file_name"] == "shipment.xlsx"
+    assert client.get("/api/v3/packing/orders?raw_file_id=missing").status_code == 404
+    assert client.get("/api/v3/packing/files?raw_file_id=missing").status_code == 404
 
 
 def test_shipment_sort_places_undated_batches_last(db_session, register_client):
@@ -167,6 +215,7 @@ def test_packing_billing_summary_counts_and_lazy_invoice_lines(db_session, regis
     assert client.get("/api/v3/invoicing/orders?view=completed").json()["total"] == 1
     records = client.get("/api/v3/invoicing/records").json()
     assert records["total"] == 1 and "items" not in records["items"][0]
+    assert records["items"][0]["file_name"] == raw.file_name
     assert client.get(f"/api/v3/invoicing/order-record/{billed.id}").json()["invoice_id"] == invoice.id
     assert client.get(f"/api/v3/orders/files/{raw.id}/orders").json()["total"] == 3
     assert client.get("/api/v3/invoicing/records?invoice_group=drafts&view=all").json()["total"] == 1
@@ -216,6 +265,7 @@ def test_scan_history_pages_only_requested_events(db_session, register_client):
     code = boxes[0].qr_code_uid
     scan = client.get(f"/api/v3/packing/scan/{code}?include_history=false").json()
     assert scan["change_history"] == []
+    assert scan["file_name"] == order.raw_file.file_name
     page = client.get(f"/api/v3/packing/scan/{code}/history?offset=25").json()
     assert page["total"] >= 65 and len(page["items"]) == 25 and page["has_more"]
     summary = client.get("/api/v3/packing/orders").json()["items"][0]
@@ -223,21 +273,6 @@ def test_scan_history_pages_only_requested_events(db_session, register_client):
     boxes[0].is_locked = True
     db_session.flush()
     assert client.get("/api/v3/packing/orders").json()["items"][0]["outstanding"] == len(boxes) - 1
-
-
-def test_source_register_revalidates_workflow_eligibility(db_session, register_client):
-    client, actor = register_client
-    customer = Customer(client_code="SOURCE", company_name="Source Client", route_group="BKK", billing_email="unused", destination_country="TH")
-    db_session.add(customer)
-    db_session.flush()
-    raw = make_file(db_session, actor, status=OrderStatus.PURCHASING_CONSOLIDATED, customer=customer)
-    order = ClientOrder(raw_order_file_id=raw.id, customer_id=customer.id, order_ref_id="SOURCE-ORDER", status=OrderStatus.PURCHASING_CONSOLIDATED)
-    db_session.add(order)
-    db_session.flush()
-    assert client.get("/api/v3/procurement/source-files").json()["total"] == 1
-    order.status = OrderStatus.HANDOFF_01_SENT
-    db_session.flush()
-    assert client.get("/api/v3/procurement/source-files").json()["total"] == 0
 
 
 def test_master_invoice_search_includes_every_source_customer_date_and_route(db_session, register_client):
@@ -251,7 +286,7 @@ def test_master_invoice_search_includes_every_source_customer_date_and_route(db_
     second_customer = Customer(client_code="SECOND", company_name="Second Client", billing_email="unused", route_group="BE", destination_country="TH")
     db_session.add(second_customer)
     db_session.flush()
-    raw = make_file(db_session, actor, customer=second_customer, day="2026-10-10")
+    raw = make_file(db_session, actor, name="second-source.xlsx", customer=second_customer, day="2026-10-10")
     raw.route_line = "BE"
     second = ClientOrder(raw_order_file_id=raw.id, customer_id=second_customer.id, order_ref_id="SECOND-REF", status=OrderStatus.INVOICES_DRAFTED)
     first.status = OrderStatus.INVOICES_DRAFTED
@@ -264,12 +299,15 @@ def test_master_invoice_search_includes_every_source_customer_date_and_route(db_
         db_session.add(InvoiceLineItem(invoice_id=invoice.id, source_order_id=order.id, product_id=first.items[0].product_id,
             box_number=1, pack_size="1kg", billed_pack_count=1, billed_weight_kg=1, unit_price_eur=5, line_total_eur=5))
     db_session.flush()
-    for params in [{"q": "SECOND-REF"}, {"customer": "Second Client"}, {"route": "BE"}, {"date_from": "2026-10-10", "date_to": "2026-10-10"}]:
+    for params in [{"q": "SECOND-REF"}, {"q": "second-source.xlsx"}, {"customer": "Second Client"}, {"route": "BE"}, {"date_from": "2026-10-10", "date_to": "2026-10-10"}]:
         result = client.get("/api/v3/invoicing/records", params=params).json()
         assert result["total"] == 1 and "Second Client" in result["items"][0]["customer"]
         assert result["items"][0]["order_ref_id"] == "2 orders"
+        assert result["items"][0]["file_name"] == ", ".join(sorted({first.raw_file.file_name, raw.file_name}))
         assert "2026-10-10" in result["items"][0]["shipment_date"]
     assert client.get("/api/v3/invoicing/orders?view=completed").json()["total"] == 2
+    detail = client.get(f"/api/v3/invoicing/{invoice.id}").json()
+    assert {line["source_file_name"] for line in detail["items"]} == {first.raw_file.file_name, raw.file_name}
 
 
 def test_register_index_migration_upgrades_and_downgrades(db_session):

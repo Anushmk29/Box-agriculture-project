@@ -2,12 +2,134 @@
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import openpyxl
 import xlrd
 
 ROOT = Path(__file__).resolve().parents[2]
+STANDBY = {"440T.xlsx", "51H-2.xlsx", "86L.ods"}
+
+
+def add_customer_samples(profiles):
+    """Register the reviewed customer layouts without altering their source files."""
+    for path in sorted((ROOT / "documents/excel files of all cutomer").iterdir()):
+        if path.name in STANDBY or path.suffix.lower() not in {".xlsx", ".xls"}:
+            continue
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if any(p["sha256"] == digest for p in profiles):
+            continue
+        if path.suffix == ".xls":
+            book = xlrd.open_workbook(path)
+            sheets = [(s.name, [s.row_values(i) for i in range(s.nrows)]) for s in book.sheets()]
+        else:
+            book = openpyxl.load_workbook(path, read_only=True, data_only=True)
+            try:
+                sheets = [(s.title, list(s.iter_rows(values_only=True))) for s in book]
+            finally:
+                book.close()
+        match = re.match(r"^(\d+[HLT](?:\s*-\s*\d+)?)", path.stem)
+        if not match and not any(token in path.name for token in ("Tonio", "NGA")) and path.name != "Agriculture - 07 Sept 26.xlsx":
+            raise ValueError(f"No reviewed customer identity for {path.name}; configure it before rebuilding")
+        client = re.sub(r"\s+", "", match[1]) if match else None
+        key = client or ("TONIO-MATRIX" if "Tonio" in path.name else
+                         "NGA-REGIONAL" if "NGA" in path.name else "CHOKDEE")
+        main = "TONIO" if "Tonio" in path.name else "CHOKDEE" if key == "CHOKDEE" else "NGA"
+        identity = [client] if client else ["tonio"] if main == "TONIO" else ["nga"] if main == "NGA" else ["chokdee", "giggling squid", "Agriculture"]
+        identity += {"59H": ["Jin Cheng"], "705H": ["Thai Grønt Deli"], "90L": ["IMS DRAMMEN"]}.get(client, [])
+        specs = []
+        review = []
+        numeric = None
+        kind = "text" if client in {"427T", "82L"} else "table"
+        if kind == "text":
+            specs = [dict(reference_sheet=sheets[0][0], anchors={"1": client},
+                          fields=dict(name=1, quantity=1), customers=None)]
+        else:
+            selected = sheets[:3] if key == "NGA-REGIONAL" else sheets[:1]
+            for sheet_name, rows in selected:
+                if key == "NGA-REGIONAL":
+                    header, fields = 2, dict(code=1, name=2, alt=[3], pack=4)
+                    customers = {c: str(v).strip() for c, v in enumerate(rows[1], 1)
+                                 if c >= 6 and re.fullmatch(r"\d+[HLT](?:-\d+)?", str(v or "").strip())}
+                elif main == "TONIO":
+                    header, fields = 3, dict(code=1, name=3, alt=[2], pack=4)
+                    customers = {c: str(v).strip() for c, v in enumerate(rows[2], 1)
+                                 if c >= 5 and v and str(v).strip().casefold() != "total"}
+                else:
+                    header, labels = next(
+                        (r, {str(v or "").strip().casefold(): c for c, v in enumerate(row, 1) if v})
+                        for r, row in enumerate(rows[:20], 1)
+                        if any(str(v or "").strip().casefold() in {"product name", "description (english)"} for v in row)
+                    )
+                    name = labels.get("product name") or labels["description (english)"]
+                    quantities = [c for label, c in labels.items() if label == "order" or label.startswith("order ") or label.startswith("amount of order")]
+                    quantity = max(quantities)
+                    if len(quantities) > 1 and client != "705H":
+                        raise ValueError(f"Select the shipment order column for {path.name}")
+                    fields = dict(name=name, quantity=quantity)
+                    customers = None
+                    alt = [labels[label] for label in ("viet", "thai", "description thai") if label in labels]
+                    if main == "CHOKDEE":
+                        alt = [3]
+                    if alt:
+                        fields["alt"] = alt
+                    if name == 6:
+                        fields.update(code=4, supplier_code=5, pack=9, adjacent=10)
+                        numeric = "g"
+                    elif name == 4:
+                        fields.update(code=2, supplier_code=3, pack=7, adjacent=8)
+                        numeric = "g"
+                    elif name == 3:
+                        fields.update(code=2, customer_product_code=1, description_pack=4)
+                    else:
+                        first_code = next((row[0] for row in rows[header:] if row and row[0] not in (None, "")), None)
+                        fields["customer_product_code" if re.fullmatch(r"\d{1,3}(?:\.0)?", str(first_code)) else "code"] = 1
+                        if "description thai" in labels:
+                            fields["description_pack"] = labels["description thai"]
+                    for label in ("packing", "packge", "packing weight", "packing size (gr.)"):
+                        if label in labels:
+                            fields["pack"] = labels[label]
+                    if "packing size (gr.)" in labels:
+                        numeric = "g"
+                    if "unit" in labels:
+                        fields["unit"] = labels["unit"]
+                    elif name == 3 and any(len(row) >= 8 and str(row[7]).strip().lower() in {"kgs.", "kg"} for row in rows[header:header + 10]):
+                        fields["unit"] = 8
+                    for label in ("noted", "notes", "remark", "หมายเหตุ"):
+                        if label in labels:
+                            fields["notes"] = labels[label]
+                    if client == "705H":
+                        fields["unit"] = labels["unit"]
+                        review.append("705H contains historical Order/Delivery/stock columns. Confirm the shipment order column before using this mapping.")
+                columns = [c for c in fields.values() if isinstance(c, int)] + list(customers or {})
+                anchors = {str(c): str(rows[header - 1][c - 1]).strip() for c in columns
+                           if rows[header - 1][c - 1] not in (None, "")}
+                mapped = set(columns) | set(fields.get("alt", []))
+                ignored = {str(c): str(v).strip() for c, v in enumerate(rows[header - 1], 1)
+                           if c not in mapped and v not in (None, "")}
+                specs.append(dict(reference_sheet=sheet_name, anchors=anchors, fields=fields, customers=customers,
+                                  ignored_columns=ignored))
+        definition = dict(key=key, main_customer_code=main, client_code=client or ("CHOKDEE" if main == "CHOKDEE" else None),
+                          identity_tokens=identity, kind=kind, sheets=specs, default_unit=None,
+                          numeric_pack_unit=numeric, sample=path.name, sha256=digest,
+                          sample_directory="excel files of all cutomer")
+        if client == "427T":
+            definition["text_quantity_separator"] = "-"
+        if review:
+            definition["review_issues"] = review
+        contract = {k: v for k, v in definition.items() if k not in {"key", "sample", "sha256", "sample_directory"}}
+        duplicate = next((p for p in profiles if {k: v for k, v in p.items()
+                         if k not in {"key", "sample", "sha256", "sample_directory", "additional_samples"}} == contract), None)
+        if duplicate:
+            duplicate.setdefault("additional_samples", []).append(dict(sample=path.name, sha256=digest))
+            continue
+        suffix = 2
+        while any(p["key"] == definition["key"] for p in profiles):
+            definition["key"] = f"{key}-LAYOUT-{suffix}"
+            suffix += 1
+        profiles.append(definition)
+    return profiles
 
 
 def build():
@@ -204,9 +326,16 @@ def build():
                 sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
             )
         )
+    add_customer_samples(profiles)
+    for profile in profiles:
+        if profile["key"].startswith("NGA-REGIONAL"):
+            for sheet in profile["sheets"]:
+                # Reviewed NGA samples have an unlabelled reference catalogue beyond the selling prices.
+                end = max(map(int, sheet["customers"]))
+                sheet.setdefault("ignored_columns", {}).update({str(end + offset): "" for offset in (3, 5, 6, 7)})
     output = ROOT / "backend/app/assets/excel_templates.json"
     output.write_text(json.dumps(profiles, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Inventoried {len(profiles)} Excel reference files")
+    print(f"Built {len(profiles)} Excel format definitions")
 
 
 if __name__ == "__main__":

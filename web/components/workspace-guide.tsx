@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
@@ -9,6 +11,7 @@ import { useGuidanceHints } from "@/lib/guidance-hints";
 import { guideElement } from "@/lib/guide";
 
 export function WorkspaceGuide({ scopeRef, inDialog = false }: { scopeRef?: RefObject<HTMLElement | null>; inDialog?: boolean }) {
+  useLanguage();
   const pathname = usePathname();
   const { enabled, toggle } = useGuidanceHints();
   const [step, setStep] = useState<{ title: string; detail: string }>();
@@ -69,10 +72,10 @@ export function WorkspaceGuide({ scopeRef, inDialog = false }: { scopeRef?: RefO
   }, [pathname, scopeRef, dialog, enabled]);
 
   if (!step) return null;
-  const guide = <section className={`workspace-guide${dialog ? " workspace-guide-dialog" : ""}${host ? " workspace-guide-inline" : ""}`} aria-label="Next step guidance" data-guide-ui>
-    <div className={host ? "sr-only" : "workspace-guide-copy"}><span>Next step</span><p aria-live="polite" aria-atomic="true"><strong>{step.title}</strong><small>{step.detail}</small></p></div>
-    <div className="workspace-guide-actions"><button type="button" className="invoice-secondary-button" aria-label="Show next action" title={host ? step.title : undefined} onClick={() => { if (target.current) guideElement(target.current); }}>{!host && "Show next action"}<ArrowRight size={16} aria-hidden /></button>
-      <button type="button" className="guidance-pause" aria-label={enabled ? "Pause hints" : "Resume hints"} title={enabled ? "Pause hints" : "Resume hints"} aria-pressed={enabled} onClick={toggle}>{enabled ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}{!host && (enabled ? "Pause hints" : "Resume hints")}</button></div>
+  const guide = <section className={`workspace-guide${dialog ? " workspace-guide-dialog" : ""}${host ? " workspace-guide-inline" : ""}`} aria-label={t("Next step guidance")} data-guide-ui>
+    <div className={host ? "sr-only" : "workspace-guide-copy"}><span>{t("Next step")}</span><p aria-live="polite" aria-atomic="true"><strong>{t(step.title)}</strong><small>{t(step.detail)}</small></p></div>
+    <div className="workspace-guide-actions"><button type="button" className="invoice-secondary-button" aria-label={t("Show next action")} title={host ? t(step.title) : undefined} onClick={() => { if (target.current) guideElement(target.current); }}>{!host && t("Show next action")}<ArrowRight size={16} aria-hidden /></button>
+      <button type="button" className="guidance-pause" aria-label={enabled ? t("Pause hints") : t("Resume hints")} title={enabled ? t("Pause hints") : t("Resume hints")} aria-pressed={enabled} onClick={toggle}>{enabled ? <Pause size={14} aria-hidden /> : <Play size={14} aria-hidden />}{!host && (enabled ? t("Pause hints") : t("Resume hints"))}</button></div>
   </section>;
   return host ? createPortal(guide, host) : guide;
 }

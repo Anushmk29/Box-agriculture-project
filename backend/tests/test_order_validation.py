@@ -1,3 +1,4 @@
+import pytest
 from openpyxl import Workbook
 from sqlalchemy import event
 
@@ -12,6 +13,116 @@ from app.models.master_data import (
 from app.models.order import OrderStatus, RawOrderFile
 from app.models.user import User, UserRole
 from app.modules.orders.validation import OrderValidationService
+
+
+@pytest.mark.parametrize("customer_specific", [False, True])
+def test_verified_mapping_resolves_conflicting_catalogue_names(db_session, customer_specific):
+    from test_order_intake import _draft, _item, _setup
+
+    from app.api.sku_mappings import SkuMappingCreate, create_or_update_sku_mapping
+    from app.modules.orders.intake import OrderIntake
+
+    raw, product = _setup(db_session)
+    actor = db_session.get(User, raw.uploaded_by)
+    product.t_code = "11-028"
+    product.name_en = "GREEN PAPAYA"
+    product.name_th = product.name_vi = "มะละกอดิบ"
+    other = Product(t_code="1208", name_en="GREEN PAPAYA", name_th="มะละกอ", name_vi="500-600G",
+                    box_material=product.box_material, temperature=product.temperature,
+                    control_status=product.control_status, produce_type=product.produce_type,
+                    weight_class=product.weight_class)
+    db_session.add(other)
+    item = _item(40, unit="kg", pack="1pc", name="GREEN PAPAYA", code="11-028")
+    item.alt_names = ["มะละกอ", "500-600G"]
+    raw.acknowledgment_summary = {"drafts": [_draft(item).model_dump(mode="json")]}
+    db_session.flush()
+    issues = OrderValidationService(db_session).validate(raw_file_id=raw.id, actor=actor).unresolved
+    assert len(issues) == 1
+    assert issues[0].catalog_name_match is True
+
+    create_or_update_sku_mapping(SkuMappingCreate(
+        main_customer_id=raw.main_customer_id if customer_specific else None,
+        client_sku_code="11-028", client_raw_name="GREEN PAPAYA",
+        product_id=product.id, standard_pack_size="1pc"), db=db_session, actor=actor)
+
+    result = OrderValidationService(db_session).validate(raw_file_id=raw.id, actor=actor)
+    assert result.unresolved == []
+    assert result.resolved_product_rows == 1
+    assert OrderIntake(db_session).resolve(item, raw.main_customer_id).id == product.id
+    # Matching a product must not silently supply a piece weight for a kilogram order.
+    assert len(result.quantity_issues) == 1
+    assert not result.can_split
+
+
+@pytest.mark.parametrize(("name", "alt_names", "code", "name_match"), [
+    ("  LEMONGRASS  ", [], "OTHER", True),
+    ("Customer wording", ["ตะไคร้"], "OTHER", True),
+    ("Customer wording", ["Sa\u0309"], "OTHER", True),
+    ("Lemongrass", [], "CUSTOMER-SKU", True),
+    ("New dragon fruit variety", [], "NEW", False),
+    ("Lemongras", [], "NEW", False),
+])
+def test_unresolved_indicators_use_exact_multilingual_names_not_suggestions(db_session, name, alt_names, code, name_match):
+    from test_order_intake import _draft, _item, _setup
+
+    raw, product = _setup(db_session)
+    other = Product(t_code="OTHER", name_en="Other product", name_vi="Other name", name_th="Other Thai",
+                    box_material=product.box_material, temperature=product.temperature,
+                    control_status=product.control_status, produce_type=product.produce_type,
+                    weight_class=product.weight_class)
+    db_session.add(other)
+    item = _item(1, name=name, code=code)
+    item.alt_names = alt_names
+    raw.acknowledgment_summary = {"drafts": [_draft(item).model_dump(mode="json")]}
+    db_session.flush()
+
+    result = OrderValidationService(db_session).validate(raw_file_id=raw.id, actor=db_session.get(User, raw.uploaded_by))
+    assert len(result.unresolved) == 1
+    assert result.unresolved[0].catalog_name_match is name_match
+    assert not result.can_split
+    if name == "Lemongras":
+        assert result.unresolved[0].suggestions
+
+
+def test_verified_customer_mapping_clears_unknown_sku_indicator(db_session):
+    from test_order_intake import _draft, _item, _setup
+
+    from app.api.sku_mappings import SkuMappingCreate, create_or_update_sku_mapping
+    from app.modules.orders.intake import OrderIntake
+
+    raw, product = _setup(db_session)
+    actor = db_session.get(User, raw.uploaded_by)
+    item = _item(1, name=product.name_en, code="CUSTOMER-SKU")
+    raw.acknowledgment_summary = {"drafts": [_draft(item).model_dump(mode="json")]}
+    db_session.flush()
+    assert OrderIntake(db_session).resolve(item, raw.main_customer_id) is None
+
+    create_or_update_sku_mapping(SkuMappingCreate(main_customer_id=raw.main_customer_id,
+        client_sku_code=item.product_code, client_raw_name=item.product_name,
+        product_id=product.id, standard_pack_size="100g"), db=db_session, actor=actor)
+
+    result = OrderValidationService(db_session).validate(raw_file_id=raw.id, actor=actor)
+    assert result.unresolved == []
+    assert result.can_split
+    assert OrderIntake(db_session).resolve(item, raw.main_customer_id).id == product.id
+
+
+def test_staff_remapping_verifies_an_existing_unverified_mapping(db_session):
+    from test_order_intake import _setup
+
+    from app.api.sku_mappings import SkuMappingCreate, create_or_update_sku_mapping
+    from app.models.master_data import ClientSkuMapping
+
+    raw, product = _setup(db_session)
+    actor = db_session.get(User, raw.uploaded_by)
+    mapping = ClientSkuMapping(main_customer_id=raw.main_customer_id, client_sku_code="OLD",
+                               client_raw_name="Imported name", product_id=product.id, is_verified=False)
+    db_session.add(mapping)
+    db_session.flush()
+    result = create_or_update_sku_mapping(SkuMappingCreate(main_customer_id=raw.main_customer_id,
+        client_sku_code="OLD", client_raw_name="Imported name", product_id=product.id),
+        db=db_session, actor=actor)
+    assert result.is_verified
 
 
 def test_matrix_validation_surfaces_unknown_skus_before_split(db_session, tmp_path):
@@ -73,7 +184,7 @@ def test_matrix_validation_surfaces_unknown_skus_before_split(db_session, tmp_pa
     assert [issue.product_code for issue in result.unresolved] == ["UNKNOWN"]
 
 
-def test_matrix_validation_tries_every_available_language_name(db_session, tmp_path):
+def test_matrix_validation_finds_alt_language_name_but_requires_unknown_sku_review(db_session, tmp_path):
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Orders"
@@ -120,8 +231,9 @@ def test_matrix_validation_tries_every_available_language_name(db_session, tmp_p
 
     result = OrderValidationService(db_session).validate(raw_file_id=raw_file.id, actor=agent)
 
-    assert result.resolved_product_rows == 1
-    assert result.unresolved == []
+    assert result.resolved_product_rows == 0
+    assert len(result.unresolved) == 1
+    assert result.unresolved[0].catalog_name_match is True
 
 
 def test_matrix_can_be_revalidated_after_staff_maps_an_unresolved_sku(db_session, tmp_path):

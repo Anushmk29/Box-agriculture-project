@@ -14,7 +14,7 @@ from test_procurement_handoff import setup_procurement_batch
 
 from app.api.invoicing import RecordPaymentRequest, record_payment_and_generate_receipt
 from app.api.orders import AdHocOrderRequest, add_adhoc_order
-from app.core.database import Base
+from app.core.database import Base, normalize_database_url
 from app.core.revisions import RevisionConflict, lock_invoice, lock_packing
 from app.models.audit import AgentHandoff
 from app.models.invoice import Invoice, PaymentTransaction
@@ -158,13 +158,18 @@ def test_postgres_same_upload_key_has_one_document_and_one_result(postgres_sessi
 
 
 @pytest.fixture
-def postgres_sessions():
+def postgres_sessions(monkeypatch):
+    from app.core.config import settings
+
+    # These synthetic race fixtures use the same legacy measurements as db_session.
+    monkeypatch.setattr(settings, "PACKING_PROFILES_ENABLED", False)
     url = os.getenv("BOX_TEST_POSTGRES_URL")
     if not url:
         pytest.skip("BOX_TEST_POSTGRES_URL is required for disposable PostgreSQL tests")
     parsed = make_url(url)
     if parsed.host not in {"localhost", "127.0.0.1"} or parsed.database != "box_tests":
         pytest.fail("Concurrency tests require a local disposable database named box_tests")
+    url = normalize_database_url(url)
     schema = "box_test_" + uuid4().hex
     admin = create_engine(url)
     with admin.begin() as conn:
@@ -179,6 +184,62 @@ def postgres_sessions():
         with admin.begin() as conn:
             conn.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
         admin.dispose()
+
+
+def test_postgres_template_reads_do_not_wait_for_another_upload(postgres_sessions):
+    from app.models.master_data import Customer
+    from app.modules.orders.templates import template_snapshots
+
+    with postgres_sessions() as db:
+        raw, _ = intake_setup(db)
+        main_id = raw.main_customer_id
+        expected = {item['id'] for item in template_snapshots(db, main_id)}
+        db.commit()
+    with postgres_sessions() as first, postgres_sessions() as second:
+        template_snapshots(first, main_id)
+        first.query(Customer).filter_by(id=main_id).with_for_update().one()
+        second.execute(text("SET LOCAL lock_timeout='100ms'"))
+        assert {item['id'] for item in template_snapshots(second, main_id)} == expected
+
+
+def test_postgres_first_template_seed_is_conflict_safe(postgres_sessions):
+    from app.models.excel_template import ExcelTemplate
+    from app.modules.orders.templates import template_snapshots
+
+    barrier = Barrier(2)
+    def seed():
+        with postgres_sessions() as db:
+            barrier.wait(timeout=5)
+            ids = {item['id'] for item in template_snapshots(db, 'GENERAL')}
+            db.commit()
+            return ids
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(seed) for _ in range(2)]
+        assert futures[0].result(timeout=15) == futures[1].result(timeout=15)
+    with postgres_sessions() as db:
+        rows = db.query(ExcelTemplate).all()
+        assert len(rows) == len({(row.account_key, row.template_key, row.version) for row in rows})
+
+
+def test_postgres_login_limits_share_atomic_reservations(postgres_sessions, monkeypatch):
+    from fastapi import HTTPException
+
+    from app.core import login_limits
+
+    monkeypatch.setattr(login_limits, 'ACCOUNT_ATTEMPTS', 1)
+    barrier = Barrier(2)
+    def attempt():
+        with postgres_sessions() as db:
+            barrier.wait(timeout=5)
+            try:
+                login_limits.enforce_login_limit(db, 'shared@example.com', '192.0.2.1')
+                return 'allowed'
+            except HTTPException as exc:
+                assert exc.status_code == 429
+                return 'blocked'
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(attempt) for _ in range(2)]
+        assert sorted(future.result(timeout=15) for future in futures) == ['allowed', 'blocked']
 
 
 def concurrent(sessions, actor_id, operation):

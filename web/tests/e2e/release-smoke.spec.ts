@@ -102,7 +102,7 @@ test("packing floor shows a group queue failure instead of hiding it", async ({
     await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
   });
   await page.route(
-    "**/backend/api/v3/packing/orders?*",
+    "**/backend/api/v3/packing/files?*",
     async (route) => {
       await route.fulfill({
         status: 503,
@@ -217,10 +217,10 @@ test("procurement cannot repeat completed workflow actions", async ({ page }) =>
   await page.goto("/procurement?batchId=batch-1");
 
   await expect(page.getByRole("heading", { name: "Purchasing" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "Shipment workflow" })).toContainText("Packing");
+  await expect(page.getByRole("region", { name: "Next: Packing", exact: true })).toContainText("Purchasing complete");
   await expect(
     page.getByRole("button", { name: "Confirm purchases and send to packing" }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Dispatch Signed Handoff 01" }),
   ).toHaveCount(0);
@@ -267,7 +267,7 @@ test("general users only see their permitted work areas", async ({ page }) => {
     }),
   }));
 
-  await page.goto("http://127.0.0.1:3000/");
+  await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Team work", exact: true })).toBeVisible();
   const navigation = page.getByRole("navigation", { name: "Primary navigation" });
@@ -332,7 +332,7 @@ test("dashboard directs packing through the order queue without scale prompts", 
   await openWithMockSession(page, "OWNER_ADMIN");
   await page.goto("/");
   await expect(page.getByText("Boxes missing weights", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Shipment overview" }).locator(".stat-card").filter({ hasText: "Orders awaiting packing" }).getByRole("link")).toHaveAttribute("href", "/packing/orders");
+  await expect(page.getByRole("region", { name: "Shipment overview" }).getByRole("link", { name: /Orders awaiting packing:/ })).toHaveAttribute("href", "/packing/orders");
 });
 
 test("packed contents start floor work without scale entry", async ({ page }) => {
@@ -392,7 +392,7 @@ test("owner manages deactivation and permanent deletion from one account action"
     body: JSON.stringify({ items: users, total: users.length, offset: 0, limit: 25, has_more: false }),
   }));
 
-  await page.goto("http://127.0.0.1:3000/users");
+  await page.goto("/users");
   await page.getByRole("button", { name: "Manage" }).click();
   const dialog = page.getByRole("dialog", { name: "Manage Unused Person" });
   await expect(dialog.getByRole("button", { name: "Deactivate account" })).toBeVisible();
@@ -447,7 +447,7 @@ test("scanned editable sticker opens its order and shows who changed it", async 
   }));
 
   await page.route("**/backend/api/v3/packing/scan/*/history?*", route => route.fulfill({ json: { items: [{ event_type: "BOX_WEIGHT_RECORDED", actor_name: "Floor Packer", actor_role: "GENERAL", changed_at: "2026-09-30T10:30:00Z", before: { actual_net_weight_kg: null }, after: { actual_net_weight_kg: 2.03 } }], total: 1, offset: 0, limit: 25, has_more: false } }));
-  await page.goto("http://127.0.0.1:3000/scan");
+  await page.goto("/scan");
   await expect(page.getByRole("link", { name: "Scan box" })).toHaveAttribute("aria-current", "page");
   await page.getByLabel("Sticker code or QR link").fill("http://127.0.0.1:3000/scan/BOX-GROUP%20CT-20260929-001-6b89f7de");
   await page.getByRole("button", { name: "Open sticker" }).click();
@@ -455,6 +455,7 @@ test("scanned editable sticker opens its order and shows who changed it", async 
   await expect(page).toHaveURL(/\/scan\/BOX-GROUP%20CT-20260929-001-6b89f7de$/);
   await expect(page.getByRole("link", { name: "Open this box in packing" })).toHaveAttribute("href", "/packing?orderId=order-1&box=BOX-GROUP%20CT-20260929-001-6b89f7de");
   await expect(page.getByRole("heading", { name: "Change history" })).toBeVisible();
+  await page.locator("summary").filter({ hasText: "Change history" }).click();
   await expect(page.getByText(/Floor Packer/)).toBeVisible();
   await expect(page.getByText(/actual net weight kg: — → 2.03/)).toBeVisible();
 });
@@ -468,8 +469,8 @@ test("billing generates master invoices for selected buyers", async ({ page }) =
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ items: [
-        { order_id: "order-a", order_ref_id: "ORD-A", customer_code: "CT-A", customer_name: "Customer A", status: "HANDOFF_02_RETURNED", can_invoice: true, invoice_id: null, invoice_number: null, invoice_status: null },
-        { order_id: "order-b", order_ref_id: "ORD-B", customer_code: "CT-B", customer_name: "Customer B", status: "HANDOFF_02_RETURNED", can_invoice: true, invoice_id: null, invoice_number: null, invoice_status: null },
+        { order_id: "order-a", order_ref_id: "ORD-A", file_name: "A.xlsx", customer_code: "CT-A", customer_name: "Customer A", status: "HANDOFF_02_RETURNED", can_invoice: true, invoice_id: null, invoice_number: null, invoice_status: null },
+        { order_id: "order-b", order_ref_id: "ORD-B", file_name: "B.xlsx", customer_code: "CT-B", customer_name: "Customer B", status: "HANDOFF_02_RETURNED", can_invoice: true, invoice_id: null, invoice_number: null, invoice_status: null },
       ], total: 2, offset: 0, limit: 25, has_more: false }),
     });
   });
@@ -482,8 +483,8 @@ test("billing generates master invoices for selected buyers", async ({ page }) =
       invoice_type: "MASTER_SUMMARY", main_customer_seller: "Main buyer", sub_customer_buyer: "2 sub-customers / orders",
       subtotal_eur: 20, total_amount_eur: 20, amount_paid_eur: 0, status: "INVOICE_DRAFT", internal_notes: null, source_order_count: 2,
       items: [
-        { line_item_id: "line-a", source_order_id: "order-a", source_order_ref: "ORD-A", source_customer_code: "CT-A", product_code: "T001", product_name: "Herb", box_number: 1, pack_size: "1kg", billed_packs: 2, billed_weight_kg: 2, unit_price_eur: 5, line_total_eur: 10 },
-        { line_item_id: "line-b", source_order_id: "order-b", source_order_ref: "ORD-B", source_customer_code: "CT-B", product_code: "T002", product_name: "Leaf", box_number: 1, pack_size: "1kg", billed_packs: 2, billed_weight_kg: 2, unit_price_eur: 5, line_total_eur: 10 },
+        { line_item_id: "line-a", source_order_id: "order-a", source_order_ref: "ORD-A", source_file_name: "A.xlsx", source_customer_code: "CT-A", product_code: "T001", product_name: "Herb", box_number: 1, pack_size: "1kg", billed_packs: 2, billed_weight_kg: 2, unit_price_eur: 5, line_total_eur: 10 },
+        { line_item_id: "line-b", source_order_id: "order-b", source_order_ref: "ORD-B", source_file_name: "B.xlsx", source_customer_code: "CT-B", product_code: "T002", product_name: "Leaf", box_number: 1, pack_size: "1kg", billed_packs: 2, billed_weight_kg: 2, unit_price_eur: 5, line_total_eur: 10 },
       ],
     };
     await route.fulfill({
@@ -505,7 +506,7 @@ test("billing generates master invoices for selected buyers", async ({ page }) =
   });
 
   await page.route("**/backend/api/v3/invoicing/invoice-master", route => route.fulfill({ json: createdInvoice }));
-  await page.goto("http://127.0.0.1:3000/billing");
+  await page.goto("/billing");
   await page.getByRole("checkbox", { name: "Select CT-A" }).click();
   await page.getByRole("checkbox", { name: "Select CT-B" }).click();
   await page.getByRole("button", { name: "Create master draft" }).click();
@@ -513,7 +514,8 @@ test("billing generates master invoices for selected buyers", async ({ page }) =
   await expect.poll(() => generated).toEqual(["order-a", "order-b"]);
   await expect(page.getByText(/Master invoice · 2 sub-orders/)).toBeVisible();
   await expect(page.locator(".invoice-paper")).toContainText("CT-A");
-  await expect(page.locator(".invoice-paper")).toContainText("ORD-B");
+  await expect(page.locator(".invoice-paper")).toContainText("B.xlsx");
+  await expect(page.locator(".invoice-paper")).not.toContainText("ORD-B");
   await expect(page.getByRole("button", { name: "Approve and create final invoice" })).toBeVisible();
   await page.getByLabel("Unit price for T001 CT-A").fill("6");
   await page.getByRole("button", { name: "Approve and create final invoice" }).click();

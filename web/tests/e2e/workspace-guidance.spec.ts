@@ -11,14 +11,15 @@ test.beforeEach(async ({ page, context }) => {
     if (path.endsWith("/auth/me")) return route.fulfill({ json: { full_name: "Guide tester", role: "OWNER_ADMIN", must_change_password: false, permissions } });
     if (path.endsWith("/operations/summary")) return route.fulfill({ json: { awaiting_intake: 0, awaiting_procurement: 0, awaiting_packing: 0 } });
     if (path.endsWith("/packing-setup/table")) return route.fulfill({ json: { ...empty, summary: { total: 0, ready: 0, strict: true } } });
-    return route.fulfill({ json: /register$|\/files$|\/batches$|\/orders$|\/records$|\/order-exceptions$|\/source-files$/.test(path) ? empty : [] });
+    return route.fulfill({ json: /register$|\/files$|\/batches$|\/orders$|\/records$|\/order-exceptions$/.test(path) ? empty : [] });
   });
 });
 
 for (const [path, title] of [
   ["/", "Upload order"], ["/orders/files", "Upload order"],
-  ["/procurement/batches", "Find purchase batches"], ["/procurement", "Choose batch"],
-  ["/procurement/combine", "Find combine order files"], ["/packing/orders", "Find packing orders"],
+  ["/procurement/batches", "Find purchase batches"],
+  ["/procurement/master-purchase", "Find master purchase"],
+  ["/packing/orders", "Find packing orders"],
   ["/packing", "Browse customer orders"], ["/packing/setup", "Find the product to review"],
   ["/billing", "Find orders to invoice"], ["/scan", "Scan the box sticker"],
   ["/users", "Add a team member"], ["/orders/attention", "Find orders needing attention"],
@@ -106,20 +107,17 @@ test("required select guidance reads the field label without its option list", a
   await expect(guide).not.toContainText("Long catalog option");
 });
 
-test("purchasing guides review before confirmation and never confirms automatically", async ({ page }) => {
+test("purchasing shows the worksheet directly without a duplicate guidance banner", async ({ page }) => {
   const item = { item_id: "one", product_id: "basil", product_code: "BASIL", product_name: "Basil", produce_type: "HERB", pack_size: "1kg", ordered_pack_count: 10, ordered_weight_kg: 10, buffer_percentage: 0, buffer_pack_count: 0, buffer_weight_kg: 0, total_purchase_target_packs: 10, total_purchase_target_weight_kg: 10, required_packs: 10, required_weight_kg: 10, confirmed_purchased_pack_count: 10, confirmed_purchased_weight_kg: 10 };
   await page.route("**/backend/api/v3/procurement/batches/guide-batch", route => route.fulfill({ json: { batch_id: "guide-batch", batch_reference: "PUR-GUIDE", status: "PURCHASING_CONSOLIDATED", total_skus: 1, total_ordered_weight_kg: 10, total_buffer_weight_kg: 0, total_required_weight_kg: 10, items: [item] } }));
   await page.goto("/procurement?batchId=guide-batch");
-  const target = page.locator("[data-guidance-current='true']");
-  await expect(target).toHaveText("Review purchase quantities");
-  await page.getByRole("region", { name: "Next step guidance" }).getByRole("button", { name: "Show next action" }).click();
-  await target.click(); // This is the review anchor; it only focuses the worksheet.
-  await expect(target).toHaveText("Confirm purchases and send to packing");
-  await expect(target).toBeEnabled();
+  await expect(page.getByRole("region", { name: "Next step guidance" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Purchase quantities table" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true })).toBeEnabled();
 });
 
 test("packing guides rule choice and box generation while the final action is blocked", async ({ page }) => {
-  await page.route("**/backend/api/v3/packing/orders/guide-order/packing-list", route => route.fulfill({ json: { client_order_id: "guide-order", packing_revision: 1, order_ref_id: "ORD-GUIDE", status: "HANDOFF_01_SENT", sub_customer_code: "SHOP", route_code: "TETE", shipment_date: "2026-10-29", total_boxes_count: 0, boxes: [] } }));
+  await page.route("**/backend/api/v3/packing/orders/guide-order/packing-list", route => route.fulfill({ json: { client_order_id: "guide-order", packing_revision: 1, order_ref_id: "ORD-GUIDE", status: "HANDOFF_01_SENT", sub_customer_code: "Subcustomer", route_code: "TETE", shipment_date: "2026-10-29", total_boxes_count: 0, boxes: [] } }));
   await page.goto("/packing?orderId=guide-order");
   const target = page.locator("[data-guidance-current='true']");
   await expect(target).toHaveAccessibleName("Packing rules");
@@ -131,19 +129,19 @@ test("packing guides rule choice and box generation while the final action is bl
 });
 
 test("missing selling prices guide each amount before saving", async ({ page }) => {
-  await page.route("**/backend/api/v3/invoicing/price-check", route => route.fulfill({ json: { issues: [{ order_id: "order", order_ref: "ORD-PRICE", customer_name: "Shop", shipment_date: "2026-10-29", items: [{ product_id: "basil", product_code: "BASIL", product_name: "Basil", pack_size: "100g" }, { product_id: "leek", product_code: "LEEK", product_name: "Leek", pack_size: "200g" }] }] } }));
+  await page.route("**/backend/api/v3/invoicing/price-check", route => route.fulfill({ json: { issues: [{ order_id: "order", order_ref: "ORD-PRICE", customer_name: "Subcustomer", shipment_date: "2026-10-29", items: [{ product_id: "basil", product_code: "BASIL", product_name: "Basil", pack_size: "100g" }, { product_id: "leek", product_code: "LEEK", product_name: "Leek", pack_size: "200g" }] }] } }));
   await page.goto("/billing/resolve-prices?orderId=order");
   const target = page.locator("[data-guidance-current='true']");
-  await expect(target).toHaveAccessibleName("Selling price for BASIL 100g Shop");
+  await expect(target).toHaveAccessibleName("Selling price for BASIL 100g Subcustomer");
   await target.fill("10");
-  await expect(target).toHaveAccessibleName("Selling price for LEEK 200g Shop");
+  await expect(target).toHaveAccessibleName("Selling price for LEEK 200g Subcustomer");
   await target.fill("20");
   await expect(target).toHaveText("Save prices and return to billing");
 });
 
 test("invoice guidance requires review and points to saving after an edit", async ({ page }) => {
   await page.route("**/backend/api/v3/invoicing/guide-invoice", route => route.fulfill({ json: {
-    invoice_id: "guide-invoice", revision: 1, client_order_id: "order", invoice_number: "INV-GUIDE", invoice_type: "ON_BEHALF_SUB_CUSTOMER", main_customer_seller: "Seller", sub_customer_buyer: "Shop", currency: "THB", subtotal_eur: 10, total_amount_eur: 10, amount_paid_eur: 0, status: "INVOICE_DRAFT", internal_notes: null,
+    invoice_id: "guide-invoice", revision: 1, client_order_id: "order", invoice_number: "INV-GUIDE", invoice_type: "ON_BEHALF_SUB_CUSTOMER", main_customer_seller: "Seller", sub_customer_buyer: "Subcustomer", currency: "THB", subtotal_eur: 10, total_amount_eur: 10, amount_paid_eur: 0, status: "INVOICE_DRAFT", internal_notes: null,
     items: [{ line_item_id: "line", product_code: "BASIL", product_name: "Basil", pack_size: "100g", billed_packs: 10, billed_weight_kg: 1, unit_price_eur: 1 }],
   } }));
   await page.goto("/billing?invoiceId=guide-invoice");
@@ -169,7 +167,7 @@ test("temporary password setup guides valid fields before saving", async ({ page
 });
 
 test("failed record retrieval guides retry before choosing a record", async ({ page }) => {
-  await page.route("**/backend/api/v3/packing/orders?**", route => route.fulfill({ status: 503, json: { detail: "Records temporarily unavailable" } }));
+  await page.route("**/backend/api/v3/packing/files?**", route => route.fulfill({ status: 503, json: { detail: "Records temporarily unavailable" } }));
   await page.goto("/packing/orders");
   const target = page.locator("[data-guidance-current='true']");
   await expect(target).toHaveText("Retry");

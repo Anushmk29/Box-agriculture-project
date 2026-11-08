@@ -6,15 +6,17 @@ from typing import Any
 
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.dates import canonical_day
 from app.core.policy import Action, require
 from app.core.values import money, positive_money, required_text
+from app.core.work_limits import MAX_ITEMS, WorkLimit
 from app.models.audit import AgentHandoff, AuditLog
 from app.models.invoice import Invoice, InvoiceLineItem, InvoiceStatus, PaymentTransaction, Receipt
+from app.models.master_data import Customer
 from app.models.order import ClientOrder, OrderStatus
-from app.models.packing import Box
+from app.models.packing import Box, BoxItem
 from app.models.user import User, UserRole
 from app.modules.handoffs.service import HandoffService, canonical_sha256
 from app.modules.packing.constraints import validate_verified_net
@@ -50,7 +52,30 @@ class MissingSellingPricesError(ValueError):
                 "order_id": self.order_id, "shipment_date": self.shipment_date, "items": self.items}
 
 
+class MissingCustomerDetailsError(ValueError):
+    def __init__(self, invoice, customer):
+        self.invoice_id = invoice.id
+        super().__init__(f"Complete destination country and billing email for {customer.client_code} before dispatch")
+
+    def detail(self):
+        return {"code": "MISSING_CUSTOMER_DETAILS", "message": str(self), "invoice_id": self.invoice_id}
+
+
+def invoice_contact(db, invoice, customer):
+    if customer is None:
+        return {"billing_email": "", "destination_country": ""}
+    if invoice.status != InvoiceStatus.INVOICE_DRAFT and invoice.dispatched_at:
+        # The first later edit records what this issued document originally used.
+        saved = db.query(AuditLog).filter_by(event_type="CUSTOMER_BILLING_DETAILS_UPDATED",
+            target_table="customers", target_id=customer.id).filter(AuditLog.created_at >= invoice.dispatched_at)\
+            .order_by(AuditLog.created_at, AuditLog.id).first()
+        if saved:
+            return saved.before_state
+    return {"billing_email": customer.billing_email, "destination_country": customer.destination_country}
+
+
 def _approved_prices(catalogue: PriceCatalogue, order: ClientOrder, boxes: list[Box]) -> dict:
+    catalogue.preload(_price_requests(order, boxes))
     prices = {}
     missing = []
     for box in boxes:
@@ -73,6 +98,19 @@ def _approved_prices(catalogue: PriceCatalogue, order: ClientOrder, boxes: list[
     return prices
 
 
+def _price_requests(order, boxes):
+    return [dict(main_customer_id=order.main_customer_id, sub_customer_id=order.customer_id,
+                 product_id=product, pack_size=pack, as_of=order.raw_file.shipment_target_date)
+            for product, pack in {(item.product_id, item.pack_size) for box in boxes for item in box.items}]
+
+
+def _billing_boxes(db, order_ids):
+    query = db.query(Box).filter(Box.client_order_id.in_(order_ids))
+    if query.count() > MAX_ITEMS or db.query(BoxItem).join(Box).filter(Box.client_order_id.in_(order_ids)).count() > MAX_ITEMS:
+        raise WorkLimit("Select fewer orders: billing supports at most 20,000 packed lines or boxes per batch")
+    return query.options(selectinload(Box.items).joinedload(BoxItem.product)).all()
+
+
 class OnBehalfInvoicingService:
     """Owns the Phase 4 invoice, payment, and receipt transaction boundaries."""
 
@@ -85,6 +123,7 @@ class OnBehalfInvoicingService:
         *,
         actor: User,
         internal_notes: str | None = None,
+        catalogue: PriceCatalogue | None = None,
     ) -> Invoice:
         require(actor, Action.DRAFT_INVOICE)
         order = (
@@ -117,7 +156,7 @@ class OnBehalfInvoicingService:
         if invoice:
             return invoice
         else:
-            prices = _approved_prices(PriceCatalogue(self.db), order, boxes)
+            prices = _approved_prices(catalogue or PriceCatalogue(self.db), order, boxes)
             invoice = Invoice(
                 invoice_number=invoice_number,
                 client_order_id=order.id,
@@ -181,7 +220,14 @@ class OnBehalfInvoicingService:
         if not ids:
             raise ValueError("Select at least one completed customer order")
         # The request owns one transaction: a failed order rolls back the entire batch.
-        return [self.generate_sub_customer_invoice(order_id, actor=actor) for order_id in ids]
+        orders = self.db.query(ClientOrder).filter(ClientOrder.id.in_(ids)).order_by(ClientOrder.id).with_for_update().all()
+        boxes = _billing_boxes(self.db, ids)
+        by_order = {order.id: [] for order in orders}
+        for box in boxes:
+            by_order[box.client_order_id].append(box)
+        catalogue = PriceCatalogue(self.db)
+        catalogue.preload([lookup for order in orders for lookup in _price_requests(order, by_order[order.id])])
+        return [self.generate_sub_customer_invoice(order_id, actor=actor, catalogue=catalogue) for order_id in ids]
 
     def approve_bulk_invoices(self, invoice_ids: list[str], *, actor: User) -> list[Invoice]:
         self._require_accounting(actor)
@@ -227,15 +273,16 @@ class OnBehalfInvoicingService:
             raise ValueError("One or more selected orders already belong to an invoice")
 
         handoffs: dict[str, AgentHandoff] = {}
-        boxes_by_order: dict[str, list[Box]] = {}
+        boxes_by_order: dict[str, list[Box]] = {order.id: [] for order in orders}
+        for box in _billing_boxes(self.db, order_ids):
+            boxes_by_order[box.client_order_id].append(box)
         for order in orders:
-            boxes = self.db.query(Box).filter(Box.client_order_id == order.id).all()
+            boxes = boxes_by_order[order.id]
             if not boxes or any(not box.is_locked for box in boxes):
                 raise ValueError(f"Order {order.order_ref_id} does not have locked final packing")
             handoff = HandoffService(self.db).verified_handoff_02(order.id)
             self._assert_packing_matches_handoff(boxes, handoff)
             handoffs[order.id] = handoff
-            boxes_by_order[order.id] = boxes
 
         ordered = sorted(orders, key=lambda order: order.order_ref_id)
         manifest_hash = canonical_sha256(
@@ -252,6 +299,7 @@ class OnBehalfInvoicingService:
         shipment_date = ordered[0].raw_file.shipment_target_date
         customer_code = ordered[0].main_customer.client_code
         catalogue = PriceCatalogue(self.db)
+        catalogue.preload([lookup for order in ordered for lookup in _price_requests(order, boxes_by_order[order.id])])
         prices_by_order = {
             order.id: _approved_prices(catalogue, order, boxes_by_order[order.id])
             for order in ordered
@@ -323,10 +371,16 @@ class OnBehalfInvoicingService:
             raise ValueError(f"Invoice {invoice_id} not found")
         if invoice.status != InvoiceStatus.INVOICE_DRAFT:
             raise ValueError("Only a draft invoice can be approved and dispatched")
+        orders = self._invoice_orders(invoice, for_update=True)
+        customers = self.db.query(Customer).filter(Customer.id.in_({invoice.customer_id, invoice.seller_customer_id} - {None}))\
+            .order_by(Customer.id).with_for_update().populate_existing().all()
+        for customer in customers:
+            if not customer.destination_country.strip() or not customer.billing_email.strip():
+                raise MissingCustomerDetailsError(invoice, customer)
         invoice.status = InvoiceStatus.INVOICE_SENT
         invoice.reviewed_by_accounting = actor.id
         invoice.dispatched_at = datetime.now(UTC)
-        for order in self._invoice_orders(invoice):
+        for order in orders:
             WorkflowService(self.db).transition(
                 target=order,
                 to_status=OrderStatus.INVOICES_SENT,

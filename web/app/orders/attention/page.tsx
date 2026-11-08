@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
@@ -12,9 +14,11 @@ import { StatusMessage } from "@/components/status-message";
 import { OrdersNavigation } from "@/components/orders-navigation";
 import { safeDestination } from "@/lib/workflow";
 
-export default function OrdersNeedingAttention() { return <Suspense fallback={<p>Loading orders needing attention…</p>}><Exceptions /></Suspense>; }
+export default function OrdersNeedingAttention() {
+  useLanguage(); return <Suspense fallback={<p>{t("Loading orders needing attention…")}</p>}><Exceptions /></Suspense>; }
 
 function Exceptions() {
+  useLanguage();
   const params = useSearchParams(); const orderId = params.get("orderId");
   const router = useRouter(); const session = useSession();
   const returnTo = safeDestination(params.get("returnTo"));
@@ -68,24 +72,24 @@ function Exceptions() {
 
   return <div className="page"><OrdersNavigation current="attention" />
     <StatusMessage error={orderId ? "" : error} success={message} />
-    <RecordRegister mobileCards title="Orders needing attention" endpoint="/order-exceptions" identity="order_id" actionLabel={() => "Review order"}
-      description="Resolve full shortages and cancellations. Use All to find an order to cancel, or Completed to review past resolutions."
-      emptyMessage="No orders need shortage resolution. Use All to find an order to cancel."
-      columns={orderColumns} refreshKey={refresh} statuses={["SPLIT_AND_VALIDATED", "PURCHASING_CONSOLIDATED", "HANDOFF_01_SENT", "CANCELLED", "UNAVAILABLE"]}
+    <RecordRegister mobileCards title={t("Orders needing attention")} endpoint="/order-exceptions" identity="order_id" actionLabel={() => "Review order"}
+      description={t("Resolve full shortages and cancellations. Use All to find an order to cancel, or Completed to review past resolutions.")}
+      emptyMessage={t("No orders need shortage resolution. Use All to find an order to cancel.")}
+      columns={orderColumns.filter(column => column.key !== "order_ref_id")} refreshKey={refresh} statuses={["SPLIT_AND_VALIDATED", "PURCHASING_CONSOLIDATED", "HANDOFF_01_SENT", "CANCELLED", "UNAVAILABLE"]}
       open={row => recordLink("/orders/attention", "orderId", row.order_id)} />
-    {orderId && <TaskDialog title={String(record?.order_ref_id || "Order needing attention")} busy={busy}
-      onClose={() => router.push(listHref)} description="A resolution preserves demand and audit history. Payments and later invoice matters are handled by your team outside this system.">
+    {orderId && <TaskDialog title={String(record?.file_name || "Order needing attention")} busy={busy}
+      onClose={() => router.push(listHref)} description={t("A resolution preserves demand and audit history. Payments and later invoice matters are handled by your team outside this system.")}>
       <StatusMessage error={error} />
-      {!record ? <p>Loading order…</p> : <>
+      {!record ? <p>{t("Loading order…")}</p> : <>
         <p>{String(record.customer_name)} · {String(record.status)}</p>
-        {record.resolution_reason && <p>Resolution: {String(record.resolution_reason)}</p>}
-        {pending ? <><p>A submission is pending. Retry its original details to confirm the result.</p><button disabled={busy} onClick={() => void submit()}>Retry pending resolution</button></> : <>
+        {record.resolution_reason && <p>{t("Resolution: ")}{String(record.resolution_reason)}</p>}
+        {pending ? <><p>{t("A submission is pending. Retry its original details to confirm the result.")}</p><button disabled={busy} onClick={() => void submit()}>{t("Retry pending resolution")}</button></> : <>
           {(record.can_close_unavailable || record.can_cancel || record.can_record_manual_cancellation) ? <>
-            <label>Reason / manual resolution details<textarea data-guide={reason.trim().length < (record.can_cancel || record.can_close_unavailable ? 3 : 10) ? "Explain how this order should be resolved" : undefined} data-guide-detail="Record the reason and any manual handling before choosing the resolution." rows={4} maxLength={512} value={reason} onChange={event => setReason(event.target.value)} /></label>
-            {record.can_close_unavailable && <button data-guide="Record the unavailable order" data-guide-detail="Check the reason before closing the order as unavailable." disabled={busy || reason.trim().length < 3} onClick={() => void submit("UNAVAILABLE")}>Close as unavailable</button>}
-            {record.can_cancel && <button data-guide="Record the reviewed cancellation" data-guide-detail="Check the order and reason before cancelling it." disabled={busy || reason.trim().length < 3} onClick={() => void submit("CANCELLED")}>Cancel before buying</button>}
-            {!record.can_cancel && record.can_record_manual_cancellation && <><p>Confirm that you have manually resolved the purchased/packed goods. This action does not move stock, refund money or change shared purchase history.</p><button disabled={busy || reason.trim().length < 10} onClick={() => void submit("CANCELLED", true)}>Confirm manual handling and cancel</button></>}
-          </> : <p>This order is resolved or already invoiced. It cannot be changed here.</p>}
+            <label>{t("Reason / manual resolution details")}<textarea data-guide={reason.trim().length < (record.can_cancel || record.can_close_unavailable ? 3 : 10) ? t("Explain how this order should be resolved") : undefined} data-guide-detail={t("Record the reason and any manual handling before choosing the resolution.")} rows={4} maxLength={512} value={reason} onChange={event => setReason(event.target.value)} /></label>
+            {record.can_close_unavailable && <button data-guide={t("Record the unavailable order")} data-guide-detail={t("Check the reason before closing the order as unavailable.")} disabled={busy || reason.trim().length < 3} onClick={() => void submit("UNAVAILABLE")}>{t("Close as unavailable")}</button>}
+            {record.can_cancel && <button data-guide={t("Record the reviewed cancellation")} data-guide-detail={t("Check the order and reason before cancelling it.")} disabled={busy || reason.trim().length < 3} onClick={() => void submit("CANCELLED")}>{t("Cancel before buying")}</button>}
+            {!record.can_cancel && record.can_record_manual_cancellation && <><p>{t("Confirm that you have manually resolved the purchased/packed goods. This action does not move stock, refund money or change shared purchase history.")}</p><button disabled={busy || reason.trim().length < 10} onClick={() => void submit("CANCELLED", true)}>{t("Confirm manual handling and cancel")}</button></>}
+          </> : <p>{t("This order is resolved or already invoiced. It cannot be changed here.")}</p>}
         </>}
       </>}
     </TaskDialog>}

@@ -35,31 +35,20 @@ test("order intake rejects image files without sending an upload", async ({ page
   expect(uploads).toBe(0);
 });
 
-test("buyer combines client files and explicitly reviews a duplicate SKU", async ({ page }) => {
-  let combined = false;
+test("buyer explicitly reviews and merges a duplicate SKU", async ({ page }) => {
   let merged = false;
   const products = [{ id: "duplicate", t_code: "DUP", name_en: "White mushrooms", name_vi: "Duplicate" }, { id: "canonical", t_code: "MASTER", name_en: "White mushroom", name_vi: "Master" }];
   const batch = { batch_id: "combined", batch_reference: "PUR-COMBINED", status: "PURCHASING_CONSOLIDATED", total_skus: 0, total_ordered_weight_kg: 3, total_buffer_weight_kg: 0, total_required_weight_kg: 3, items: [] };
   await session(page, { value: "OWNER_ADMIN" }, async (path, route) => {
-    if (path === "/procurement/source-files") return { items: ["Sophie", "James"].map((name, i) => ({ raw_file_id: String(i), customer: name, file_name: `${name}.xlsx`, shipment_date: "2026-10-02", route: "CT", customer_count: 1 })), total: 2, offset: 0, limit: 25, has_more: false };
     if (path === "/procurement/latest-batch") return null;
     if (path === "/master-data/products") return merged ? products.slice(1) : products;
-    if (path === "/procurement/combine-and-consolidate") {
-      expect(route.request().postDataJSON().raw_file_ids).toEqual(["0", "1"]); combined = true; return batch;
-    }
     if (path === "/master-data/products/merge") {
       expect(route.request().postDataJSON()).toEqual({ source_id: "duplicate", target_id: "canonical" }); merged = true; return { message: "Merged" };
     }
     if (path.startsWith("/procurement/batches/")) return batch;
     return [];
   });
-  await page.goto("/procurement/combine");
-  await page.getByRole("checkbox", { name: "Select Sophie.xlsx", exact: true }).check();
-  await page.getByRole("checkbox", { name: "Select James.xlsx", exact: true }).check();
-  await expect(page.locator(".combine-review")).toContainText("source purchase batches will be replaced");
-  await page.getByRole("button", { name: "Combine 2 files", exact: true }).click();
-  await expect.poll(() => combined).toBe(true);
-  await expect(page).toHaveURL(/batchId=combined/);
+  await page.goto("/procurement?batchId=combined");
   await page.getByText("Batch preparation and catalog tools", { exact: true }).click();
   await page.getByRole("button", { name: "Merge duplicate products", exact: true }).click();
   await page.getByLabel("Duplicate to merge").selectOption("duplicate");
@@ -159,11 +148,12 @@ test("original file download errors remain visible on the order page", async ({ 
   });
   await page.goto("/orders?fileId=file");
   await page.locator(".order-file-reference summary").click();
+  await page.getByRole("button", { name: "File tools", exact: true }).click();
   await page.route("**/backend/api/v3/orders/file/source", route => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ detail: "Original file unavailable. Try again later." }) }));
   await expect(page.getByRole("button", { name: "Retry delivery" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Refresh delivery status" })).toHaveCount(0);
   await page.getByRole("button", { name: "Download original file" }).click();
-  await expect(page.getByRole("alert").filter({ hasText: "Original file unavailable. Try again later." })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "File tools", exact: true }).getByRole("alert")).toContainText("Original file unavailable. Try again later.");
   await expect(page.getByRole("button", { name: "View acknowledgment" })).toHaveCount(0);
 });
 
@@ -171,14 +161,14 @@ test("original file download errors remain visible on the order page", async ({ 
 test("packing workspace starts with a customer picker and explains the next action", async ({ page }) => {
   const packing = { client_order_id: "order", order_ref_id: "ORD-BUYER", status: "HANDOFF_01_SENT", packing_approval_status: "NONE", packing_review_note: null, sub_customer_code: "BUYER", route_code: "CT", shipment_date: "2026-10-02", total_boxes_count: 0, boxes: [] };
   await session(page, { value: "GENERAL" }, async path => {
-    if (path === "/packing/orders") return { items: [{ order_id: "order", order_ref_id: "ORD-BUYER", customer_code: "BUYER", customer: "Buyer shop", status: "HANDOFF_01_SENT", boxes: 0 }], total: 1, offset: 0, limit: 25, has_more: false };
-    if (path.endsWith("/sub-packing-lists")) return { group_name: "ALL", sub_customers: [{ client_order_id: "order", sub_customer_code: "BUYER", company_name: "Buyer shop", order_ref_id: "ORD-BUYER", boxes_count: 0, total_estimated_net_weight_kg: 2 }] };
+    if (path === "/packing/orders") return { items: [{ order_id: "order", order_ref_id: "ORD-BUYER", customer_code: "BUYER", customer: "Buyer subcustomer", status: "HANDOFF_01_SENT", boxes: 0 }], total: 1, offset: 0, limit: 25, has_more: false };
+    if (path.endsWith("/sub-packing-lists")) return { group_name: "ALL", sub_customers: [{ client_order_id: "order", sub_customer_code: "BUYER", company_name: "Buyer subcustomer", order_ref_id: "ORD-BUYER", boxes_count: 0, total_estimated_net_weight_kg: 2 }] };
     if (path.endsWith("/prepare")) { packing.status = "FLOOR_PACKING"; return { status: packing.status }; }
     if (path.endsWith("/packing-list")) return packing;
     return [];
   });
-  await page.goto("/packing/orders");
-  await page.getByLabel("Search records").fill("Buyer shop");
+  await page.goto("/packing/orders?display=orders");
+  await page.getByLabel("Search records").fill("Buyer subcustomer");
   await page.getByRole("link", { name: "Start packing BUYER", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Packing desk", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Current task" })).toBeVisible();
@@ -202,7 +192,7 @@ test("packing register ignores a previous search response", async ({ page }) => 
     const items = q ? [{ order_id: q, customer_code: `${q}-CUSTOMER`, order_ref_id: `ORD-${q}`, status: "FLOOR_PACKING", boxes: 1, outstanding: 1 }] : [];
     return { items, total: items.length, offset: 0, limit: 25, has_more: false };
   });
-  await page.goto("/packing/orders");
+  await page.goto("/packing/orders?display=orders");
   await page.getByLabel("Search records").fill("CT");
   await expect.poll(() => ctRequested).toBe(true);
   await page.getByLabel("Search records").fill("BE");

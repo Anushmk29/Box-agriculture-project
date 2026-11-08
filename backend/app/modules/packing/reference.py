@@ -27,7 +27,7 @@ def reference():
 
 def source_matches(product):
     selected = (product.packing_source or {}).get("rows", [])
-    names = {normalize_name(getattr(product, field)) for field in ["name_en", "name_th", "name_vi"]}
+    names = {normalize_name(getattr(product, field, None)) for field in ["name_en", "name_th", "name_vi"]} - {""}
     return [
         row
         for row in reference()["entries"]

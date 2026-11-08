@@ -22,7 +22,7 @@ SAMPLES = Path(__file__).resolve().parents[2] / "documents/new input format"
 
 @pytest.mark.parametrize("definition", references(), ids=lambda d: d["key"])
 def test_every_reference_has_a_matching_profile_and_source_cells(definition):
-    path = SAMPLES / definition["sample"]
+    path = SAMPLES.parent / definition.get("sample_directory", "new input format") / definition["sample"]
     if not path.exists():
         pytest.skip("Local client reference workbook unavailable")
     drafts = parse_profiles(str(path), references())
@@ -34,12 +34,12 @@ def test_every_reference_has_a_matching_profile_and_source_cells(definition):
             assert item.source["quantity_cell"] and item.source["sheet"]
             assert "raw_quantity" in item.source and item.source["template_version"] == 1
             assert item.quantity >= 0
-            assert item.product_name  # Unlabelled subtotal formulas are excluded.
+            assert item.product_name or "Order entry has no product description" in item.quantity_issues
 
 
 def test_inventory_covers_exactly_all_supplied_excel_workbooks():
     assert {p.name for p in SAMPLES.iterdir() if p.suffix in {".xlsx", ".xls"}} == {
-        d["sample"] for d in references()
+        d["sample"] for d in references() if not d.get("sample_directory")
     }
 
 

@@ -7,6 +7,7 @@ import pypdf
 from app.core import work_limits as limits
 from app.core.document_limits import inspect_document
 from app.core.work_limits import WorkLimit
+from app.modules.orders.quantities import unit_key
 from app.services.canonical_schema import (
     ActionType,
     CanonicalDraftItem,
@@ -41,9 +42,14 @@ class PdfOrderParser:
                 raise WorkLimit("PDF extracted text exceeds the 2 MB budget")
 
         lower_text = full_text.lower()
-        if "paris store" in lower_text or "alindar" in lower_text:
+        paris = "paris store" in lower_text or "alindar" in lower_text
+        italy = bool(re.search(r"\b(itm|mxp)\b", lower_text))
+        if (("alindar" in file_name.lower() and italy and not paris)
+                or (re.search(r"\bitm\b", file_name, re.I) and paris and not italy)):
+            raise ValueError("Filename and PDF customer identity conflict; review the source")
+        if paris:
             return self._parse_alindar_paris_store(full_text, file_name)
-        elif "itm" in lower_text or "mxp" in lower_text:
+        elif italy:
             return self._parse_itm_italy(full_text, file_name)
         else:
             return self._parse_generic_pdf_table(full_text, file_name)
@@ -63,14 +69,17 @@ class PdfOrderParser:
             if year:
                 shipment_date = date(year, int(eta_match.group(2)), int(eta_match.group(1))).isoformat()
 
-        for line in lines:
-            # Pattern: line ending with '<number> KG'
-            m = re.search(r"^(.*?)\s+(\d+(?:\.\d+)?)\s*KG$", line, re.IGNORECASE)
+        for line_number, line in enumerate(lines, 1):
+            m = re.search(r"^(.*?)\s+([+-]?\d+(?:[.,]\d+)?)\s*([A-Za-z]+)$", line, re.IGNORECASE)
             if not m:
                 continue
 
             content_part = m.group(1).strip()
-            qty = float(m.group(2))
+            if not content_part or re.fullmatch(r"[\d\s.,]+", content_part):
+                continue  # The unlabeled thousands-separated PDF total is not a product.
+            raw_quantity = m.group(2)
+            qty = float(raw_quantity.replace(",", "."))
+            unit = unit_key(m.group(3))
 
             # Ignore header lines
             if "total" in content_part.lower() or "d e s i g n a t i o n" in content_part.lower():
@@ -83,13 +92,24 @@ class PdfOrderParser:
             if code_m:
                 prod_code = code_m.group(1).strip()
                 prod_name = code_m.group(2).strip()
+            supplier = re.match(r"^(\d{2}-\d{3}|EL-?\d{2,3})\s+(.*)$", prod_name)
+            supplier_code = supplier[1] if supplier else None
+            if supplier:
+                prod_name = supplier[2]
 
             # Pack size hint
-            pack_m = re.search(r"(\d+(?:g|kg|gr))", prod_name, re.IGNORECASE)
+            pack_m = re.search(r"(\d+(?:[.,]\d+)?\s*(?:kg|gr|g))\b", prod_name, re.IGNORECASE)
             pack_size = pack_m.group(1) if pack_m else None
 
-            # Handle 0 KG as unfulfilled or CANCEL
-            action = ActionType.ORDER if qty > 0 else ActionType.CANCEL
+            problems = []
+            if unit not in {"kg", "g", "pc", "pack", "box", "bag", "bunch", "tray"}:
+                problems.append(f"Confirm the PDF order quantity unit: {m.group(3)}")
+            if unit == "box":
+                problems.append("Confirm the weight or inner pack count per ordered box; a product pack label is not a box weight")
+            if qty < 0:
+                problems.append("Negative order quantities need an explicit cancellation")
+                qty = 0
+            action = ActionType.ORDER if qty > 0 or problems else ActionType.CANCEL
 
             items.append(
                 CanonicalDraftItem(
@@ -98,10 +118,15 @@ class PdfOrderParser:
                     product_name=prod_name,
                     pack_size=pack_size,
                     quantity=qty,
-                    unit="kg",
+                    unit=unit,
                     action=action,
                     confidence=0.98,
                     notes="Paris Store DDP Thiais Order",
+                    quantity_issues=problems,
+                    source={"file": file_name, "pdf_line": line_number,
+                            "raw_quantity": raw_quantity, "raw_unit": m.group(3),
+                            "raw_pack_size": pack_size, "supplier_code": supplier_code,
+                            "requires_packing_review": unit == "box" or not pack_size},
                 )
             )
 
@@ -203,19 +228,26 @@ class PdfOrderParser:
     def _parse_generic_pdf_table(self, text: str, file_name: str) -> CanonicalOrderDraft:
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         items: list[CanonicalDraftItem] = []
-        for line in lines:
-            m = re.search(r"(\d+(?:\.\d+)?)\s*(?:kg|kgs|pcs|pack|box)$", line, re.IGNORECASE)
+        for line_number, line in enumerate(lines, 1):
+            m = re.search(r"([+-]?\d+(?:[.,]\d+)?)\s*(kg|kgs|pcs|pack|box)$", line, re.IGNORECASE)
             if m:
-                qty = float(m.group(1))
+                qty = float(m.group(1).replace(",", "."))
+                problems = ["Confirm the customer PDF format and quantities before Purchasing"]
+                if qty < 0:
+                    problems.append("Negative order quantities need an explicit cancellation")
                 items.append(
                     CanonicalDraftItem(
                         raw_text=line,
                         product_code=None,
                         product_name=line[: m.start()].strip(),
-                        quantity=qty,
-                        unit="kg",
+                        quantity=max(qty, 0),
+                        unit=unit_key(m.group(2)),
                         action=ActionType.ORDER,
                         confidence=0.80,
+                        quantity_issues=problems,
+                        source={"file": file_name, "pdf_line": line_number,
+                                "raw_quantity": m.group(1), "raw_unit": m.group(2),
+                                "requires_packing_review": True},
                     )
                 )
 

@@ -9,11 +9,12 @@ Historical effective intervals remain readable; new expiry dates are forbidden.
 from __future__ import annotations
 
 import re
+from collections import defaultdict
 from datetime import date, timedelta
 from decimal import Decimal
 
-from sqlalchemy import func, or_
-from sqlalchemy.orm import Session
+from sqlalchemy import Integer, String, and_, column, func, or_, select, values
+from sqlalchemy.orm import Session, aliased
 
 from app.core.dates import canonical_day
 from app.core.packs import pack_key
@@ -78,6 +79,80 @@ def _select_price(rows, pack_size, price_attribute):
 class PriceCatalogue:
     def __init__(self, db: Session):
         self.db = db
+        self._preloaded = {}
+
+    def preload(self, lookups):
+        """Read selected scopes together, with the same per-scope history bounds."""
+        requested = {}
+        for lookup in lookups:
+            key = (lookup["main_customer_id"], lookup["sub_customer_id"], lookup["product_id"],
+                   lookup["pack_size"], canonical_day(lookup["as_of"]))
+            if key not in self._preloaded:
+                requested[key] = None
+        keys = list(requested)
+        for offset in range(0, len(keys), 200):
+            batch = keys[offset:offset + 200]
+            found = {}
+            for model, attribute in ((CustomerSellingPrice, "selling_price_eur"), (PriceList, "unit_price_eur")):
+                scopes = []
+                for index, (main, customer, product, _pack, day) in enumerate(batch):
+                    if model is CustomerSellingPrice and not main:
+                        continue
+                    for priority, sub in enumerate((customer, None)):
+                        scopes.append((index * 4 + priority + (0 if model is CustomerSellingPrice else 2),
+                                       main, sub, product, day.replace("-", "")))
+                if not scopes:
+                    continue
+                wanted = values(column("slot", Integer), column("main_id", String),
+                                column("customer_id", String), column("product_id", String),
+                                column("day", String)).data(scopes).cte("wanted_prices")
+                customer_column = model.sub_customer_id if model is CustomerSellingPrice else model.customer_id
+                scope = and_(model.product_id == wanted.c.product_id,
+                             customer_column.is_not_distinct_from(wanted.c.customer_id))
+                if model is CustomerSellingPrice:
+                    scope = and_(scope, model.main_customer_id == wanted.c.main_id)
+                labels = select(wanted.c.slot, model.pack_size).select_from(wanted).join(model, scope).distinct().cte("price_labels")
+                ranked_labels = select(labels, func.row_number().over(
+                    partition_by=labels.c.slot, order_by=labels.c.pack_size).label("position")).cte("ranked_labels")
+                by_slot = defaultdict(list)
+                for slot, label in self.db.execute(select(ranked_labels.c.slot, ranked_labels.c.pack_size)
+                                                   .where(ranked_labels.c.position <= 501)):
+                    by_slot[slot].append(label)
+                matching = []
+                for slot, *_ in scopes:
+                    if len(by_slot[slot]) > 500:
+                        found[slot] = PriceCatalogueReviewRequired("Too many pack labels in this price scope; review the catalogue")
+                        continue
+                    candidates = _pack_size_candidates(batch[slot // 4][3])
+                    matching.extend((slot, label) for label in by_slot[slot] if _price_pack_key(label) in candidates)
+                if not matching:
+                    continue
+                rows = defaultdict(list)
+                for part in range(0, len(matching), 1000):
+                    packs = values(column("slot", Integer), column("pack_size", String)).data(matching[part:part + 1000]).cte("wanted_packs")
+                    active = select(wanted.c.slot, *model.__table__.c, func.row_number().over(
+                        partition_by=wanted.c.slot, order_by=(model.valid_from.desc(), model.id)).label("position"))\
+                        .select_from(wanted).join(model, scope).join(packs, and_(packs.c.slot == wanted.c.slot,
+                            packs.c.pack_size == model.pack_size)).where(
+                            func.replace(func.trim(model.valid_from), "-", "") <= wanted.c.day,
+                            or_(model.valid_to.is_(None), func.replace(func.trim(model.valid_to), "-", "") >= wanted.c.day))\
+                        .subquery("active_prices")
+                    price_row = aliased(model, active)
+                    for slot, row in self.db.execute(select(active.c.slot, price_row).where(active.c.position <= 501)):
+                        if len(rows[slot]) <= 500:
+                            rows[slot].append(row)
+                for slot, *_ in scopes:
+                    if slot in found:
+                        continue
+                    try:
+                        self._validate_rows(rows[slot])
+                        found[slot] = _select_price(rows[slot], batch[slot // 4][3], attribute)
+                    except PriceCatalogueReviewRequired as exc:
+                        found[slot] = exc
+            for index, key in enumerate(batch):
+                # Bad lower-priority histories must not override an approved customer price.
+                self._preloaded[key] = next((found[index * 4 + priority] for priority in range(4)
+                                             if found.get(index * 4 + priority) is not None), None)
 
     def price_for(
         self,
@@ -89,6 +164,12 @@ class PriceCatalogue:
         as_of: str,
     ) -> Decimal | None:
         as_of = canonical_day(as_of)
+        key = (main_customer_id, sub_customer_id, product_id, pack_size, as_of)
+        if key in self._preloaded:
+            price = self._preloaded[key]
+            if isinstance(price, PriceCatalogueReviewRequired):
+                raise price
+            return price
         if main_customer_id:
             for sub in (sub_customer_id, None):
                 query = self._matching_packs(self._selling_scope(main_customer_id, sub, product_id),
@@ -127,6 +208,11 @@ class PriceCatalogue:
             func.replace(func.trim(model.valid_from), "-", "") <= compact,
             or_(model.valid_to.is_(None), func.replace(func.trim(model.valid_to), "-", "") >= compact),
         ).order_by(model.valid_from.desc(), model.id).limit(501).all()
+        PriceCatalogue._validate_rows(rows)
+        return rows
+
+    @staticmethod
+    def _validate_rows(rows):
         if len(rows) > 500:
             raise PriceCatalogueReviewRequired("Too many overlapping price rows; review the catalogue")
         # Validate legacy date strings too; malformed calendar dates must not win
@@ -138,7 +224,6 @@ class PriceCatalogue:
                     canonical_day(row.valid_to)
         except ValueError as exc:
             raise PriceCatalogueReviewRequired("Invalid stored price date; review the catalogue") from exc
-        return rows
 
     def set_price(
         self,
@@ -163,6 +248,7 @@ class PriceCatalogue:
         valid_from = canonical_day(valid_from)
         pack_size = required_text(_price_pack_key(pack_size), limit=64)
         price = positive_money(price)
+        self._preloaded.clear()
         if not self.db.query(Customer).filter_by(id=main_customer_id, is_main_customer=True).with_for_update().populate_existing().first():
             raise LookupError("Main customer not found")
         if not self.db.get(Product, product_id):

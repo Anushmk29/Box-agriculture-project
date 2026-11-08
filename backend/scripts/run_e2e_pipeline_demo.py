@@ -18,13 +18,14 @@ from dotenv import load_dotenv
 
 load_dotenv(os.path.join(backend_dir, ".env"))
 
+from app.services.packing_override_service import PackingOverrideService
+from app.services.purchasing_aggregator import PurchasingAggregatorService
+
 from app.core.database import SessionLocal
 from app.models.master_data import Customer, Product
 from app.models.order import ClientOrder, ClientOrderItem, OrderStatus, RawOrderFile
 from app.models.user import User, UserRole
 from app.services.on_behalf_invoicing_service import OnBehalfInvoicingService
-from app.services.packing_override_service import PackingOverrideService
-from app.services.purchasing_aggregator import PurchasingAggregatorService
 
 
 def run_pipeline():

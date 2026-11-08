@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { LoadingProvider } from "@/components/loading-provider";
 import { Toaster } from "@/components/toaster";
 import { ConfirmHost } from "@/components/confirm-host";
+import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 import "./compact.css";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body><LoadingProvider><AppShell>{children}</AppShell></LoadingProvider><ConfirmHost /><Toaster /></body>
+      <body><LanguageProvider><LoadingProvider><AppShell>{children}</AppShell></LoadingProvider><ConfirmHost /><Toaster /></LanguageProvider></body>
     </html>
   );
 }

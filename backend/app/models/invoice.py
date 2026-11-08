@@ -1,13 +1,23 @@
 import enum
 from datetime import UTC, datetime
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.orm import deferred, relationship
 
 from app.core.database import Base, uuid_pk
 
 
-class InvoiceStatus(str, enum.Enum):
+class InvoiceStatus(enum.StrEnum):
     INVOICE_DRAFT = "INVOICE_DRAFT"
     INVOICE_SENT = "INVOICE_SENT"
     PARTIALLY_PAID = "PARTIALLY_PAID"

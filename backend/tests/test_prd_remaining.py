@@ -72,7 +72,7 @@ def test_fuzzy_sku_requires_review_and_suggests_canonical_product(db_session):
     assert NameFirstMatcher(db_session).reviewed_product(["Lemongras"], main_customer_id="another-client") is None
 
 
-def test_same_day_uploads_keep_separate_demand_and_combining_retires_old_batches(db_session):
+def test_same_day_uploads_keep_separate_demand_and_buffers_after_rebuild(db_session):
     raw, _ = _setup(db_session)
     actor = db_session.get(User, raw.uploaded_by)
     second = RawOrderFile(file_name="second.xlsx", storage_url="second.xlsx", shipment_target_date=raw.shipment_target_date,
@@ -94,11 +94,57 @@ def test_same_day_uploads_keep_separate_demand_and_combining_retires_old_batches
     service.set_item_buffer(first_batch.items[0].id, 10, actor=actor, save_as_default=False)
     service.set_item_buffer(second_batch.items[0].id, 20, actor=actor, save_as_default=False)
     actor.role = UserRole.GENERAL
-    combined = service.consolidate([raw.id, second.id], actor=actor)
+    service.rebuild_batch(first_batch.id, actor=actor)
+    service.rebuild_batch(second_batch.id, actor=actor)
+    assert db_session.query(MasterPurchasingList).count() == 2
+    assert float(first_batch.items[0].ordered_net_weight_kg) == 1.0
+    assert float(second_batch.items[0].ordered_net_weight_kg) == 2.0
+    assert float(first_batch.items[0].buffer_percentage) == 10
+    assert float(second_batch.items[0].buffer_percentage) == 20
+
+
+def test_rebuild_keeps_historical_multi_file_batch_sources(db_session):
+    from app.models.procurement import PurchasingOrderSource
+
+    raw, _ = _setup(db_session)
+    actor = db_session.get(User, raw.uploaded_by)
+    second = RawOrderFile(file_name="historical.xlsx", storage_url="historical.xlsx",
+        shipment_target_date=raw.shipment_target_date, route_line=raw.route_line,
+        uploaded_by=actor.id, main_customer_id=raw.main_customer_id, status=OrderStatus.PARSED)
+    db_session.add(second)
+    db_session.flush()
+    for source, quantity in [(raw, 10), (second, 20)]:
+        OrderIntake(db_session).materialize(raw_file=source, drafts=[_draft(_item(quantity))])
+        source.status = OrderStatus.SPLIT_AND_VALIDATED
+    batch = MasterPurchasingList(batch_reference="HISTORICAL", raw_order_file_id=raw.id,
+        shipment_date=raw.shipment_target_date, total_skus_count=0, status=OrderStatus.PURCHASING_CONSOLIDATED)
+    db_session.add(batch)
+    db_session.flush()
+    for source in [raw, second]:
+        db_session.add(PurchasingOrderSource(purchasing_list_id=batch.id, raw_order_file_id=source.id))
+    db_session.flush()
+
+    service = PurchasingBatchService(db_session)
+    with pytest.raises(ValueError, match="one uploaded order file"):
+        service._build_batch(raw_file_ids=[raw.id, second.id], actor=actor, batch_ref="NEW-MULTI-FILE")
+    service.rebuild_batch(batch.id, actor=actor)
     assert db_session.query(MasterPurchasingList).count() == 1
-    assert float(combined.items[0].ordered_net_weight_kg) == 3.0
-    assert len(combined.sources) == 2
-    assert float(combined.items[0].buffer_percentage) == pytest.approx(16.67)
+    assert {source.raw_order_file_id for source in batch.sources} == {raw.id, second.id}
+    assert float(batch.items[0].ordered_net_weight_kg) == 3.0
+
+
+def test_new_batch_cannot_take_sources_from_another_batch(db_session):
+    raw, _ = _setup(db_session)
+    actor = db_session.get(User, raw.uploaded_by)
+    OrderIntake(db_session).materialize(raw_file=raw, drafts=[_draft(_item(10))])
+    raw.status = OrderStatus.SPLIT_AND_VALIDATED
+    db_session.flush()
+    service = PurchasingBatchService(db_session)
+    batch = service.consolidate_raw_file(raw.id, actor=actor)
+    with pytest.raises(ValueError, match="another purchase batch"):
+        service._build_batch(raw_file_ids=[raw.id], actor=actor, batch_ref="DIFFERENT-BATCH")
+    assert db_session.query(MasterPurchasingList).count() == 1
+    assert float(batch.items[0].ordered_net_weight_kg) == 1.0
 
 
 def test_master_product_merge_collapses_pending_lines_and_remembers_alias(db_session):

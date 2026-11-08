@@ -44,7 +44,7 @@ export async function api<T>(path: string, init: RequestInit = {}, options: { ba
       if (response.status === 401 && path !== "/auth/login" && typeof window !== "undefined") {
         expireSession();
       }
-      throw new ApiError(response.status, payload?.detail);
+      throw new ApiError(response.status, payload?.detail, Number(response.headers.get("Retry-After")) || null);
     }
     return payload as T;
   } finally {

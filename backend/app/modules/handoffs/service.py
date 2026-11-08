@@ -15,6 +15,8 @@ from app.models.order import ClientOrder, OrderStatus
 from app.models.packing import Box
 from app.models.procurement import MasterPurchasingList
 from app.models.user import User
+from app.modules.orders.quantities import weight_only_line
+from app.modules.procurement.batch import load_batch_orders
 from app.modules.workflow.service import WorkflowService
 
 
@@ -44,21 +46,25 @@ class HandoffService:
         """Internal transaction step; caller authorizes and locks the batch."""
         orders = self._batch_orders(batch)
         allocated_counts = self._allocate_confirmed_counts(batch, orders)
+        weight_allocations = self._allocate_weight_orders(batch, orders, allocated_counts)
         purchases = {(item.product_id, item.pack_size): item for item in batch.items}
         confirmed_orders = []
         for order in sorted(orders, key=lambda current: current.order_ref_id):
-            positive_items = [item for item in order.items if item.ordered_pack_count > 0]
+            positive_items = [item for item in order.items if item.ordered_pack_count > 0 or weight_only_line(item)]
             for item in positive_items:
                 purchase = purchases.get((item.product_id, item.pack_size))
                 item.replacement_product_id = purchase.replacement_product_id if purchase else None
                 # The relationship may have been loaded before this confirmation.
                 self.db.expire(item, ["replacement_product"])
-                item.confirmed_pack_count = allocated_counts[item.id]
-                item.confirmed_net_weight_kg = (
-                    Decimal(str(item.estimated_net_weight_kg))
-                    / item.ordered_pack_count
-                    * allocated_counts[item.id]
-                ).quantize(Decimal("0.0001"), rounding=ROUND_DOWN)
+                if item.id in weight_allocations:
+                    item.confirmed_pack_count, item.confirmed_net_weight_kg = weight_allocations[item.id]
+                else:
+                    item.confirmed_pack_count = allocated_counts[item.id]
+                    item.confirmed_net_weight_kg = (
+                        Decimal(str(item.estimated_net_weight_kg))
+                        / item.ordered_pack_count
+                        * allocated_counts[item.id]
+                    ).quantize(Decimal("0.0001"), rounding=ROUND_DOWN)
             confirmed_orders.append(
                 {
                     "client_id": order.customer_id,
@@ -76,8 +82,10 @@ class HandoffService:
                             "pack_size": item.pack_size,
                             "confirmed_pack_count": item.confirmed_pack_count,
                             "ordered_pack_count": item.ordered_pack_count,
+                            "quantity_basis": "WEIGHT" if weight_only_line(item) else "PACKS",
                             "shortage_pack_count": max(0, item.ordered_pack_count - item.confirmed_pack_count),
                             "confirmed_net_weight_kg": float(item.confirmed_net_weight_kg),
+                            "shortage_weight_kg": max(0, float(Decimal(str(item.estimated_net_weight_kg)) - item.confirmed_net_weight_kg)),
                             "box_material_req": item.packing_product.box_material.value,
                             "temperature_req": item.packing_product.temperature.value,
                             "control_status": item.packing_product.control_status.value,
@@ -126,20 +134,14 @@ class HandoffService:
         )
         self.db.add(handoff)
 
-        workflow = WorkflowService(self.db)
+        workflow = WorkflowService(self.db, defer_flush=True)
         workflow.transition(
             target=batch,
             to_status=OrderStatus.HANDOFF_01_SENT,
             actor=actor,
             target_table="master_purchasing_lists",
         )
-        for order in orders:
-            workflow.transition(
-                target=order,
-                to_status=OrderStatus.HANDOFF_01_SENT,
-                actor=actor,
-                target_table="client_orders",
-            )
+        workflow.transition_orders(orders=orders, to_status=OrderStatus.HANDOFF_01_SENT, actor=actor)
         self.db.flush()
         self.db.refresh(handoff)
         return handoff
@@ -263,13 +265,8 @@ class HandoffService:
             raise ValueError("Handoff 02 integrity verification failed")
         return handoff
 
-    @staticmethod
-    def _batch_orders(batch: MasterPurchasingList) -> set[ClientOrder]:
-        orders = {source.client_order for source in batch.sources if source.client_order}
-        for source in batch.sources:
-            if source.raw_order_file:
-                orders.update(source.raw_order_file.client_orders)
-        return {order for order in orders if order.status not in {OrderStatus.CANCELLED, OrderStatus.UNAVAILABLE}}
+    def _batch_orders(self, batch: MasterPurchasingList) -> set[ClientOrder]:
+        return load_batch_orders(self.db, batch)
 
     @staticmethod
     def _batch_route(batch: MasterPurchasingList) -> str | None:
@@ -277,6 +274,61 @@ class HandoffService:
             if source.raw_order_file:
                 return source.raw_order_file.route_line
         return None
+
+    @staticmethod
+    def _allocate_weight_orders(batch, orders, fixed_allocations):
+        """Keep standard-pack allocations; share remaining received stock by kg."""
+        grouped = {}
+        for order in orders:
+            for item in order.items:
+                grouped.setdefault((item.product_id, item.pack_size), []).append(item)
+        purchases = {(item.product_id, item.pack_size): item for item in batch.items}
+        allocations = {}
+        for key, items in grouped.items():
+            pending = [item for item in items if weight_only_line(item)]
+            if not pending:
+                continue
+            purchase = purchases.get(key)
+            count = (purchase.confirmed_purchased_pack_count or 0) if purchase else 0
+            available = Decimal(str(purchase.confirmed_purchased_weight_kg or 0)) if purchase else Decimal(0)
+            # A consolidated purchase can include both known standard packs and
+            # reviewed weight orders. Both allocations draw from the same stock.
+            for item in items:
+                if item.ordered_pack_count > 0:
+                    packs = fixed_allocations[item.id]
+                    net = (Decimal(str(item.estimated_net_weight_kg)) / item.ordered_pack_count * packs
+                           ).quantize(Decimal("0.0001"), rounding=ROUND_DOWN)
+                    count -= packs
+                    available -= net
+            if count <= 0 or available <= 0:
+                allocations.update({item.id: (0, Decimal(0)) for item in pending})
+                continue
+            requested = sum(Decimal(str(item.estimated_net_weight_kg)) for item in pending)
+            target = min(requested, available)
+            ranked = []
+            weight_ranked = []
+            used = 0
+            for item in pending:
+                weight = Decimal(str(item.estimated_net_weight_kg))
+                exact = count * weight / requested
+                packs = int(exact)
+                used += packs
+                ranked.append((exact - packs, item.client_order.order_ref_id, item.id))
+                exact_net = target * weight / requested
+                net = exact_net.quantize(Decimal("0.0001"), rounding=ROUND_DOWN)
+                weight_ranked.append((exact_net - net, item.client_order.order_ref_id, item.id))
+                allocations[item.id] = (packs, net)
+            for _, _, identity in sorted(ranked, key=lambda row: (-row[0], row[1], row[2]))[:count - used]:
+                packs, net = allocations[identity]
+                allocations[identity] = (packs + 1, net)
+            remainder = int((target - sum(allocations[item.id][1] for item in pending)) / Decimal("0.0001"))
+            for _, _, identity in sorted(weight_ranked, key=lambda row: (-row[0], row[1], row[2]))[:remainder]:
+                packs, net = allocations[identity]
+                allocations[identity] = (packs, net + Decimal("0.0001"))
+            for item in pending:
+                if allocations[item.id][0] == 0:
+                    allocations[item.id] = (0, Decimal(0))
+        return allocations
 
     @staticmethod
     def _allocate_confirmed_counts(

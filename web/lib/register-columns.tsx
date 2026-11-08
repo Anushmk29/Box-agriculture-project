@@ -1,3 +1,4 @@
+import { t } from "@/lib/language";
 import type { RegisterColumn, RegisterRow } from "@/components/record-register";
 
 // One customer cell: readable name first, code underneath only when it adds information.
@@ -9,6 +10,13 @@ const customerCell = (row: RegisterRow) => {
 };
 
 export const orderStatuses = ["HANDOFF_01_SENT", "PACKING_DESIGNED", "FLOOR_PACKING", "FINAL_PACK_LOCKED", "HANDOFF_02_RETURNED", "INVOICES_DRAFTED", "INVOICES_SENT", "CONFIRMED_PAID", "RECEIPTS_ISSUED", "ORDER_CLOSED"];
+export const purchaseColumns: RegisterColumn[] = [
+  { key: "files", label: "Order files", sort: "name", render: row => <span className="register-customer">{(row.files as string[] || []).join(", ") || t("No source filename")}<small>{String(row.display_name || "")}</small></span> },
+  { key: "customers", label: "Clients", sort: "customer", render: row => { const clients = row.customers as string[] || []; return clients.slice(0, 2).join(", ") + (clients.length > 2 ? ` +${clients.length - 2}` : ""); } },
+  { key: "shipment_date", label: "Shipment", sort: "shipment_date" }, { key: "route_code", label: "Route", sort: "route" },
+  { key: "status", label: "Status", sort: "status" }, { key: "total_skus", label: "Products", sort: "products" },
+  { key: "outstanding_items", label: "Awaiting confirmation", sort: "outstanding" },
+];
 export const fileColumns: RegisterColumn[] = [
   { key: "file_name", label: "Order file", sort: "name" }, { key: "customer", label: "Client", sort: "customer" },
   { key: "shipment_date", label: "Shipment", sort: "shipment_date" }, { key: "route", label: "Route", sort: "route" },
@@ -17,7 +25,7 @@ export const fileColumns: RegisterColumn[] = [
 ];
 export const orderColumns: RegisterColumn[] = [
   { key: "customer_code", label: "Customer", sort: "customer", render: customerCell },
-  { key: "order_ref_id", label: "Order reference", sort: "reference", render: row => <code className="register-ref">{String(row.order_ref_id ?? "—")}</code> }, { key: "shipment_date", label: "Shipment", sort: "shipment_date" },
+  { key: "file_name", label: "Order file", sort: "name", render: row => String(row.file_name || t("Source filename unavailable")) }, { key: "shipment_date", label: "Shipment", sort: "shipment_date" },
   { key: "route", label: "Route", sort: "route" }, { key: "status", label: "Status", sort: "status" },
   { key: "created_at", label: "Created", sort: "created_at", render: row => {
     if (!row.created_at) return "—";
@@ -25,6 +33,6 @@ export const orderColumns: RegisterColumn[] = [
     if (!Number.isFinite(created.getTime())) return "—";
     const today = new Date();
     const days = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(created.getFullYear(), created.getMonth(), created.getDate())) / 86400000);
-    return days <= 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`;
+    return days <= 0 ? t("Today") : days === 1 ? t("Yesterday") : t(`${days} days ago`);
   } },
 ];

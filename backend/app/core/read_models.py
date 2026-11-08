@@ -29,6 +29,18 @@ def purchase_file_links():
     return direct.union(combined, explicit).subquery()
 
 
+def scope_file_names(db, raw_file_id=None, batch_id=None):
+    if not raw_file_id and not batch_id:
+        return None
+    query = db.query(RawOrderFile.file_name)
+    if raw_file_id:
+        query = query.filter(RawOrderFile.id == raw_file_id)
+    else:
+        links = purchase_file_links()
+        query = query.filter(RawOrderFile.id.in_(select(links.c.file_id).where(links.c.batch_id == batch_id)))
+    return ", ".join(name for name, in bounded_headers(query.distinct().order_by(RawOrderFile.file_name))) or None
+
+
 def stored_bytes(db, column):
     value = cast(column, Text)
     return func.length(cast(value, LargeBinary)) if db.get_bind().dialect.name == "sqlite" else func.octet_length(value)
@@ -78,7 +90,9 @@ def invoice_read_options():
     return (undefer(Invoice.internal_notes), joinedload(Invoice.customer), joinedload(Invoice.seller_customer),
         selectinload(Invoice.items).joinedload(InvoiceLineItem.product),
         selectinload(Invoice.items).joinedload(InvoiceLineItem.source_order)
-            .joinedload(ClientOrder.customer))
+            .joinedload(ClientOrder.customer),
+        selectinload(Invoice.items).joinedload(InvoiceLineItem.source_order)
+            .joinedload(ClientOrder.raw_file).load_only(*RAW_HEADERS))
 
 
 def load_invoice_details(db, ids, *, page=False):

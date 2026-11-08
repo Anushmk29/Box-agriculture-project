@@ -1,0 +1,31 @@
+{
+    email {$ACME_EMAIL}
+    admin off
+}
+
+{$APP_DOMAIN} {
+    encode zstd gzip
+
+    # Allow the application's 25 MiB documents plus multipart overhead.
+    # The API enforces its own tighter per-route limits.
+    request_body {
+        max_size 28MB
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        X-Frame-Options SAMEORIGIN
+        -Server
+    }
+
+    # Keep cookies and API calls on the app origin. Bypass Next.js buffering
+    # for Excel/PDF uploads; strip /backend before forwarding to FastAPI.
+    handle_path /backend/* {
+        reverse_proxy api:8000
+    }
+
+    handle {
+        reverse_proxy web:3000
+    }
+}

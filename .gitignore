@@ -1,5 +1,8 @@
 .env
 .env.local
+fb_cookies.json
+cookies.json
+*_cookies.json
 .venv/
 __pycache__/
 *.py[cod]

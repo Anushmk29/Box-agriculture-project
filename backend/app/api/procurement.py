@@ -1,31 +1,32 @@
 from decimal import Decimal
 from html import escape
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import func
-from sqlalchemy.orm import Session, joinedload, selectinload
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
 from app.core.dependencies import require_access, require_action
 from app.core.policy import Action
 from app.core.read_models import (
     MAX_DETAIL_LINES,
-    LegacyPage,
     bounded_headers,
     purchase_file_links,
     raw_headers,
+    scope_file_names,
 )
 from app.core.registers import RegisterQuery
 from app.core.values import INT32_MAX, PURCHASE_WEIGHT_MAX
 from app.core.work_limits import WorkLimit
-from app.models.master_data import ProduceType, Product
-from app.models.order import ClientOrder, ClientOrderItem, OrderStatus, RawOrderFile
+from app.models.master_data import ProduceType
+from app.models.order import OrderStatus, RawOrderFile
 from app.models.procurement import MasterPurchasingList, PurchasingItem
 from app.models.user import User, UserRole
 from app.modules.procurement.batch import PurchasingBatchService
+from app.modules.procurement.market_list import market_list, market_pdf
 from app.modules.procurement.service import ProcurementConfirmation, ProcurementConfirmationService
 
 router = APIRouter(
@@ -43,6 +44,7 @@ class PurchasingItemOut(BaseModel):
     produce_type: str | None = None
     pack_size: str
     ordered_pack_count: int
+    pack_count_pending: bool = False
     ordered_weight_kg: float
     buffer_percentage: float
     buffer_pack_count: int
@@ -59,7 +61,7 @@ class PurchasingItemOut(BaseModel):
     replacement_product_name: str | None = None
 
 
-def _to_purchasing_item_out(it: PurchasingItem, ordered_packs: int) -> PurchasingItemOut:
+def _to_purchasing_item_out(it: PurchasingItem, ordered_packs: int, *, pack_count_pending: bool = False) -> PurchasingItemOut:
     tot_packs = it.total_required_pack_count or 0
     buf_pct = float(it.buffer_percentage or 0.0)
     ord_packs = ordered_packs
@@ -85,6 +87,7 @@ def _to_purchasing_item_out(it: PurchasingItem, ordered_packs: int) -> Purchasin
         produce_type=produce_type_val,
         pack_size=it.pack_size,
         ordered_pack_count=ord_packs,
+        pack_count_pending=pack_count_pending or (ord_packs == 0 and ord_wt > 0),
         ordered_weight_kg=ord_wt,
         buffer_percentage=buf_pct,
         buffer_pack_count=buf_packs,
@@ -128,7 +131,8 @@ def _batch_response(db: Session, mpl: MasterPurchasingList) -> MasterPurchasingR
         .order_by(RawOrderFile.file_name, RawOrderFile.id))
     items = db.query(PurchasingItem).filter(PurchasingItem.purchasing_list_id == mpl.id).options(
         joinedload(PurchasingItem.product), joinedload(PurchasingItem.replacement_product)).all()
-    ordered = PurchasingBatchService(db).ordered_packs(mpl)
+    pending_keys = set()
+    ordered = PurchasingBatchService(db).ordered_packs(mpl, pending_keys=pending_keys)
     return MasterPurchasingResponse(
         batch_id=mpl.id,
         batch_reference=mpl.batch_reference,
@@ -144,18 +148,51 @@ def _batch_response(db: Session, mpl: MasterPurchasingList) -> MasterPurchasingR
             sum(float(it.total_required_weight_kg or 0) for it in items), 4
         ),
         items=[
-            _to_purchasing_item_out(it, ordered.get((it.product_id, it.pack_size), 0))
+            _to_purchasing_item_out(it, ordered.get((it.product_id, it.pack_size), 0),
+                                    pack_count_pending=(it.product_id, it.pack_size) in pending_keys)
             for it in items
         ],
     )
 
 
-class CombineOrdersRequest(BaseModel):
-    raw_file_ids: list[str] = Field(default_factory=list, max_length=500)
-    client_order_ids: list[str] | None = Field(default=None, max_length=500)
-    batch_reference: str | None = None
-    shipment_date: str | None = None
-    route_code: str | None = None
+class MarketListRequest(BaseModel):
+    batch_ids: list[Annotated[str, Field(min_length=1, max_length=36)]] = Field(min_length=1, max_length=50)
+
+
+def _market_report(db, batch_ids):
+    try:
+        return market_list(db, batch_ids)
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.post("/master-purchase/preview")
+def preview_master_purchase(payload: MarketListRequest, db: Session = Depends(get_db, scope="function")):
+    return _market_report(db, payload.batch_ids)
+
+
+def _market_download(db, batch_ids):
+    report = _market_report(db, batch_ids)
+    try:
+        content = market_pdf(report)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    return Response(content, media_type="application/pdf", headers={
+        "Content-Disposition": 'attachment; filename="master-purchase-list.pdf"',
+        "Cache-Control": "no-store",
+    })
+
+
+@router.post("/master-purchase/pdf")
+def download_master_purchase(payload: MarketListRequest, db: Session = Depends(get_db, scope="function")):
+    return _market_download(db, payload.batch_ids)
+
+
+@router.get("/batches/{batch_id}/pdf")
+def download_purchase_pdf(batch_id: str, db: Session = Depends(get_db, scope="function")):
+    return _market_download(db, [batch_id])
 
 
 class BufferUpdateRequest(BaseModel):
@@ -174,30 +211,6 @@ class ProcurementItemConfirmationRequest(BaseModel):
 
 class ProcurementBatchConfirmationRequest(BaseModel):
     items: list[ProcurementItemConfirmationRequest] = Field(min_length=1, max_length=2000)
-
-
-@router.get("/source-orders")
-def procurement_source_orders(response: Response, page: LegacyPage = Depends(), db: Session = Depends(get_db, scope="function")):
-    query = (db.query(RawOrderFile).options(raw_headers(), selectinload(RawOrderFile.main_customer)).filter(
-        RawOrderFile.status == OrderStatus.PURCHASING_CONSOLIDATED,
-        RawOrderFile.client_orders.any(ClientOrder.status == OrderStatus.PURCHASING_CONSOLIDATED), ~RawOrderFile.client_orders.any((ClientOrder.status != OrderStatus.PURCHASING_CONSOLIDATED) & (ClientOrder.status != OrderStatus.CANCELLED)))
-        .order_by(RawOrderFile.created_at.desc(), RawOrderFile.id))
-    files, _ = page.rows(query, response, replacement="/procurement/source-files")
-    ids = [raw.id for raw in files]
-    stats = {identity: (count, weight) for identity, count, weight in db.query(ClientOrder.raw_order_file_id,
-        func.count(ClientOrder.id), func.sum(ClientOrder.total_estimated_net_weight_kg)).filter(
-        ClientOrder.raw_order_file_id.in_(ids), ClientOrder.status != OrderStatus.CANCELLED).group_by(ClientOrder.raw_order_file_id)} if ids else {}
-    category_rows = db.query(ClientOrder.raw_order_file_id, Product.produce_type).join(ClientOrderItem,
-        ClientOrderItem.client_order_id == ClientOrder.id).join(Product, Product.id == ClientOrderItem.product_id).filter(
-        ClientOrder.raw_order_file_id.in_(ids), ClientOrder.status != OrderStatus.CANCELLED).distinct().all() if ids else []
-    categories = {}
-    for identity, category in category_rows:
-        categories.setdefault(identity, []).append(category.value)
-    return [{"raw_file_id": raw.id, "file_name": raw.file_name,
-        "main_customer": raw.main_customer.company_name if raw.main_customer else "General",
-        "shipment_date": raw.shipment_target_date, "route_code": raw.route_line,
-        "order_count": stats[raw.id][0], "categories": sorted(categories.get(raw.id, [])),
-        "weight_kg": round(float(stats[raw.id][1] or 0), 2)} for raw in files]
 
 
 @router.put("/batches/{batch_id}/confirm")
@@ -286,30 +299,6 @@ def consolidate_purchasing_list(
     except ValueError as exc:
         status = 404 if "not found" in str(exc) else 400
         raise HTTPException(status_code=status, detail=str(exc)) from exc
-    return _batch_response(db, mpl)
-
-
-@router.post("/combine-and-consolidate", response_model=MasterPurchasingResponse)
-def combine_orders_for_procurement(
-    payload: CombineOrdersRequest,
-    db: Session = Depends(get_db, scope="function"),
-    actor: User = Depends(require_access(UserRole.GENERAL, UserRole.AI_AGENT_1)),
-):
-    """
-    Master Purchase Generation: Manual merge tool allowing staff to combine
-    different main customer orders or order files for streamlined bulk purchasing.
-    """
-    try:
-        mpl = PurchasingBatchService(db).consolidate(
-            raw_file_ids=payload.raw_file_ids,
-            actor=actor,
-            client_order_ids=payload.client_order_ids,
-            batch_ref=payload.batch_reference,
-            shipment_date=payload.shipment_date,
-            route_code=payload.route_code,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return _batch_response(db, mpl)
 
 
@@ -404,6 +393,7 @@ def export_talad_thai_buyer_sheet(
         )
 
     if format == "html":
+        file_names = scope_file_names(db, batch_id=mpl.id) or "Source filename unavailable"
         rows_html = "".join(
             f"""
         <tr>
@@ -424,7 +414,7 @@ def export_talad_thai_buyer_sheet(
         <html>
         <head>
             <meta charset="utf-8">
-            <title>Talad Thai Buyer Procurement Sheet - {escape(mpl.batch_reference)}</title>
+            <title>Talad Thai Buyer Procurement Sheet - {escape(file_names)}</title>
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 30px; color: #333; }}
                 h1 {{ color: #166534; margin-bottom: 5px; }}
@@ -442,7 +432,7 @@ def export_talad_thai_buyer_sheet(
                 <div>
                     <h1>ใบสั่งซื้อตลาดไท (Talad Thai Market Procurement Sheet)</h1>
                     <div class="meta">
-                        <strong>Batch Ref:</strong> {escape(mpl.batch_reference)} | 
+                        <strong>Order files:</strong> {escape(file_names)} |
                         <strong>Date:</strong> {escape(str(mpl.shipment_date or "Current"))} | 
                         <strong>Route:</strong> {escape(mpl.route_code or "ALL")} | 
                         <strong>Total Produce SKUs:</strong> {len(items_data)}

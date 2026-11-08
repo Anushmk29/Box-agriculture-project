@@ -1,13 +1,24 @@
 import enum
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Boolean, Column, DateTime, Enum, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base, uuid_pk
 
 
-class AdjustmentType(str, enum.Enum):
+class AdjustmentType(enum.StrEnum):
     AS_ORDERED = "AS_ORDERED"
     SHORTAGE_REDUCED = "SHORTAGE_REDUCED"
     QUANTITY_INCREASED = "QUANTITY_INCREASED"

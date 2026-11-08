@@ -1,0 +1,82 @@
+name: Deploy Hostinger VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment (deploy to staging and verify before production)
+        type: choice
+        options: [staging, production]
+        required: true
+      ci_run_id:
+        description: Successful CI run ID from a push to main (same ID for staging and production)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: vps-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: ${{ inputs.environment }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CI_RUN_ID: ${{ inputs.ci_run_id }}
+      VPS_HOST: ${{ vars.VPS_HOST }}
+      VPS_PORT: ${{ vars.VPS_PORT || '22' }}
+      VPS_USER: ${{ vars.VPS_USER }}
+      VPS_ROOT: ${{ vars.VPS_ROOT }}
+    steps:
+      - name: Verify successful main CI and download its release bundle
+        run: |
+          [[ "$CI_RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$CI_RUN_ID" > run.json
+          python3 - <<'PY'
+          import json, os
+          run = json.load(open("run.json"))
+          assert run["status"] == "completed" and run["conclusion"] == "success", "CI must pass"
+          assert run["event"] == "push" and run["head_branch"] == "main", "Use main push CI"
+          assert run["path"] == ".github/workflows/ci.yml", "Unexpected workflow"
+          assert run["head_repository"]["full_name"] == os.environ["GITHUB_REPOSITORY"], "Unexpected repository"
+          release = f'{run["head_sha"]}-{run["id"]}-{run["run_attempt"]}'
+          with open(os.environ["GITHUB_ENV"], "a") as output:
+              output.write(f"EXPECTED_RELEASE={release}\n")
+          PY
+          gh run download "$CI_RUN_ID" --repo "$GITHUB_REPOSITORY" --name vps-release --dir bundle
+      - name: Configure SSH with the independently verified host key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          [[ "$VPS_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$VPS_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
+          [[ "$VPS_PORT" =~ ^[0-9]{1,5}$ ]] && ((10#$VPS_PORT > 0 && 10#$VPS_PORT < 65536))
+          [[ "$VPS_ROOT" =~ ^/opt/fresh-produce-[a-z0-9-]+$ ]]
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_KNOWN_HOSTS" ]]
+          grep -Fx "RELEASE_ID=$EXPECTED_RELEASE" bundle/release.env
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/vps_key ~/.ssh/known_hosts
+      - name: Transfer tested bundle and run controlled deployment
+        run: |
+          remote="$VPS_ROOT/releases/$EXPECTED_RELEASE"
+          ssh_opts=(-i ~/.ssh/vps_key -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15)
+          ssh "${ssh_opts[@]}" -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "test -d '$VPS_ROOT' && mkdir -p '$remote'"
+          scp "${ssh_opts[@]}" -P "$VPS_PORT" bundle/* "$VPS_USER@$VPS_HOST:$remote/"
+          ssh "${ssh_opts[@]}" -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "bash '$remote/deploy.sh' '$VPS_ROOT'"
+          printf 'Deployed tested release `%s` to **%s**.\n' \
+            "$EXPECTED_RELEASE" '${{ inputs.environment }}' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/vps_key

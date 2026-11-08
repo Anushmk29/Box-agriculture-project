@@ -4,6 +4,9 @@ import sys
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
+from app.services.order_splitter import OrderSplitter
+from app.services.purchasing_aggregator import PurchasingAggregator
+
 from app.core.database import SessionLocal
 from app.models import (
     ClientOrder,
@@ -15,8 +18,6 @@ from app.models import (
     UserRole,
 )
 from app.services.matrix_parser import MatrixOrderParser
-from app.services.order_splitter import OrderSplitter
-from app.services.purchasing_aggregator import PurchasingAggregator
 
 
 def test_pipeline():

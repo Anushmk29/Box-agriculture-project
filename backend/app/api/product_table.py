@@ -52,6 +52,7 @@ class Changes(BaseModel):
     weight_class: WeightClass | None = None
     firmness: Firmness | None = None
     volume_l_per_kg: float | None = Field(default=None, gt=0, le=10000, allow_inf_nan=False)
+    planning_basis: Literal["VOLUME", "HISTORY"] | None = None
     grouping_row: int | None = None
     identity_row: int | None = None
     limits: list[TableLimit] | None = Field(default=None, max_length=15)
@@ -75,8 +76,9 @@ class Bulk(BaseModel):
 class NewProduct(BaseModel):
     model_config = ConfigDict(extra="forbid")
     t_code: str = Field(min_length=1, max_length=32)
-    name_en: str = Field(min_length=1, max_length=256)
+    name_en: str = Field(default="", max_length=256)
     name_th: str = Field(default="", max_length=256)
+    name_vi: str = Field(default="", max_length=256)
     changes: Changes = Field(default_factory=Changes)
 
 
@@ -142,6 +144,10 @@ def update(db, product, changes, actor):
         product.packing_volume_l_per_kg = changes.volume_l_per_kg
         product.packing_volume_estimated = False
         manual.add("volume")
+    if "planning_basis" in provided:
+        if changes.planning_basis is None:
+            raise ValueError("Choose volume estimates or reviewed history")
+        table["planning_basis"] = changes.planning_basis
     if "limits" in provided:
         limits = changes.limits or []
         if len({limit.box_catalogue_id for limit in limits}) != len(limits):
@@ -228,7 +234,7 @@ def update(db, product, changes, actor):
         if missing:
             raise ValueError("Complete or resolve: " + ", ".join(missing))
         product.packing_reviewed = True
-        product.packing_volume_reviewed = True
+        product.packing_volume_reviewed = bool(product.packing_volume_l_per_kg)
         for limit in product.box_limits:
             limit.reviewed = True
     product.packing_revision += 1
@@ -278,7 +284,7 @@ def listing(
     rows = [
         r
         for r in rows
-        if (not term or term in " ".join([r["t_code"], r["name_en"], r["name_th"]]).casefold())
+        if (not term or term in " ".join([r["t_code"], r["name_en"], r["name_th"], r["name_vi"]]).casefold())
         and (status == "all" or r["ready"] == (status == "ready"))
         and (el == "all" or r["control_status"] == (None if el == "unknown" else el))
         and (temperature == "all" or r["temperature"] == (None if temperature == "unknown" else temperature))
@@ -351,15 +357,15 @@ def create(
     actor: User = Depends(require_action(Action.FLOOR_PACKING)),
 ):
     code, name = payload.t_code.strip().upper(), payload.name_en.strip()
-    if not code or not name:
-        raise HTTPException(422, "Enter a SKU and English name")
+    if not code or not any([name, payload.name_th.strip(), payload.name_vi.strip()]):
+        raise HTTPException(422, "Enter a SKU and at least one Thai, Vietnamese or English name")
     if db.query(Product.id).filter(func.upper(Product.t_code) == code).first():
         raise HTTPException(409, "This SKU already exists; edit the existing row")
     product = Product(
         t_code=code,
         name_en=name,
         name_th=payload.name_th.strip(),
-        name_vi=name,
+        name_vi=payload.name_vi.strip(),
         box_material="FOAM",
         temperature="COLD",
         control_status="COMBINABLE",

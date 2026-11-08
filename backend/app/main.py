@@ -19,6 +19,7 @@ from app.api import (
     order_templates,
     orders,
     packing,
+    packing_history,
     packing_setup,
     procurement,
     registers,
@@ -121,6 +122,7 @@ app.include_router(orders.router, prefix=settings.API_V3_STR)
 app.include_router(procurement.router, prefix=settings.API_V3_STR)
 app.include_router(packing.router, prefix=settings.API_V3_STR)
 app.include_router(packing_setup.router, prefix=settings.API_V3_STR)
+app.include_router(packing_history.router, prefix=settings.API_V3_STR)
 app.include_router(invoicing.router, prefix=settings.API_V3_STR)
 app.include_router(sku_mappings.router, prefix=settings.API_V3_STR)
 app.include_router(handoffs.router, prefix=settings.API_V3_STR)

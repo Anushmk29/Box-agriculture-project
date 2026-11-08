@@ -1,0 +1,23 @@
+.workspace { min-width: 0; }
+.workspace > header { flex-wrap: wrap; }
+.workspace :global(.product-heading-main) { min-width: 0; max-width: 100%; }
+.workspace :global(.packing-setup-tabs) { flex-wrap: wrap; max-width: 100%; }
+.panel { display: grid; gap: 1rem; min-width: 0; max-width: 100%; }
+.settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: .85rem; margin-block: .85rem; }
+.settings label, .choice label { display: grid; gap: .3rem; }
+.settings input, .settings select, .choice input, .choice select { min-width: 0; width: 100%; }
+.scroll { min-width: 0; max-width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+.scroll table { border-collapse: collapse; width: 100%; min-width: 680px; }
+.scroll td, .scroll th { padding: .8rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.scroll small { display: block; color: var(--muted); margin-top: .3rem; }
+.scroll button { display: block; margin-top: .5rem; }
+.items { display: grid; gap: 1rem; margin-block: 1rem; }
+.items fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; min-width: 0; }
+.items legend { overflow-wrap: anywhere; }
+.choice { display: grid; gap: .5rem; margin-block: .6rem; }
+.check { display: flex; gap: .6rem; align-items: flex-start; margin-block: .8rem; }
+.check input { flex: 0 0 auto; width: auto; margin-top: .2rem; }
+@media (max-width: 760px) {
+  .workspace > header { flex-direction: column; align-items: flex-start; }
+  .workspace :global(.product-header-actions) { flex-wrap: wrap; }
+}

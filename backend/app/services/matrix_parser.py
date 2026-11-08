@@ -162,7 +162,7 @@ class MatrixOrderParser:
                     else:
                         code_col = 1
 
-                if name_en_col is None and name_vi_col is None:
+                if name_en_col is None and name_vi_col is None and name_th_col is None:
                     name_en_col = 2 if code_col == 1 else 3
 
                 return {
@@ -325,7 +325,7 @@ class MatrixOrderParser:
                     raw_th = ws.cell(row, name_th_col).value if name_th_col else None
                     raw_pack = ws.cell(row, pack_col).value if pack_col else None
 
-                    if not raw_code and not raw_en and not raw_vi:
+                    if not raw_code and not raw_en and not raw_vi and not raw_th:
                         continue
 
                     clean_code = str(raw_code).strip() if raw_code else ""
@@ -364,8 +364,8 @@ class MatrixOrderParser:
                     if item_key not in results["products_catalog"]:
                         results["products_catalog"][item_key] = {
                             "code": clean_code,
-                            "name_vi": clean_vi or clean_en,
-                            "name_en": clean_en or clean_vi,
+                            "name_vi": clean_vi,
+                            "name_en": clean_en,
                             "name_th": clean_th,
                             "pack_size": clean_pack,
                         }
@@ -375,8 +375,8 @@ class MatrixOrderParser:
                             "sheet": sheet_name,
                             "group": route_group,
                             "t_code": clean_code,
-                            "name_vi": clean_vi or clean_en,
-                            "name_en": clean_en or clean_vi,
+                            "name_vi": clean_vi,
+                            "name_en": clean_en,
                             "name_th": clean_th,
                             "pack_size": clean_pack,
                             "quantity": qty,
@@ -452,7 +452,7 @@ class MatrixOrderParser:
                 name_th = ws.cell(row, 4).value if pc > 4 else None
                 pack_size = ws.cell(row, pc).value
 
-                if not t_code and not name_vi and not name_en:
+                if not t_code and not name_vi and not name_en and not name_th:
                     continue
 
                 clean_code = str(t_code).strip() if t_code else ""

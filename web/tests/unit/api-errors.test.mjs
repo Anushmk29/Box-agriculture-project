@@ -3,6 +3,11 @@ import test from "node:test";
 
 import { ApiError, isRevisionConflict } from "../../lib/api-errors.ts";
 
+test("retry delays retain valid seconds and reject nonfinite or negative values", () => {
+  assert.equal(new ApiError(429, "Wait", 3.5).retryAfterSeconds, 4);
+  for (const value of [null, 0, -1, Infinity, NaN]) assert.equal(new ApiError(429, "Wait", value).retryAfterSeconds, null);
+});
+
 test("validation errors name the field and human line number", () => {
   const error = new ApiError(422, [{ loc: ["body", "items", 1, "unit_price_eur"],
     msg: "Value error, Enter a finite positive amount" }]);

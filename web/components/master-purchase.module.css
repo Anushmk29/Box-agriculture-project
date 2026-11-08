@@ -1,0 +1,11 @@
+.action { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.dialog :global(.task-dialog-body) { grid-template-columns: minmax(0, 1fr); }
+.dialog :global(.task-dialog-footer) { padding: 16px 20px; border-top: 1px solid var(--line); flex-shrink: 0; }
+.dialog :global(.task-dialog-footer) button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.section { margin-top: 28px; min-width: 0; }
+.section h2 { margin-bottom: 12px; font-size: 1.15rem; overflow-wrap: anywhere; }
+.scroll { width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; }
+.scroll table { min-width: 660px; }
+.scroll td { vertical-align: top; }
+.scroll small { display: block; margin-top: 5px; color: var(--ink-2); overflow-wrap: anywhere; }
+.subtotal { margin-top: 12px; font-weight: 600; }

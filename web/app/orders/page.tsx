@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { Suspense, useCallback, useState, useEffect, useRef } from "react";
 import { PageHeader } from "@/components/page-header";
 import { HintedButton } from "@/components/disabled-hint";
@@ -47,6 +49,7 @@ type SubCustomerDetail = {
 
 type UnresolvedProduct = {
   product_code: string;
+  catalog_name_match?: boolean;
   name_vi?: string;
   name_en?: string;
   pack_size?: string;
@@ -106,14 +109,18 @@ type SplitResponse = {
   }>;
 };
 
-export default function OrdersPage() { return <Suspense fallback={<PageLoadingSkeleton label="Opening order…" />}><OrdersContent /></Suspense>; }
+export default function OrdersPage() {
+  useLanguage(); return <Suspense fallback={<PageLoadingSkeleton label={t("Opening order…")} />}><OrdersContent /></Suspense>; }
 
 function OrdersContent() {
+  useLanguage();
   const requestedFileId = useSearchParams().get("fileId");
   return <OrdersWorkspace key={requestedFileId || "new-order"} requestedFileId={requestedFileId} />;
 }
 
 function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }) {
+  const [uploadHelpOpen, setUploadHelpOpen] = useState(false);
+  useLanguage();
   const session = useSession();
   const intakeRequest = useRef(0);
   const [intakeRead, setIntakeRead] = useState<"opening" | "checking" | "ready" | "error">(requestedFileId ? "opening" : "ready");
@@ -445,6 +452,17 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
     setNewPackSize(item.pack_size || "100g");
   }
 
+  async function validateMappedProduct(item: UnresolvedProduct) {
+    const validation = await api<ValidationResponse>(`/orders/${result?.raw_file_id}/validate`);
+    setUnresolved(validation.unresolved || []);
+    setQuantityIssueCount(validation.quantity_issue_count || 0);
+    setQuantityReview(validation.quantity_review);
+    if (validation.unresolved?.some(unresolvedItem => unresolvedItem.product_code === item.product_code
+      && unresolvedItem.name_vi === item.name_vi && unresolvedItem.pack_size === item.pack_size)) {
+      throw new Error("Mapping saved, but this order line is still unmatched. Review the selected product and try again.");
+    }
+  }
+
   async function quickMapSku(event: React.FormEvent) {
     event.preventDefault();
     if (!mappingModalItem || !selectedProductId) return;
@@ -464,11 +482,7 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
         })
       });
 
-      // Remove from missing list
-      const validation = await api<ValidationResponse>(`/orders/${result?.raw_file_id}/validate`);
-      setUnresolved(validation.unresolved || []);
-      setQuantityIssueCount("quantity_issue_count" in validation ? validation.quantity_issue_count || 0 : 0);
-      setQuantityReview(validation.quantity_review);
+      await validateMappedProduct(mappingModalItem);
       setSuccess(`✓ Successfully mapped '${mappingModalItem.product_code}'!`);
       setMappingModalItem(null);
       setSelectedCatalogProduct(null);
@@ -532,11 +546,7 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
       // 3. Add to local master product state so it's instantly available everywhere
       setMasterProducts(prev => [created, ...prev.filter(p => p.id !== created.id)]);
 
-      // 4. Remove this item from unresolved missing list
-      const validation = await api<ValidationResponse>(`/orders/${result?.raw_file_id}/validate`);
-      setUnresolved(validation.unresolved || []);
-      setQuantityIssueCount("quantity_issue_count" in validation ? validation.quantity_issue_count || 0 : 0);
-      setQuantityReview(validation.quantity_review);
+      await validateMappedProduct(mappingModalItem);
       setSuccess(`✓ Successfully created master SKU '${created.t_code} · ${created.name_en || created.name_vi}' and verified mapping!`);
       setMappingModalItem(null);
       setSelectedCatalogProduct(null);
@@ -614,7 +624,7 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
     ? (result?.sub_customer_codes || [])
     : details.filter(d => d.route_group === activeGroup).map(d => d.client_code);
 
-  const header = <PageHeader eyebrow="Customer orders" title="Orders" description="Upload, review and send customer orders to the buyers." />;
+  const header = <PageHeader eyebrow="Customer orders" title={t("Orders")} description={t("Upload, review and send customer orders to the buyers.")} />;
   const pageHeading = result
     ? <div className="order-review-heading">{header}<WorkflowProgress current="orders" /></div>
     : <>{header}<WorkflowProgress current="orders" /></>;
@@ -623,10 +633,10 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
     {pageHeading}
     {intakeRead === "error" ? <section className="panel order-load-error" role="alert">
       <AlertTriangle size={24} aria-hidden="true" />
-      <h2>Unable to open this order</h2><p>{error}</p>
-      <div><button type="button" className="primary-button" onClick={() => { if (requestedFileId) void resumeIntake(requestedFileId); }}>Retry opening order</button><Link className="invoice-secondary-button" href="/orders/files">Browse order files</Link></div>
-    </section> : <LoadingSkeleton label={intakeRead === "checking" ? "Checking products and quantities…" : "Opening order…"}
-      description="Your saved order is loading. Its details and next action will appear here." />}
+      <h2>{t("Unable to open this order")}</h2><p>{t(error)}</p>
+      <div><button type="button" className="primary-button" onClick={() => { if (requestedFileId) void resumeIntake(requestedFileId); }}>{t("Retry opening order")}</button><Link className="invoice-secondary-button" href="/orders/files">{t("Browse order files")}</Link></div>
+    </section> : <LoadingSkeleton label={intakeRead === "checking" ? t("Checking products and quantities…") : t("Opening order…")}
+      description={t("Your saved order is loading. Its details and next action will appear here.")} />}
   </div>;
 
   const pending = Boolean(result && ["UPLOADED", "PARSED"].includes(result.status) && !splitResult);
@@ -653,7 +663,7 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
     : pending ? formatNeedsReview ? "Check the spreadsheet columns and units before matching products or correcting lines. Re-reading the format replaces line corrections."
       : unresolved.length ? "Start with the highlighted Match product button. Each line must have a catalog match."
       : quantityIssueCount ? "Check the original amounts and units, then correct the highlighted quantity issues."
-      : "Review the shops, products and pack counts below. Confirming creates the buyers' purchase batch."
+      : "Review the subcustomers, products and pack counts below. Confirming creates the buyers' purchase batch."
     : "Excel and PDF orders are supported. Choose a file, check the customer and shipment details, then upload.";
   const highlight = (action: string) => nextAction === action && !busy && !customerBusy && !customerLoading ? "true" : undefined;
   function showNextAction() {
@@ -666,63 +676,66 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
     else target.querySelector<HTMLElement>("input, button, select")?.focus({ preventScroll: true });
   }
 
-  const nextStepButton = confirmed ? <Link className="primary-button" href={purchaseHref} data-next-action={highlight("purchase")}>Open purchase batch <ArrowRight size={17} aria-hidden="true" /></Link>
-    : <button type="button" className="invoice-secondary-button" title={nextDetail} disabled={busy || customerLoading || customerBusy} onClick={showNextAction}>Show next action <ArrowRight size={17} aria-hidden="true" /></button>;
-  const hintsButton = <button type="button" className="order-hints-toggle" aria-pressed={hintsEnabled} onClick={toggleHints}>{hintsEnabled ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}{hintsEnabled ? "Pause hints" : "Resume hints"}</button>;
-  const summaryText = <>{result ? `${result.total_sub_customers_detected} ${result.total_sub_customers_detected === 1 ? "shop" : "shops"} in this file` : "Follow the highlighted field or button."}{pending && ` · ${unresolved.length} unmatched products · ${quantityIssueCount} quantity ${quantityIssueCount === 1 ? "issue" : "issues"}`}</>;
+  const nextStepButton = confirmed ? <Link className="primary-button" href={purchaseHref} data-next-action={highlight("purchase")}>{t("Open purchase batch ")}<ArrowRight size={17} aria-hidden="true" /></Link>
+    : <button type="button" className="invoice-secondary-button" title={t(nextDetail)} disabled={busy || customerLoading || customerBusy} onClick={showNextAction}>{t("Show next action ")}<ArrowRight size={17} aria-hidden="true" /></button>;
+  const hintsButton = <button type="button" className="order-hints-toggle" aria-pressed={hintsEnabled} onClick={toggleHints}>{hintsEnabled ? <Pause size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}{hintsEnabled ? t("Pause hints") : t("Resume hints")}</button>;
+  const summaryText = <>{result ? t(`${result.total_sub_customers_detected} ${result.total_sub_customers_detected === 1 ? t("subcustomer") : t("subcustomers")} in this file`) : t("Follow the highlighted field or button.")}{pending && t(` · ${unresolved.length} unmatched products · ${quantityIssueCount} quantity ${quantityIssueCount === 1 ? t("issue") : t("issues")}`)}</>;
 
   return (
     <div className="page orders-workspace" data-order-state={result ? "review" : "upload"} data-order-status={pending ? "pending" : confirmed ? "confirmed" : undefined} data-hints={hintsEnabled ? "on" : "off"}>
       {pageHeading}
-      {activeUploadPending && <section className="panel" aria-label="Pending upload"><h2>Confirm the pending upload</h2>
-        <p>Check whether the last file was saved before starting another upload. If it is not confirmed, select the original file again; its customer and shipment details are retained.</p>
-        <button type="button" className="primary-button" disabled={busy} onClick={recoverUpload}>Recover pending upload</button>
+      {activeUploadPending && <section className="panel" aria-label={t("Pending upload")}><h2>{t("Confirm the pending upload")}</h2>
+        <p>{t("Check whether the last file was saved before starting another upload. If it is not confirmed, select the original file again; its customer and shipment details are retained.")}</p>
+        <button type="button" className="primary-button" disabled={busy} onClick={recoverUpload}>{t("Recover pending upload")}</button>
       </section>}
-      <section className="order-overview" aria-label="Current task" aria-busy={busy}>
+      <section className="order-overview" aria-label={t("Current task")} aria-busy={busy} data-upload-help={uploadHelpOpen ? "open" : "closed"}>
         <div className="order-overview-heading">
           <div className="order-file-heading"><span className="order-file-icon" aria-hidden="true">{confirmed ? <CheckCircle2 size={25} /> : <FileSpreadsheet size={25} />}</span><div>
-            <h2>{confirmed ? "Orders confirmed" : result ? "Review this order" : "New customer order"}</h2>
-            <p className="order-file-name">{result?.file_name || file?.name || "Start with an Excel or PDF order file"}</p>
+            <h2>{confirmed ? t("Orders confirmed") : result ? t("Review this order") : t("New customer order")}</h2>
+            <p className="order-file-name">{result?.file_name || file?.name || t("Start with an Excel or PDF order file")}</p>
           </div></div>
           {result && <StatusChip status={result.status} />}
+          {!result && <button type="button" className="order-mobile-help-toggle invoice-secondary-button" aria-expanded={uploadHelpOpen} aria-controls="order-upload-guidance" onClick={() => setUploadHelpOpen(value => !value)}>{uploadHelpOpen ? t("Hide upload help") : t("Show upload help")}</button>}
         </div>
-        <ol className="order-intake-progress" aria-label="Order intake progress">
+        <div id="order-upload-guidance">
+        <ol className="order-intake-progress" aria-label={t("Order intake progress")}>
           {["Upload file", "Review order", "Confirm orders"].map((label, index) => {
             const current = !result ? 0 : confirmed ? 3 : unresolved.length || quantityIssueCount ? 1 : 2;
             return <li key={label} aria-current={current === index ? "step" : undefined} className={index < current ? "is-complete" : ""}>
-              <span aria-hidden="true">{index < current ? <CheckCircle2 size={17} /> : index + 1}</span>{label}
+              <span aria-hidden="true">{index < current ? <CheckCircle2 size={17} /> : index + 1}</span>{t(label)}
             </li>;
           })}
         </ol>
         {result ? <div className="order-summary-bottom">
-          <div className="order-summary-task" aria-live="polite" aria-atomic="true"><h3>{busy ? "Updating the order…" : nextTitle}</h3><p>{summaryText}</p></div>
+          <div className="order-summary-task" aria-live="polite" aria-atomic="true"><h3>{busy ? t("Updating the order…") : t(nextTitle)}</h3><p>{t(summaryText)}</p></div>
           <div className="order-summary-actions">{nextStepButton}{hintsButton}</div>
         </div> : <><div className="order-next-step">
-          <div aria-live="polite" aria-atomic="true"><span className="order-next-label">{busy ? "Please wait" : "Next step"}</span><h3>{busy ? "Updating the order…" : nextTitle}</h3><p>{nextDetail}</p></div>
+          <div aria-live="polite" aria-atomic="true"><span className="order-next-label">{busy ? t("Please wait") : t("Next step")}</span><h3>{busy ? t("Updating the order…") : t(nextTitle)}</h3><p>{t(nextDetail)}</p></div>
           {nextStepButton}
         </div>
-        <div className="order-hints-control"><p>{summaryText}</p>{hintsButton}</div></>}
+        <div className="order-hints-control"><p>{t(summaryText)}</p>{hintsButton}</div></>}
+        </div>
       </section>
 
       <StatusMessage error={error} success={success} />
 
 
-      {confirmed && result && <section className="panel order-linked-orders" aria-label="Confirmed customer orders">
-        <RecordRegister title="Linked customer orders" description="Open an order to continue its purchasing or packing work." endpoint={`/orders/files/${result.raw_file_id}/orders`} identity="order_id" columns={orderColumns} views={false} filters={false} mobileCards open={row => ["SPLIT_AND_VALIDATED", "PURCHASING_CONSOLIDATED", "PROCUREMENT_CONFIRMED"].includes(String(row.status)) ? `/procurement/batches?raw_file_id=${encodeURIComponent(result.raw_file_id)}&view=all` : recordLink("/packing", "orderId", row.order_id)} />
+      {confirmed && result && <section className="panel order-linked-orders" aria-label={t("Confirmed customer orders")}>
+        <RecordRegister title={t("Linked customer orders")} description={t("Open an order to continue its purchasing or packing work.")} endpoint={`/orders/files/${result.raw_file_id}/orders`} identity="order_id" columns={orderColumns.filter(column => column.key !== "order_ref_id")} views={false} filters={false} mobileCards open={row => ["SPLIT_AND_VALIDATED", "PURCHASING_CONSOLIDATED", "PROCUREMENT_CONFIRMED"].includes(String(row.status)) ? `/procurement/batches?raw_file_id=${encodeURIComponent(result.raw_file_id)}&view=all` : recordLink("/packing", "orderId", row.order_id)} />
       </section>}
       <div className={`order-stage-layout${result ? " has-order" : ""}`}>
         <section id="order-review" className="panel result-panel">
           <div className="order-review-actions">
             <div>
-              <h2>{confirmed ? "Original file details" : "Review the order"}</h2>
-              <p className="order-section-description">{confirmed ? "View the shops and details from the uploaded file." : "Check shops and pack counts before sending the order to buyers."}</p>
+              <h2>{confirmed ? t("Original file details") : t("Review the order")}</h2>
+              <p className="order-section-description">{confirmed ? t("View the subcustomers and details from the uploaded file.") : t("Check subcustomers and pack counts before sending the order to buyers.")}</p>
             </div>
 
             {result && !splitResult && ["UPLOADED", "PARSED"].includes(result.status) && (
               <HintedButton onClick={authorizeAndSplit} data-next-action={highlight("confirm")}
                 disabled={busy || formatNeedsReview || unresolved.length > 0 || quantityIssueCount > 0 || !["UPLOADED", "PARSED"].includes(result?.status || "")}
-                reason={formatNeedsReview ? "Confirm the customer Excel format first" : unresolved.length > 0 ? `Match ${unresolved.length} ${unresolved.length === 1 ? "product" : "products"} first` : quantityIssueCount > 0 ? `Review ${quantityIssueCount} quantity issues first` : undefined}>
-                <Split size={16} /> {busy ? "Confirming…" : "Confirm orders and create purchase batch"}
+                reason={formatNeedsReview ? t("Confirm the customer Excel format first") : unresolved.length > 0 ? t(`Match ${unresolved.length} ${unresolved.length === 1 ? t("product") : t("products")} first`) : quantityIssueCount > 0 ? t(`Review ${quantityIssueCount} quantity issues first`) : undefined}>
+                <Split size={16} /> {busy ? t("Confirming…") : t("Confirm orders and create purchase batch")}
               </HintedButton>
             )}
           </div>
@@ -732,23 +745,25 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
               {pending && <div className="order-review-checks">
                 {formatNeedsReview && <div className="order-review-check" data-check-state="required">
                   <OrderTemplateReview rawFileId={result.raw_file_id} onReviewed={() => resumeIntake(result.raw_file_id)} highlighted={Boolean(highlight("format"))} disabled={busy} />
-                  <p><strong>Required first.</strong> Confirm columns and units before correcting order lines.</p>
+                  <p><strong>{t("Required first.")}</strong> {t("Confirm columns and units before correcting order lines.")}</p>
                 </div>}
                 <div className="order-review-check" data-check-state={formatNeedsReview ? "waiting" : quantityIssueCount ? "required" : "clear"}>
                   <OrderQuantityReview rawFileId={result.raw_file_id} issues={quantityIssueCount} initialData={quantityReview} onReview={setQuantityReview} onIssues={setQuantityIssueCount} highlighted={Boolean(highlight("quantities"))} disabled={busy || formatNeedsReview} />
-                  <p><strong>{formatNeedsReview ? "Waiting for Excel format." : quantityIssueCount ? `Required: ${quantityIssueCount} ${quantityIssueCount === 1 ? "issue" : "issues"}.` : "No quantity issues."}</strong> {formatNeedsReview ? "Quantities will be checked again after setup." : quantityIssueCount ? unresolved.length ? "Match products, then fix amounts and units before confirming." : "Fix amounts and units before confirming." : "No correction needed; viewing is optional."}</p>
+                  <p><strong>{formatNeedsReview ? t("Waiting for Excel format.") : quantityIssueCount ? t(`Required: ${quantityIssueCount} ${quantityIssueCount === 1 ? t("issue") : t("issues")}.`) : t("No quantity issues.")}</strong> {formatNeedsReview ? t("Quantities will be checked again after setup.") : quantityIssueCount ? unresolved.length ? t("Match products, then fix amounts and units before confirming.") : t("Fix amounts and units before confirming.") : t("No correction needed; viewing is optional.")}</p>
                 </div>
               </div>}
 
               {unresolved.length > 0 && (
                 <section className="unmatched-products" aria-labelledby="unmatched-title">
-                  <header><AlertTriangle size={20} aria-hidden /><div><h3 id="unmatched-title">Fix before confirming: {unresolved.length} unmatched {unresolved.length === 1 ? "product" : "products"}</h3>
-                    <p>{formatNeedsReview ? "First confirm the customer Excel format above. Then match each product to the catalog." : "Required before confirmation. Match each product to the catalog, then resolve any quantity issues."}</p></div></header>
-                  <ul tabIndex={0} aria-label="Products needing a catalog match">
+                  <header><AlertTriangle size={20} aria-hidden /><div><h3 id="unmatched-title">{t("Fix before confirming: ")}{unresolved.length} {t("unmatched ")}{unresolved.length === 1 ? t("product") : t("products")}</h3>
+                    <p>{formatNeedsReview ? t("First confirm the customer Excel format above. Then match each product to the catalog.") : t("Required before confirmation. Match each product to the catalog, then resolve any quantity issues.")}</p></div></header>
+                  <ul tabIndex={0} aria-label={t("Products needing a catalog match")}>
                     {unresolved.map((item, idx) => (
-                      <li key={idx}>
-                        <div><strong>{item.product_code}</strong> {item.name_vi ? `· ${item.name_vi}` : ""} {item.name_en ? <span className="unmatched-en">({item.name_en})</span> : null}<span className="unmatched-pack">{item.pack_size || "100g"}</span></div>
-                        <button type="button" className="invoice-secondary-button btn-sm" disabled={busy || formatNeedsReview} title={formatNeedsReview ? "Confirm the customer Excel format first" : undefined} data-next-action={idx === 0 ? highlight("match") : undefined} onClick={() => openMappingModal(item)}><PlusCircle size={14} /> Match product</button>
+                      <li key={idx} data-match-state={item.catalog_name_match === false ? "new" : "review"}>
+                        <div><strong>{item.product_code}</strong> {item.name_vi ? `· ${item.name_vi}` : ""} {item.name_en ? <span className="unmatched-en">({item.name_en})</span> : null}<span className="unmatched-pack">{item.pack_size || t("100g")}</span>
+                          <span className="unmatched-status"><AlertTriangle size={14} aria-hidden />{item.catalog_name_match === false ? t("No catalogue name match — check or add product") : item.catalog_name_match ? t("Name found — review SKU or catalogue conflict") : t("Review product match")}</span>
+                        </div>
+                        <button type="button" className="invoice-secondary-button btn-sm" disabled={busy || formatNeedsReview} title={formatNeedsReview ? t("Confirm the customer Excel format first") : undefined} data-next-action={idx === 0 ? highlight("match") : undefined} onClick={() => openMappingModal(item)}><PlusCircle size={14} /> {t("Match product")}</button>
                       </li>
                     ))}
                   </ul>
@@ -758,8 +773,8 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
               {splitResult && (
                 <div className="order-split-done">
                   <CheckCircle2 size={20} aria-hidden />
-                  <div><strong>Orders confirmed and sent to buyers</strong>
-                    <p>{splitResult.total_client_orders_created} customer orders · {splitResult.total_line_items_created} lines · about {splitResult.total_estimated_weight_kg} kg</p></div>
+                  <div><strong>{t("Orders confirmed and sent to buyers")}</strong>
+                    <p>{splitResult.total_client_orders_created} {t("customer orders · ")}{splitResult.total_line_items_created} {t("lines · about ")}{splitResult.total_estimated_weight_kg} {t("kg")}</p></div>
                 </div>
               )}
 
@@ -767,57 +782,56 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
           ) : (
             <div style={{ marginTop: "16px", display: "grid", gap: "16px" }}>
               <p style={{ color: "var(--muted)", fontSize: "0.88rem", margin: 0 }}>
-                Upload your customer order workbook. The system finds each shop and route group in the file and checks every product against the catalog.
-              </p>
+                {t("Upload your customer order workbook. The system finds each subcustomer and route group in the file and checks every product against the catalog.")}</p>
             </div>
           )}
         </section>
         {/* Supporting intake actions follow the active review in keyboard order. */}
         <div className="order-entry-tools">
           {result && <>
-            <OrderDisclosure title={`${result.total_sub_customers_detected} ${result.total_sub_customers_detected === 1 ? "shop" : "shops"} in this order`} description={groupKeys.length ? `View shops across ${groupKeys.length} route ${groupKeys.length === 1 ? "group" : "groups"}` : "View the customer shops found in the file"} icon={<Store size={20} />} className="order-shops">
-              {groupKeys.length > 0 && <div className="order-group-filter" role="group" aria-label="Route groups">
-                <button type="button" aria-pressed={activeGroup === "ALL"} onClick={() => setActiveGroup("ALL")}>All ({result.total_sub_customers_detected})</button>
+            <OrderDisclosure title={t(`${result.total_sub_customers_detected} ${result.total_sub_customers_detected === 1 ? t("subcustomer") : t("subcustomers")} in this order`)} description={groupKeys.length ? t(`View subcustomers across ${groupKeys.length} route ${groupKeys.length === 1 ? t("group") : t("groups")}`) : t("View the subcustomers found in the file")} icon={<Store size={20} />} className="order-shops">
+              {groupKeys.length > 0 && <div className="order-group-filter" role="group" aria-label={t("Route groups")}>
+                <button type="button" aria-pressed={activeGroup === "ALL"} onClick={() => setActiveGroup("ALL")}>{t("All (")}{result.total_sub_customers_detected})</button>
                 {groupKeys.map(grp => <button key={grp} type="button" aria-pressed={activeGroup === grp} onClick={() => setActiveGroup(grp)}>{grp} ({groups[grp]})</button>)}
               </div>}
-              <p className="order-shops-count">{filteredShops.length} shops in {activeGroup === "ALL" ? "all groups" : activeGroup}</p>
+              <p className="order-shops-count">{filteredShops.length} {t("subcustomers in ")}{activeGroup === "ALL" ? t("all groups") : activeGroup}</p>
               <div className="code-cloud">
                 {filteredShops.map(code => <span key={code}><Store size={12} aria-hidden /> {code}</span>)}
               </div>
             </OrderDisclosure>
-            <OrderDisclosure title="File tools" description={canReviewFormat && !formatNeedsReview ? "Source file and Excel format settings" : "Original file and upload details"} icon={<FileSpreadsheet size={20} />} className="order-file-reference">
-              {pending && result.verification_notice && <p className="order-verification-note">{result.verification_notice.replace(/sub-customers/gi, "shops")}</p>}
-              <p className="record-id">File ID: {result.raw_file_id}</p>
-              <button type="button" className="secondary-button" disabled={busy} onClick={downloadSource}><Download size={16} /> Download original file</button>
+            <OrderDisclosure modal busy={busy} feedback={<StatusMessage error={error} />} title={t("File tools")} description={canReviewFormat && !formatNeedsReview ? t("Source file and Excel format settings") : t("Original file and upload details")} icon={<FileSpreadsheet size={20} />} className="order-file-reference">
+              {pending && result.verification_notice && <p className="order-verification-note">{t(result.verification_notice.replace(/sub-customers/gi, "subcustomers"))}</p>}
+              <p className="order-file-name">{t("File name: ")}{result.file_name}</p>
+              <button type="button" className="secondary-button" disabled={busy} onClick={downloadSource}><Download size={16} /> {t("Download original file")}</button>
               {canReviewFormat && !formatNeedsReview && <OrderTemplateReview rawFileId={result.raw_file_id} onReviewed={() => resumeIntake(result.raw_file_id)} disabled={busy} actionLabel="Adjust Excel format" />}
             </OrderDisclosure>
           </>}
-          <OrderDisclosure title={result ? "Upload another order" : "Upload order"} description={result ? "Start a new upload for another customer or shipment" : "Choose a file and check the shipment details"} icon={<Upload size={20} />} open={!result}>
+          <OrderDisclosure key={result?.raw_file_id || "new-upload"} modal={Boolean(result)} busy={busy || customerBusy} feedback={<StatusMessage error={error} />} title={result ? t("Upload another order") : t("Upload order")} description={result ? t("Start a new upload for another customer or shipment") : t("Choose a file and check the shipment details")} icon={<Upload size={20} />} open={!result} attention={activeUploadPending ? "An upload is awaiting confirmation. Check the pending upload before starting another." : undefined}>
           <form id="order-upload" className="panel form-panel" onSubmit={upload}>
             <div className="section-heading">
               <div>
-                <h2>Upload order file</h2>
-                <p>Excel order sheets (one or many shops) or PDF purchase orders</p>
+                {!result && <h2>{t("Upload order file")}</h2>}
+                <p>{t("Excel order sheets (one or many subcustomers) or PDF purchase orders")}</p>
               </div>
               <FileSpreadsheet />
             </div>
 
             <label className="file-drop" data-next-action={highlight("file")}>
               <Upload />
-              <strong>{file?.name ?? "Choose an order file"}</strong>
-              <span>Browse Excel (.xlsx, .xlsm, .xls) or PDF purchase orders</span>
-              <span className="order-file-choose">{file ? "Change file" : "Browse files"}</span>
+              <strong>{file?.name ?? t("Choose an order file")}</strong>
+              <span>{t("Browse Excel (.xlsx, .xlsm, .xls) or PDF purchase orders")}</span>
+              <span className="order-file-choose">{file ? t("Change file") : t("Browse files")}</span>
               <input
                 type="file"
                 ref={uploadFileInput}
                 accept=".xlsx,.xls,.xlsm,.pdf"
                 onChange={e => setFile(e.target.files?.[0])}
-                required
+                required={!file}
               />
             </label>
 
             <div className="order-template-downloads">
-              <span>Need the official format?</span>
+              <span>{t("Need the official format?")}</span>
               <div className="order-template-links">
                 <a
                   href="/templates/Group_Order_Matrix_Template.xlsx"
@@ -831,8 +845,7 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
                     gap: "3px",
                   }}
                 >
-                  <Download size={12} /> Group Matrix Template (.xlsx)
-                </a>
+                  <Download size={12} /> {t("Group Matrix Template (.xlsx)")}</a>
                 <span style={{ color: "var(--line-strong)" }}>·</span>
                 <a
                   href="/templates/Single_Customer_Order_Template.xlsx"
@@ -846,24 +859,21 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
                     gap: "3px",
                   }}
                 >
-                  <Download size={12} /> Single Order Template (.xlsx)
-                </a>
+                  <Download size={12} /> {t("Single Order Template (.xlsx)")}</a>
               </div>
             </div>
 
             <fieldset disabled={Boolean(activeUploadPending)} style={{ border: 0, padding: 0, margin: 0 }}>
-            <legend className="sr-only">Upload customer and shipment details</legend>
+            <legend className="sr-only">{t("Upload customer and shipment details")}</legend>
             <div className="order-intake-fields">
               <div className="field-row">
                 <label>
-                  Find billing customer
-                  <input type="search" value={customerSearch} onChange={e => { setCustomerSearch(e.target.value); setCustomerOffset(0); }}
-                    placeholder="Type a customer name or code" disabled={busy || customerBusy} />
+                  {t("Find billing customer")}<input type="search" value={customerSearch} onChange={e => { setCustomerSearch(e.target.value); setCustomerOffset(0); }}
+                    placeholder={t("Type a customer name or code")} disabled={busy || customerBusy} />
                 </label>
                 <label>
-                  Billing customer
-                <select data-next-action={highlight("customer")} value={mainCustomerId} onChange={e => selectCustomer(mainCustomers.find(customer => customer.id === e.target.value) || (selectedCustomer?.id === e.target.value ? selectedCustomer : undefined))} required disabled={busy || customerBusy || customerLoading}>
-                  <option value="">Select the billing customer</option>
+                  {t("Billing customer")}<select data-next-action={highlight("customer")} value={mainCustomerId} onChange={e => selectCustomer(mainCustomers.find(customer => customer.id === e.target.value) || (selectedCustomer?.id === e.target.value ? selectedCustomer : undefined))} required disabled={busy || customerBusy || customerLoading}>
+                  <option value="">{t("Select the billing customer")}</option>
                   {selectedCustomer && !mainCustomers.some(customer => customer.id === selectedCustomer.id) && <option value={selectedCustomer.id}>{selectedCustomer.company_name}</option>}{mainCustomers.map(customer => (
                     <option key={customer.id} value={customer.id}>
                       {customer.company_name} · {customer.route_group || customer.client_code}
@@ -872,74 +882,71 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
                 </select>
                 </label>
               </div>
-                <div className="register-pagination"><span>{customerLoading ? "Searching customers..." : `${customerTotal} customers`}</span><button type="button" disabled={customerLoading || customerOffset === 0} onClick={() => setCustomerOffset(value => Math.max(0, value - 25))}>Previous customers</button><button type="button" disabled={customerLoading || customerOffset + 25 >= customerTotal} onClick={() => setCustomerOffset(value => value + 25)}>Next customers</button></div>{customerSearchError && <p role="alert">{customerSearchError}<button type="button" onClick={() => setCustomerRetry(value => value + 1)}>Retry customer search</button></p>}
+                <div className="register-pagination"><span>{customerLoading ? t("Searching customers...") : t(`${customerTotal} customers`)}</span><button type="button" disabled={customerLoading || customerOffset === 0} onClick={() => setCustomerOffset(value => Math.max(0, value - 25))}>{t("Previous customers")}</button><button type="button" disabled={customerLoading || customerOffset + 25 >= customerTotal} onClick={() => setCustomerOffset(value => value + 25)}>{t("Next customers")}</button></div>{customerSearchError && <p role="alert">{customerSearchError}<button type="button" onClick={() => setCustomerRetry(value => value + 1)}>{t("Retry customer search")}</button></p>}
                 <button type="button" className="customer-account-add" disabled={busy || customerBusy} onClick={() => {
                   setNewCustomerCode(""); setNewCustomerName(customerSearch.trim());
                   setNewCustomerCountry(""); setNewCustomerEmail(""); setCustomerError(""); setShowNewCustomer(true);
-                }}><PlusCircle size={16} /> Add billing customer</button>
+                }}><PlusCircle size={16} /> {t("Add billing customer")}</button>
               <div className="field-row order-shipment-fields">
               <label>
-                Shipment date
-                <input type="date" data-next-action={highlight("date")} value={shipmentDate} onChange={e => setShipmentDate(e.target.value)} required />
+                {t("Shipment date")}<input type="date" data-next-action={highlight("date")} value={shipmentDate} onChange={e => setShipmentDate(e.target.value)} required />
               </label>
               <div className="order-route-field">
-                <label htmlFor="order-route">Route</label>
+                <label htmlFor="order-route">{t("Route")}</label>
                 <select id="order-route" data-next-action={!customRoute ? highlight("route") : undefined}
                   value={customRoute ? "__custom__" : route} required disabled={busy || customerBusy}
                   aria-describedby="order-route-help" onChange={e => {
                     const isCustom = e.target.value === "__custom__";
                     setCustomRoute(isCustom); setRoute(isCustom ? "" : e.target.value);
                   }}>
-                  <option value="">Select a route</option>
+                  <option value="">{t("Select a route")}</option>
                   {routeOptions.map(line => <option key={line} value={line}>{line}</option>)}
-                  <option value="__custom__">Other route…</option>
+                  <option value="__custom__">{t("Other route…")}</option>
                 </select>
-                {customRoute && <input aria-label="New route" data-next-action={highlight("route")} value={route}
+                {customRoute && <input aria-label={t("New route")} data-next-action={highlight("route")} value={route}
                   onChange={e => setRoute(e.target.value)} onBlur={() => setRoute(route.trim().toUpperCase())}
-                  placeholder="Enter route code" required maxLength={32} pattern=".*\S.*" disabled={busy || customerBusy} />}
-                <small id="order-route-help">Filled from the billing customer. Change it for this shipment if needed.</small>
-                {routeError && <p role="alert">{routeError} <button type="button" onClick={() => setRouteRetry(value => value + 1)}>Retry routes</button></p>}
+                  placeholder={t("Enter route code")} required maxLength={32} pattern=".*\S.*" disabled={busy || customerBusy} />}
+                <small id="order-route-help">{t("Filled from the billing customer. Change it for this shipment if needed.")}</small>
+                {routeError && <p role="alert">{t(routeError)} <button type="button" onClick={() => setRouteRetry(value => value + 1)}>{t("Retry routes")}</button></p>}
               </div>
               </div>
             </div>
             </fieldset>
 
             <button className="primary-button" data-next-action={highlight("upload")} disabled={busy || customerBusy || customerLoading || !file || !mainCustomerId || !shipmentDate || !route.trim()}>
-              {busy ? "Reading order file…" : "Upload and check order"}
+              {busy ? t("Reading order file…") : t("Upload and check order")}
             </button>
           </form></OrderDisclosure>
-          {showNewCustomer && <TaskDialog title="Add billing customer" description="Save a new billing customer and select it for this order upload."
+          {showNewCustomer && <TaskDialog title={t("Add billing customer")} description={t("Save a new billing customer and select it for this order upload.")}
             busy={customerBusy} onClose={() => setShowNewCustomer(false)}>
             <form onSubmit={createMainCustomer} style={{ display: "grid", gap: "16px" }}>
               <StatusMessage error={customerError} />
-              <label>Customer code<input value={newCustomerCode} onChange={e => setNewCustomerCode(e.target.value)} required maxLength={64} disabled={customerBusy} /></label>
-              <label>Company name<input value={newCustomerName} onChange={e => setNewCustomerName(e.target.value)} required maxLength={256} disabled={customerBusy} /></label>
-              <label>Destination country<input value={newCustomerCountry} onChange={e => setNewCustomerCountry(e.target.value)} required maxLength={64} disabled={customerBusy} /></label>
-              <label>Billing email (optional)<input type="email" value={newCustomerEmail} onChange={e => setNewCustomerEmail(e.target.value)} maxLength={255} disabled={customerBusy} /></label>
-              <p className="task-note">Route line: {route}</p>
-              <button type="submit" className="primary-button" disabled={customerBusy}>{customerBusy ? "Adding account…" : "Add and select account"}</button>
+              <label>{t("Customer code")}<input value={newCustomerCode} onChange={e => setNewCustomerCode(e.target.value)} required maxLength={64} disabled={customerBusy} /></label>
+              <label>{t("Company name")}<input value={newCustomerName} onChange={e => setNewCustomerName(e.target.value)} required maxLength={256} disabled={customerBusy} /></label>
+              <label>{t("Destination country")}<input value={newCustomerCountry} onChange={e => setNewCustomerCountry(e.target.value)} required maxLength={64} disabled={customerBusy} /></label>
+              <label>{t("Billing email (optional)")}<input type="email" value={newCustomerEmail} onChange={e => setNewCustomerEmail(e.target.value)} maxLength={255} disabled={customerBusy} /></label>
+              <p className="task-note">{t("Route line: ")}{route}</p>
+              <button type="submit" className="primary-button" disabled={customerBusy}>{customerBusy ? t("Adding account…") : t("Add and select account")}</button>
             </form>
           </TaskDialog>}
 
           {result && (
-            <OrderDisclosure title="Add more orders" description="Add a product and pack quantity to this shipment" icon={<PlusCircle size={20} />}><form className="panel form-panel" onSubmit={addAdhocItem} style={{ borderTop: "3px solid var(--leaf)" }}>
+            <OrderDisclosure modal busy={adhocBusy} feedback={<StatusMessage error={error} />} title={t("Add More Products")} description={t("Add a product and pack quantity to this shipment")} icon={<PlusCircle size={20} />} attention={activeAdhocPending ? "An addition is awaiting confirmation. Open it to retry the original details." : undefined}><form className="panel form-panel" onSubmit={addAdhocItem}>
               <div className="section-heading">
                 <div>
-                  <h2>Add more orders</h2>
-                  <p>Select a customer and enter a product, pack size, and quantity. Add each entry to this shipment one by one.</p>
+                  <p>{t("Select a customer and enter a product, pack size, and quantity. Add each entry to this shipment one by one.")}</p>
                 </div>
                 <PlusCircle color="var(--leaf)" />
               </div>
 
-              {activeAdhocPending && <p role="status">An addition is awaiting confirmation. Retry it with the original details before adding another entry.</p>}
+              {activeAdhocPending && <p role="status">{t("An addition is awaiting confirmation. Retry it with the original details before adding another entry.")}</p>}
               <fieldset disabled={adhocBusy || Boolean(activeAdhocPending)} style={{ border: 0, padding: 0, margin: 0 }}>
-              <legend className="sr-only">Order addition details</legend>
+              <legend className="sr-only">{t("Order addition details")}</legend>
               <div className="field-row">
                 <label>
-                  Shop
-                  <input
+                  {t("Subcustomer")}<input
                     list="shops-datalist"
-                    placeholder="e.g. BE-DUYÊN or CT-Trung"
+                    placeholder={t("e.g. BE-DUYÊN or CT-Trung")}
                     value={adhocCustomer}
                     onChange={e => setAdhocCustomer(e.target.value)}
                     required
@@ -950,10 +957,9 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
                 </label>
 
                 <label>
-                  Produce Item (Code or Name)
-                  <input
+                  {t("Produce Item (Code or Name)")}<input
                     ref={manualProductInput}
-                    placeholder="e.g. T024, Sweet basil, Chaplu leaf"
+                    placeholder={t("e.g. T024, Sweet basil, Chaplu leaf")}
                     value={adhocProduct}
                     onChange={e => setAdhocProduct(e.target.value)}
                     required
@@ -963,18 +969,16 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
 
               <div className="field-row">
                 <label>
-                  Pack Size
-                  <select value={adhocPackSize} onChange={e => setAdhocPackSize(e.target.value)}>
-                    <option value="100g">100g</option>
-                    <option value="200g">200g</option>
-                    <option value="500g">500g</option>
-                    <option value="1kg">1kg</option>
+                  {t("Pack Size")}<select value={adhocPackSize} onChange={e => setAdhocPackSize(e.target.value)}>
+                    <option value="100g">{t("100g")}</option>
+                    <option value="200g">{t("200g")}</option>
+                    <option value="500g">{t("500g")}</option>
+                    <option value="1kg">{t("1kg")}</option>
                   </select>
                 </label>
 
                 <label>
-                  Quantity (Packs)
-                  <input
+                  {t("Quantity (Packs)")}<input
                     type="number"
                     min="1"
                     value={adhocQty}
@@ -986,22 +990,22 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
 
               </fieldset>
               <button className="primary-button" style={{ background: "var(--leaf)" }} disabled={adhocBusy}>
-                {adhocBusy ? "Confirming addition..." : activeAdhocPending ? "Retry pending addition" : "+ Add order"}
+                {adhocBusy ? t("Confirming addition...") : activeAdhocPending ? t("Retry pending addition") : t("+ Add order")}
               </button>
             </form></OrderDisclosure>
           )}
-      <OrderDisclosure title="Order file format guide" description="See supported layouts and download the order templates" icon={<CircleHelp size={20} />} className="order-template-tools">
+      <OrderDisclosure modal title={t("Order file format guide")} description={t("See supported layouts and download the order templates")} icon={<CircleHelp size={20} />} className="order-template-tools">
         <div className="format-guide">
-          <section><h3><Layers size={15} aria-hidden /> Group order matrix (many shops)</h3><ul>
-            <li><strong>Row 2 – route groups:</strong> merged headers such as <code>Group CT</code>, <code>Group BE</code>, <code>Group NGA</code>.</li>
-            <li><strong>Row 3 – shop codes:</strong> one column per shop, e.g. <code>CT-Trung</code>, <code>BE-DUYÊN</code>.</li>
-            <li><strong>Columns A–D – products:</strong> <code>Code</code>, <code>VIET DESCRIPTION</code>, <code>ENGLISH DESCRIPTION</code>, <code>Packing</code>.</li>
-            <li><strong>Cells:</strong> pack counts per shop. Row and column totals are calculated.</li>
+          <section><h3><Layers size={15} aria-hidden /> {t("Group order matrix (many subcustomers)")}</h3><ul>
+            <li><strong>{t("Row 2 – route groups:")}</strong> {t("merged headers such as ")}<code>{t("Group CT")}</code>, <code>{t("Group BE")}</code>, <code>{t("Group NGA")}</code>.</li>
+            <li><strong>{t("Row 3 – subcustomer codes:")}</strong> {t("one column per subcustomer, e.g. ")}<code>{t("CT-Trung")}</code>, <code>{t("BE-DUYÊN")}</code>.</li>
+            <li><strong>{t("Columns A–D – products:")}</strong> <code>{t("Code")}</code>, <code>{t("VIET DESCRIPTION")}</code>, <code>{t("ENGLISH DESCRIPTION")}</code>, <code>{t("Packing")}</code>.</li>
+            <li><strong>{t("Cells:")}</strong> {t("pack counts per subcustomer. Row and column totals are calculated.")}</li>
           </ul></section>
-          <section><h3><FileSpreadsheet size={15} aria-hidden /> Single customer order</h3><ul>
-            <li><strong>Order Info sheet:</strong> customer code, shipment date and route.</li>
-            <li><strong>Order sheet:</strong> <code>Code</code>, <code>Product Name</code>, <code>Viet</code>, <code>Thai</code>, <code>Packing</code>, <code>Order</code>.</li>
-            <li><strong>Weights:</strong> pack count × standard pack weight (100g = 0.10 kg).</li>
+          <section><h3><FileSpreadsheet size={15} aria-hidden /> {t("Single customer order")}</h3><ul>
+            <li><strong>{t("Order Info sheet:")}</strong> {t("customer code, shipment date and route.")}</li>
+            <li><strong>{t("Order sheet:")}</strong> <code>{t("Code")}</code>, <code>{t("Product Name")}</code>, <code>{t("Viet")}</code>, <code>{t("Thai")}</code>, <code>{t("Packing")}</code>, <code>{t("Order")}</code>.</li>
+            <li><strong>{t("Weights:")}</strong> {t("pack count × standard pack weight (100g = 0.10 kg).")}</li>
           </ul></section>
         </div>
       </OrderDisclosure>
@@ -1009,78 +1013,78 @@ function OrdersWorkspace({ requestedFileId }: { requestedFileId: string | null }
       </div>
 
       {mappingModalItem && (
-        <TaskDialog title="Match to a catalog product" description="Choose the catalog product that this order item refers to." size="lg" className="product-match-dialog" guidance={false} busy={mappingBusy} onClose={() => setMappingModalItem(null)}
+        <TaskDialog title={t("Match to a catalog product")} description={t("Choose the catalog product that this order item refers to.")} size="lg" className="product-match-dialog" guidance={false} busy={mappingBusy} onClose={() => setMappingModalItem(null)}
           footer={<>
-            <div className="mapping-save-status" data-selected={Boolean(mappingMode === "select" && selectedCatalogProduct)} aria-live="polite" aria-atomic="true"><span>{mappingMode === "select" ? selectedCatalogProduct ? "Selected product" : "No product selected" : "New catalog product"}</span><strong>{mappingMode === "select" ? selectedCatalogProduct ? `${selectedCatalogProduct.t_code} · ${selectedCatalogProduct.name_en || selectedCatalogProduct.name_vi}` : "Select a product above to enable Save match." : "Complete the required details, then create and match."}</strong>
-              {mappingMode === "select" && selectedCatalogProduct && <p>Check your choice, then save to link it to this order item.</p>}
+            <div className="mapping-save-status" data-selected={Boolean(mappingMode === "select" && selectedCatalogProduct)} aria-live="polite" aria-atomic="true"><span>{mappingMode === "select" ? selectedCatalogProduct ? t("Selected product") : t("No product selected") : t("New catalog product")}</span><strong>{mappingMode === "select" ? selectedCatalogProduct ? `${selectedCatalogProduct.t_code} · ${selectedCatalogProduct.name_en || selectedCatalogProduct.name_vi}` : t("Select a product above to enable Save match.") : t("Complete the required details, then create and match.")}</strong>
+              {mappingMode === "select" && selectedCatalogProduct && <p>{t("Check your choice, then save to link it to this order item.")}</p>}
             </div>
-            <div className="mapping-footer-actions"><button type="button" className="invoice-secondary-button" disabled={mappingBusy} onClick={() => setMappingModalItem(null)}>Cancel</button>
-              <button type="submit" form={mappingMode === "select" ? "product-match-form" : "product-create-match-form"} className="primary-button" disabled={mappingBusy || (mappingMode === "select" && !selectedProductId)}>{mappingBusy ? "Saving…" : mappingMode === "select" ? "Save match" : "Create product and match"}</button>
+            <div className="mapping-footer-actions"><button type="button" className="invoice-secondary-button" disabled={mappingBusy} onClick={() => setMappingModalItem(null)}>{t("Cancel")}</button>
+              <button type="submit" form={mappingMode === "select" ? "product-match-form" : "product-create-match-form"} className="primary-button" disabled={mappingBusy || (mappingMode === "select" && !selectedProductId)}>{mappingBusy ? t("Saving…") : mappingMode === "select" ? t("Save match") : t("Create product and match")}</button>
             </div>
           </>}>
           <div className="mapping-workspace">
-            <aside className="mapping-source" aria-label="Order item to match">
-              <div className="mapping-source-title"><FileSpreadsheet size={18} aria-hidden /><h3>Order item to match</h3></div>
-              <div className="mapping-source-name"><strong>{mappingModalItem.name_vi || mappingModalItem.name_en || mappingModalItem.display_name || "Unnamed item"}</strong>{mappingModalItem.name_vi && mappingModalItem.name_en && <span>{mappingModalItem.name_en}</span>}</div>
+            <aside className="mapping-source" aria-label={t("Order item to match")}>
+              <div className="mapping-source-title"><FileSpreadsheet size={18} aria-hidden /><h3>{t("Order item to match")}</h3></div>
+              <div className="mapping-source-name"><strong>{mappingModalItem.name_vi || mappingModalItem.name_en || mappingModalItem.display_name || t("Unnamed item")}</strong>{mappingModalItem.name_vi && mappingModalItem.name_en && <span>{mappingModalItem.name_en}</span>}</div>
               <dl className="mapping-source-facts">
-              <div><dt>Code in file</dt><dd>{mappingModalItem.product_code || "Not provided"}</dd></div>
-              <div><dt>Pack size in file</dt><dd>{mappingModalItem.pack_size || "Not provided"}</dd></div>
+              <div><dt>{t("Code in file")}</dt><dd>{mappingModalItem.product_code || t("Not provided")}</dd></div>
+              <div><dt>{t("Pack size in file")}</dt><dd>{mappingModalItem.pack_size || t("Not provided")}</dd></div>
               </dl>
-              <ol className="mapping-steps" aria-label="Product matching steps">
+              <ol className="mapping-steps" aria-label={t("Product matching steps")}>
                 {["Check the order item", mappingMode === "select" ? "Choose a catalog product" : "Enter product details", mappingMode === "select" ? "Save the match" : "Create and match"].map((step, index) => {
                   const current = mappingMode === "select" ? selectedProductId ? 2 : 1 : newCode.trim() && newNameEn.trim() && newProduceType && newBoxMaterial && newTemperature ? 2 : 1;
-                  return <li key={step} aria-current={index === current ? "step" : undefined} className={index < current ? "is-complete" : undefined}><span aria-hidden>{index < current ? <CheckCircle2 size={16} /> : index + 1}</span>{step}</li>;
+                  return <li key={step} aria-current={index === current ? "step" : undefined} className={index < current ? "is-complete" : undefined}><span aria-hidden>{index < current ? <CheckCircle2 size={16} /> : index + 1}</span>{t(step)}</li>;
                 })}
               </ol>
-              <p className="mapping-source-note">Match the product name and variety. The order&apos;s pack size stays unchanged when you save.</p>
+              <p className="mapping-source-note">{t("Match the product name and variety. The order's pack size stays unchanged when you save.")}</p>
             </aside>
             <div className="mapping-editor">
-            <div className="segmented mapping-mode" role="group" aria-label="How to match">
-              <button type="button" disabled={mappingBusy} aria-pressed={mappingMode === "select"} onClick={() => { setMappingMode("select"); setMappingError(""); }}><Search size={14} /> Choose existing product</button>
-              <button type="button" disabled={mappingBusy} aria-pressed={mappingMode === "create"} onClick={() => { setMappingMode("create"); setMappingError(""); }}><PlusCircle size={14} /> New catalog product</button>
+            <div className="segmented mapping-mode" role="group" aria-label={t("How to match")}>
+              <button type="button" disabled={mappingBusy} aria-pressed={mappingMode === "select"} onClick={() => { setMappingMode("select"); setMappingError(""); }}><Search size={14} /> {t("Choose existing product")}</button>
+              <button type="button" disabled={mappingBusy} aria-pressed={mappingMode === "create"} onClick={() => { setMappingMode("create"); setMappingError(""); }}><PlusCircle size={14} /> {t("New catalog product")}</button>
             </div>
 
             {mappingMode === "select" ? (
               <form id="product-match-form" className="mapping-catalog-form" onSubmit={quickMapSku}>
                 <StatusMessage error={mappingError} />
-                <label className="mapping-search">Search the catalog<span className="mapping-search-control"><Search size={17} aria-hidden /><input type="search" autoFocus value={productSearch} disabled={mappingBusy} onChange={event => { setProductLoading(true); setProductSearchError(""); setProductSearch(event.target.value); setProductOffset(0); }} placeholder="Product name in any language, or code" /></span></label>
-                <div className="mapping-results-heading"><strong>Choose a product</strong><span>Compare with the order item on the left</span></div>
-                <div className="mapping-result-list" aria-label="Product choices" aria-busy={productLoading}>
-                  {Boolean(mappingModalItem.suggestions?.length) && <section className="mapping-suggested" aria-label="Suggested products">
-                    <div className="mapping-choice-heading"><strong>Suggested products <span>{mappingModalItem.suggestions?.length}</span></strong><p>Similar names — check the product before choosing.</p></div>
+                <label className="mapping-search">{t("Search the catalog")}<span className="mapping-search-control"><Search size={17} aria-hidden /><input type="search" autoFocus value={productSearch} disabled={mappingBusy} onChange={event => { setProductLoading(true); setProductSearchError(""); setProductSearch(event.target.value); setProductOffset(0); }} placeholder={t("Product name in any language, or code")} /></span></label>
+                <div className="mapping-results-heading"><strong>{t("Choose a product")}</strong><span>{t("Compare with the order item on the left")}</span></div>
+                <div className="mapping-result-list" aria-label={t("Product choices")} aria-busy={productLoading}>
+                  {Boolean(mappingModalItem.suggestions?.length) && <section className="mapping-suggested" aria-label={t("Suggested products")}>
+                    <div className="mapping-choice-heading"><strong>{t("Suggested products ")}<span>{mappingModalItem.suggestions?.length}</span></strong><p>{t("Similar names — check the product before choosing.")}</p></div>
                     <div>{mappingModalItem.suggestions?.map(product => <button type="button" key={product.id} disabled={mappingBusy} aria-pressed={selectedProductId === product.id} onClick={() => { setSelectedCatalogProduct(product); setMappingError(""); }}>
                       <span className="mapping-choice-indicator" aria-hidden>{selectedProductId === product.id && <CheckCircle2 size={16} />}</span>
                       <span className="mapping-suggestion-copy"><strong>{product.name_en || product.name_vi}</strong><small>{product.t_code}{product.name_en && product.name_vi && product.name_en !== product.name_vi ? ` · ${product.name_vi}` : ""}</small></span>
-                      <span className="mapping-suggestion-action">{selectedProductId === product.id ? "Selected" : "Select"}</span>
+                      <span className="mapping-suggestion-action">{selectedProductId === product.id ? t("Selected") : t("Select")}</span>
                     </button>)}</div>
                   </section>}
-                  <div className="mapping-choice-heading mapping-search-heading"><strong>{productSearch.trim() ? "Search results" : "All catalog products"}</strong><span>{productLoading ? "Searching…" : productSearchError ? "Unavailable" : `${masterProducts.length} ${masterProducts.length === 1 ? "result" : "results"}`}</span></div>
-                  <div role="radiogroup" aria-label="Catalog products">
-                  {productLoading ? <p className="mapping-empty" role="status">Looking for matching products…</p> : productSearchError ? <div className="mapping-empty" role="alert"><strong>Catalog search unavailable</strong><p>{productSearchError}</p><button type="button" className="invoice-secondary-button" onClick={() => { setProductLoading(true); setProductRetry(value => value + 1); }}>Retry search</button></div> : masterProducts.length ? masterProducts.map(product => <label key={product.id} className={`mapping-result${selectedProductId === product.id ? " is-selected" : ""}`}>
+                  <div className="mapping-choice-heading mapping-search-heading"><strong>{productSearch.trim() ? t("Search results") : t("All catalog products")}</strong><span>{productLoading ? t("Searching…") : productSearchError ? t("Unavailable") : `${masterProducts.length} ${masterProducts.length === 1 ? t("result") : t("results")}`}</span></div>
+                  <div role="radiogroup" aria-label={t("Catalog products")}>
+                  {productLoading ? <p className="mapping-empty" role="status">{t("Looking for matching products…")}</p> : productSearchError ? <div className="mapping-empty" role="alert"><strong>{t("Catalog search unavailable")}</strong><p>{productSearchError}</p><button type="button" className="invoice-secondary-button" onClick={() => { setProductLoading(true); setProductRetry(value => value + 1); }}>{t("Retry search")}</button></div> : masterProducts.length ? masterProducts.map(product => <label key={product.id} className={`mapping-result${selectedProductId === product.id ? " is-selected" : ""}`}>
                     <input type="radio" name="catalog-product" value={product.id} checked={selectedProductId === product.id} disabled={mappingBusy} onChange={() => { setSelectedCatalogProduct(product); setMappingError(""); }} />
                     <span className="mapping-result-copy"><span><code>{product.t_code}</code><strong>{product.name_en || product.name_vi}</strong></span>{product.name_en && product.name_vi && <small>{product.name_vi}</small>}</span>
-                  </label>) : <div className="mapping-empty"><strong>No results for this search</strong><p>Try another language or a product code{mappingModalItem.suggestions?.length ? ", or check the suggestions above." : "."}</p><div className="mapping-empty-actions">{productSearch.trim() && <button type="button" className="invoice-secondary-button" onClick={() => { setProductLoading(true); setProductSearch(""); setProductOffset(0); }}>Show all products</button>}<button type="button" className="invoice-secondary-button" onClick={() => setMappingMode("create")}>Add it as a new product</button></div></div>}
+                  </label>) : <div className="mapping-empty"><strong>{t("No results for this search")}</strong><p>{t("Try another language or a product code")}{mappingModalItem.suggestions?.length ? t(", or check the suggestions above.") : "."}</p><div className="mapping-empty-actions">{productSearch.trim() && <button type="button" className="invoice-secondary-button" onClick={() => { setProductLoading(true); setProductSearch(""); setProductOffset(0); }}>{t("Show all products")}</button>}<button type="button" className="invoice-secondary-button" onClick={() => setMappingMode("create")}>{t("Add it as a new product")}</button></div></div>}
                   </div>
                 </div>
-                {(productOffset > 0 || masterProducts.length >= 100) && <div className="mapping-pagination"><span>{productLoading ? "Searching…" : masterProducts.length ? `Products ${productOffset + 1}–${productOffset + masterProducts.length}` : "0 results"}</span><div><button type="button" disabled={mappingBusy || productLoading || productOffset === 0} onClick={() => { setProductLoading(true); setProductOffset(value => Math.max(0, value - 100)); }}>Previous products</button><button type="button" disabled={mappingBusy || productLoading || masterProducts.length < 100} onClick={() => { setProductLoading(true); setProductOffset(value => value + 100); }}>Next products</button></div></div>}
+                {(productOffset > 0 || masterProducts.length >= 100) && <div className="mapping-pagination"><span>{productLoading ? t("Searching…") : masterProducts.length ? t(`Products ${productOffset + 1}–${productOffset + masterProducts.length}`) : t("0 results")}</span><div><button type="button" disabled={mappingBusy || productLoading || productOffset === 0} onClick={() => { setProductLoading(true); setProductOffset(value => Math.max(0, value - 100)); }}>{t("Previous products")}</button><button type="button" disabled={mappingBusy || productLoading || masterProducts.length < 100} onClick={() => { setProductLoading(true); setProductOffset(value => value + 100); }}>{t("Next products")}</button></div></div>}
               </form>
             ) : (
               <form id="product-create-match-form" className="mapping-create-form" onSubmit={createAndMapNewProduct}>
-                <p className="mapping-create-intro">Create a missing product and save its match. Fields marked * are required.</p>
+                <p className="mapping-create-intro">{t("Create a missing product and save its match. Fields marked * are required.")}</p>
                 <StatusMessage error={mappingError} />
-                <fieldset disabled={mappingBusy}><legend>Product identity</legend><div className="mapping-field-grid">
-                  <label>Product code *<input aria-label="Product code" value={newCode} onChange={event => setNewCode(event.target.value)} placeholder="e.g. 11-009" required /></label>
-                  <label>English name *<input aria-label="English name" value={newNameEn} onChange={event => setNewNameEn(event.target.value)} placeholder="e.g. CHINESE CABBAGE" required /></label>
-                  <label>Vietnamese name<input value={newNameVi} onChange={event => setNewNameVi(event.target.value)} placeholder="e.g. Cải ngọt" /></label>
-                  <label>Thai name<input value={newNameTh} onChange={event => setNewNameTh(event.target.value)} placeholder="e.g. กวางตุ้ง" /></label>
+                <fieldset disabled={mappingBusy}><legend>{t("Product identity")}</legend><div className="mapping-field-grid">
+                  <label>{t("Product code *")}<input aria-label={t("Product code")} value={newCode} onChange={event => setNewCode(event.target.value)} placeholder={t("e.g. 11-009")} required /></label>
+                  <label>{t("English name *")}<input aria-label={t("English name")} value={newNameEn} onChange={event => setNewNameEn(event.target.value)} placeholder={t("e.g. CHINESE CABBAGE")} required /></label>
+                  <label>{t("Vietnamese name")}<input value={newNameVi} onChange={event => setNewNameVi(event.target.value)} placeholder={t("e.g. Cải ngọt")} /></label>
+                  <label>{t("Thai name")}<input value={newNameTh} onChange={event => setNewNameTh(event.target.value)} placeholder={t("e.g. กวางตุ้ง")} /></label>
                 </div></fieldset>
-                <fieldset disabled={mappingBusy}><legend>Packing &amp; storage</legend><div className="mapping-field-grid">
-                  <label>Category *<select required aria-label="Category" value={newProduceType} onChange={event => setNewProduceType(event.target.value)}><option value="">Choose category</option>{PRODUCT_CATEGORIES.map(category => <option key={category.value} value={category.value}>{category.label}</option>)}</select></label>
-                  <label>Box Material *<select required aria-label="Box Material" value={newBoxMaterial} onChange={event => setNewBoxMaterial(event.target.value)}><option value="">Choose material</option><option value="FOAM">Foam</option><option value="CARDBOARD">Cardboard</option></select></label>
-                  <label>Temp Zone *<select required aria-label="Temp Zone" value={newTemperature} onChange={event => setNewTemperature(event.target.value)}><option value="">Choose temperature</option><option value="COLD">Cold (chill)</option><option value="NORMAL">Normal (ambient)</option></select></label>
-                  <label>Pack size<input value={newPackSize} onChange={event => setNewPackSize(event.target.value)} placeholder="e.g. 100g" /></label>
+                <fieldset disabled={mappingBusy}><legend>{t("Packing & storage")}</legend><div className="mapping-field-grid">
+                  <label>{t("Category *")}<select required aria-label={t("Category")} value={newProduceType} onChange={event => setNewProduceType(event.target.value)}><option value="">{t("Choose category")}</option>{PRODUCT_CATEGORIES.map(category => <option key={category.value} value={category.value}>{t(category.label)}</option>)}</select></label>
+                  <label>{t("Box Material *")}<select required aria-label={t("Box Material")} value={newBoxMaterial} onChange={event => setNewBoxMaterial(event.target.value)}><option value="">{t("Choose material")}</option><option value="FOAM">{t("Foam")}</option><option value="CARDBOARD">{t("Cardboard")}</option></select></label>
+                  <label>{t("Temp Zone *")}<select required aria-label={t("Temp Zone")} value={newTemperature} onChange={event => setNewTemperature(event.target.value)}><option value="">{t("Choose temperature")}</option><option value="COLD">{t("Cold (chill)")}</option><option value="NORMAL">{t("Normal (ambient)")}</option></select></label>
+                  <label>{t("Pack size")}<input value={newPackSize} onChange={event => setNewPackSize(event.target.value)} placeholder={t("e.g. 100g")} /></label>
                 </div></fieldset>
-                <details className="mapping-category-help"><summary>Help choosing a category</summary><p>Fresh chili: Vegetables. Ground chili: Spices / seasonings. Rice crackers: Packaged food. Lip balm: Personal care. If unsure, choose Other / needs review, and check packaging and temperature on the product label.</p></details>
+                <details className="mapping-category-help"><summary>{t("Help choosing a category")}</summary><p>{t("Fresh chili: Vegetables. Ground chili: Spices / seasonings. Rice crackers: Packaged food. Lip balm: Personal care. If unsure, choose Other / needs review, and check packaging and temperature on the product label.")}</p></details>
               </form>
             )}
             </div>

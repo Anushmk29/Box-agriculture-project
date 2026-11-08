@@ -13,7 +13,7 @@ async function packingDesk(page: Page, editable = false, billing = true) {
     items: Array.from({ length: index % 3 + 2 }, (_, item) => ({ item_id: `item-${index}-${item}`, product_id: `product-${item}`, product_code: `22-${index}${item}`,
       produce_name: names[(index + item) % names.length], pack_size: "100g", packed_count: 3, net_weight_kg: .3, adjustment_type: "AS_ORDERED" })),
   }));
-  const data = { client_order_id: "order", order_ref_id: "ORD-20261006-Ly-Thanh-Sarl_Vegetable_for_Monday_07-09-2026-c91ea5443d1b508a", status: editable ? "FLOOR_PACKING" : "HANDOFF_02_RETURNED", packing_approval_status: "NONE", packing_review_note: null,
+  const data = { client_order_id: "order", file_name: "Ly-Thanh-Sarl Vegetable for Monday.xlsx", order_ref_id: "ORD-20261006-Ly-Thanh-Sarl_Vegetable_for_Monday_07-09-2026-c91ea5443d1b508a", status: editable ? "FLOOR_PACKING" : "HANDOFF_02_RETURNED", packing_approval_status: "NONE", packing_review_note: null,
     sub_customer_code: "Ly-Thanh-Sarl__Vegetable_for_Monday_07-09-2026", route_code: "GROUP GENERAL", shipment_date: "2026-10-06", total_boxes_count: boxes.length, boxes };
   const state = { finalizes: 0 };
   await page.route("**/backend/api/v3/**", async route => {
@@ -41,7 +41,8 @@ test("completed desk shows one next step and keeps order metadata out of the box
   await expect(page.locator("#box-box-1")).toBeInViewport();
   await page.screenshot({ path: "../outputs/packing-desk-desktop.png", fullPage: false });
   await page.getByText("Order details", { exact: true }).click();
-  await expect(page.getByText(data.order_ref_id, { exact: true })).toBeVisible();
+  await expect(page.locator(".packing-order-details").getByText(data.file_name, { exact: true })).toBeVisible();
+  await expect(page.getByText(data.order_ref_id, { exact: true })).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Shipment workflow" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByText(data.order_ref_id, { exact: true })).toBeHidden();
@@ -74,12 +75,14 @@ test("box rows open one at a time and preserve label and plan details", async ({
 
 test("editable boxes keep their controls and finalization advances to the next step", async ({ page }) => {
   const { state } = await packingDesk(page, true);
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/packing?orderId=order");
   const first = page.locator("#box-box-1");
   await first.locator("summary.packing-box-main").click();
   await expect(first.getByLabel("Box 1 packing rules", { exact: true })).toBeEnabled();
   await expect(first.getByRole("button", { name: "Edit / substitute" }).first()).toBeEnabled();
   await expect(first.getByRole("button", { name: "Add packing item" })).toBeEnabled();
+  await page.screenshot({ path: "../outputs/packing-desk-editable-desktop.png", fullPage: false });
   await page.getByRole("button", { name: "Finalize Packing", exact: true }).click();
   await expect(page.getByRole("link", { name: "Continue to billing" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Finalize Packing", exact: true })).toHaveCount(0);
@@ -107,22 +110,29 @@ test("staff without billing access get a packing action and can find supporting 
   await page.goto("/packing?orderId=order");
   await expect(page.getByRole("link", { name: "Continue to billing" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Pack next order", exact: true }).first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "Export vehicle load" })).toBeHidden();
   await page.getByText("Order tools", { exact: true }).click();
-  await expect(page.getByRole("button", { name: "Export vehicle load" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Export vehicle load" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Products & box settings" })).toBeVisible();
 });
 
-test("editable contents stay within the phone viewport", async ({ page }) => {
+for (const width of [1024, 390]) {
+test(`editable contents stay within the ${width}px viewport`, async ({ page }) => {
   await packingDesk(page, true);
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width, height: 1000 });
   await page.goto("/packing?orderId=order");
   await page.locator("#box-box-1 > details > summary").click();
   await expect(page.getByLabel("Box 1 packing rules", { exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await expect.poll(() => page.locator("#box-box-1 .packing-items-scroll").evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await expect(page.getByLabel("Box 1 packing rules", { exact: true })).toHaveCSS("min-height", "44px");
+  const search = page.getByRole("searchbox", { name: "Find box or product", exact: true });
+  const searchBounds = await search.boundingBox();
+  const iconBounds = await page.locator(".packing-box-search > svg").boundingBox();
+  expect(searchBounds!.x).toBeGreaterThan(iconBounds!.x + iconBounds!.width);
+  await page.screenshot({ path: `../outputs/packing-desk-editable-${width}.png`, fullPage: false });
   const edit = page.locator("#box-box-1").getByRole("button", { name: "Edit / substitute" }).first();
   await edit.scrollIntoViewIfNeeded();
   await expect(edit).toBeInViewport();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+}

@@ -1,24 +1,23 @@
 """Account-scoped template versions, snapshots, and the procurement review gate."""
 
 from sqlalchemy import func
+from sqlalchemy.dialects.postgresql import insert as postgres_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from app.core.work_limits import WorkLimit
 from app.models.excel_template import ExcelTemplate
-from app.models.master_data import Customer
 from app.services.excel_profiles import is_reference_definition, references
 
 
 def template_snapshots(db, account_key):
     account_key = account_key or "GENERAL"
-    # Serialize initial seeding for the selected account without parser DB access.
-    db.query(Customer).filter_by(id=account_key).with_for_update().first()
     versions = (
         db.query(ExcelTemplate.template_key, func.max(ExcelTemplate.version).label("version"))
         .filter(ExcelTemplate.account_key == account_key)
         .group_by(ExcelTemplate.template_key)
         .subquery()
     )
-    rows = (
+    query = (
         db.query(ExcelTemplate)
         .join(
             versions,
@@ -28,25 +27,30 @@ def template_snapshots(db, account_key):
         .filter(ExcelTemplate.account_key == account_key)
         .order_by(ExcelTemplate.template_key)
         .limit(101)
-        .all()
     )
+    rows = query.all()
     if len(rows) > 100:
         raise WorkLimit("Review at most 100 recurring formats per main customer")
     latest = {}
     for row in rows:
         latest.setdefault(row.template_key, row)
-    for definition in references():
-        if definition["key"] not in latest:
-            row = ExcelTemplate(
-                account_key=account_key,
-                template_key=definition["key"],
-                version=1,
-                definition=definition,
-            )
-            db.add(row)
-            latest[definition["key"]] = row
-    if len(latest) > 100:
+    missing = [definition for definition in references() if definition["key"] not in latest]
+    if len(latest) + len(missing) > 100:
         raise WorkLimit("Review at most 100 recurring formats per main customer")
+    if missing:
+        # Only the first seed competes on unique template keys; normal uploads take no write lock.
+        dialect = db.get_bind().dialect.name
+        if dialect not in {"postgresql", "sqlite"}:
+            raise RuntimeError("Customer templates require PostgreSQL or SQLite")
+        insert = postgres_insert if dialect == "postgresql" else sqlite_insert
+        db.execute(insert(ExcelTemplate).values([
+            dict(account_key=account_key, template_key=d["key"], version=1, definition=d)
+            for d in missing
+        ]).on_conflict_do_nothing(index_elements=["account_key", "template_key", "version"]))
+        rows = query.all()
+        if len(rows) > 100:
+            raise WorkLimit("Review at most 100 recurring formats per main customer")
+        latest = {row.template_key: row for row in rows}
     db.flush()
     return [
         dict(id=r.id, version=r.version, confirmed=r.confirmed,

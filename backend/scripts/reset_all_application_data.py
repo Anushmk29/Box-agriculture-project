@@ -5,15 +5,16 @@ import io
 import json
 import sys
 import zipfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from sqlalchemy import text, make_url
+from sqlalchemy import make_url, text
+
 from app import models  # noqa: F401
-from app.core.database import Base, engine
 from app.core.config import settings
+from app.core.database import Base, engine
 
 
 def schema_snapshot(connection):
@@ -42,7 +43,7 @@ def main():
     quote = engine.dialect.identifier_preparer.quote
     backup_dir = Path(__file__).resolve().parents[2] / '.codex-artifact' / 'database-backups'
     backup_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    timestamp = datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')
     backup_path = backup_dir / f'{project}-before-reset-{timestamp}.zip'
 
     with engine.begin() as connection:

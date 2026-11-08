@@ -1,9 +1,11 @@
 import difflib
 import re
+from collections import defaultdict
 
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.master_data import ClientSkuMapping, ControlStatus, Product
+from app.services.product_identity import name_key
 
 
 class NameFirstMatcher:
@@ -16,7 +18,12 @@ class NameFirstMatcher:
         self.exact_en = {}
         self.exact_th = {}
         self.exact_code = {}
+        self.name_candidates = defaultdict(list)
         for p in self.products:
+            for field in ("name_th", "name_vi", "name_en"):
+                key = name_key(getattr(p, field, None))
+                if key and p not in self.name_candidates[key]:
+                    self.name_candidates[key].append(p)
             if p.name_vi:
                 self.exact_vi[p.name_vi.strip().lower()] = p
             if p.name_en:
@@ -230,15 +237,41 @@ class NameFirstMatcher:
         key = (tuple(names), raw_code, main_customer_id)
         if key in self._reviewed_products:
             return self._reviewed_products[key]
-        reviewed = None
+        # A staff-verified choice resolves the ambiguity that prompted mapping.
+        # Automatic catalogue evidence must not veto that explicit decision.
+        scopes = dict.fromkeys((main_customer_id or "GLOBAL", "GLOBAL"))
+        code = (raw_code or "").strip().upper()
+        for scope in scopes:
+            mapped = self.client_sku_by_code.get((scope, code))
+            if mapped:
+                self._reviewed_products[key] = mapped
+                return mapped
+        for scope in scopes:
+            mapped_names = {product.id: product for name in names if name and name.strip()
+                            if (product := self.client_sku_by_name.get((scope, name.strip().lower())))}
+            if mapped_names:
+                reviewed = next(iter(mapped_names.values())) if len(mapped_names) == 1 else None
+                self._reviewed_products[key] = reviewed
+                return reviewed
+        candidates, evidence_sets = {}, []
         for name in [*names, ""]:
+            exact = self.name_candidates.get(name_key(name), [])
+            for product in exact:
+                candidates[product.id] = product
+            if exact:
+                evidence_sets.append({product.id for product in exact})
+                continue
             product, tier, _ = self.resolve_product(name or "", raw_code=raw_code, main_customer_id=main_customer_id)
             if tier == "PRE_FED_CLIENT_SKU" or tier.startswith("NAME_EXACT_"):
-                reviewed = product
-                break
+                candidates[product.id] = product
+                evidence_sets.append({product.id})
             if tier == "CODE_FALLBACK" and (raw_code or "").strip().upper() in self.exact_code:
-                reviewed = product
-                break
+                candidates[product.id] = product
+                evidence_sets.append({product.id})
+        agreed = set.intersection(*evidence_sets) if evidence_sets else set()
+        reviewed = candidates[next(iter(agreed))] if len(agreed) == 1 else None
+        if reviewed and code and self._resolve_code(raw_code)[0] is not reviewed:
+            reviewed = None
         self._reviewed_products[key] = reviewed
         return reviewed
 
@@ -254,5 +287,5 @@ class NameFirstMatcher:
             if score >= 0.35:
                 ranked.append((score, product))
         return [{"id": p.id, "t_code": p.t_code, "name_en": p.name_en,
-                 "name_vi": p.name_vi, "score": round(score, 3)}
+                 "name_vi": p.name_vi, "name_th": p.name_th, "score": round(score, 3)}
                 for score, p in sorted(ranked, key=lambda row: (-row[0], row[1].t_code))[:5]]

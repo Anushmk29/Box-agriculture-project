@@ -17,8 +17,9 @@ function validationMessage(detail: unknown): string | null {
 export class ApiError extends Error {
   status: number;
   detail: unknown;
+  retryAfterSeconds: number | null;
 
-  constructor(status: number, detail: unknown) {
+  constructor(status: number, detail: unknown, retryAfterSeconds: number | null = null) {
     const message = typeof detail === "string" ? detail
       : detail && typeof detail === "object" && "message" in detail ? String(detail.message)
       : validationMessage(detail) ?? `Request failed with status ${status}`;
@@ -26,6 +27,8 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
     this.detail = detail;
+    this.retryAfterSeconds = retryAfterSeconds !== null && Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+      ? Math.ceil(retryAfterSeconds) : null;
   }
 }
 

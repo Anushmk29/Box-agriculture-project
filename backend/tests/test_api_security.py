@@ -170,11 +170,6 @@ def test_accounting_level_includes_general_procurement_access(db_session):
         "/api/v3/procurement/not-found/consolidate",
         headers=headers,
     )
-    combine = client.post(
-        "/api/v3/procurement/combine-and-consolidate",
-        headers=headers,
-        json={"raw_file_ids": ["not-found"]},
-    )
     buffer_update = client.put(
         "/api/v3/procurement/items/not-found/buffer",
         headers=headers,
@@ -182,12 +177,11 @@ def test_accounting_level_includes_general_procurement_access(db_session):
     )
 
     assert consolidate.status_code == 404
-    assert combine.status_code == 400
     assert buffer_update.status_code == 403
     app.dependency_overrides.clear()
 
 
-def test_procurement_combine_rejects_unknown_order_sources(db_session):
+def test_removed_combine_routes_are_unavailable(db_session):
     manager = User(
         email="combine-manager@example.com",
         password_hash=hash_password("correct horse battery staple"),
@@ -208,12 +202,16 @@ def test_procurement_combine_rejects_unknown_order_sources(db_session):
         json={"raw_file_ids": ["not-found"]},
     )
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Raw order files not found: not-found"
+    assert response.status_code == 404
+    for path in ["/api/v3/procurement/source-files", "/api/v3/procurement/source-orders"]:
+        assert client.get(path, headers={"Authorization": f"Bearer {token}"}).status_code == 404
+    paths = client.get("/openapi.json").json()["paths"]
+    assert "/api/v3/procurement/combine-and-consolidate" not in paths
+    assert db_session.query(MasterPurchasingList).count() == 0
     app.dependency_overrides.clear()
 
 
-def test_procurement_auto_reference_does_not_collide_for_different_sources(db_session):
+def test_purchase_references_remain_distinct_per_uploaded_file(db_session):
     manager = User(
         email="batch-reference-manager@example.com",
         password_hash=hash_password("correct horse battery staple"),
@@ -265,14 +263,12 @@ def test_procurement_auto_reference_does_not_collide_for_different_sources(db_se
     headers = {"Authorization": f"Bearer {token}"}
 
     first = client.post(
-        "/api/v3/procurement/combine-and-consolidate",
+        f"/api/v3/procurement/{first_raw.id}/consolidate",
         headers=headers,
-        json={"raw_file_ids": [first_raw.id], "shipment_date": "2026-09-18"},
     )
     second = client.post(
-        "/api/v3/procurement/combine-and-consolidate",
+        f"/api/v3/procurement/{second_raw.id}/consolidate",
         headers=headers,
-        json={"raw_file_ids": [second_raw.id], "shipment_date": "2026-09-18"},
     )
 
     assert first.status_code == 200

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test("staff confirm target defaults and dispatch in one action", async ({ page, context }) => {
+for (const pending of [false, true, "mixed"] as const) {
+test(`staff confirm ${pending === "mixed" ? "mixed pack and weight orders" : pending ? "weight orders with actual packs" : "target defaults"} and dispatch in one action`, async ({ page, context }) => {
   const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url");
   await context.addCookies([{ name: "access_token", value: `qa.${payload}.qa`, domain: "127.0.0.1", path: "/" }]);
   let status = "PURCHASING_CONSOLIDATED";
@@ -8,9 +9,9 @@ test("staff confirm target defaults and dispatch in one action", async ({ page, 
   let confirmations = 0;
   const item = {
     item_id: "handoff-item", product_id: "handoff-product", product_code: "QA001", product_name: "Handoff basil",
-    produce_type: "HERB", pack_size: "1kg", ordered_pack_count: 10, ordered_weight_kg: 10,
+    produce_type: "HERB", pack_size: pending ? "600g+" : "1kg", ordered_pack_count: pending === "mixed" ? 5 : pending ? 0 : 10, ordered_weight_kg: 10, pack_count_pending: Boolean(pending),
     buffer_percentage: 10, buffer_pack_count: 1, buffer_weight_kg: 1,
-    total_purchase_target_packs: 11, total_purchase_target_weight_kg: 11, required_packs: 11, required_weight_kg: 11,
+    total_purchase_target_packs: pending ? 0 : 11, total_purchase_target_weight_kg: 11, required_packs: pending ? 0 : 11, required_weight_kg: 11,
     // Legacy prefilled values must not count as buyer approval.
     confirmed_purchased_pack_count: 11, confirmed_purchased_weight_kg: 11,
   };
@@ -35,7 +36,7 @@ test("staff confirm target defaults and dispatch in one action", async ({ page, 
       dispatches++;
       status = "HANDOFF_01_SENT";
       await route.fulfill({ json: { handoff_id: "test-handoff-01", payload_sha256: "a".repeat(64) } });
-    } else await route.fulfill({ json: pathname.endsWith("/source-orders") ? [] : {} });
+    } else await route.fulfill({ json: {} });
   });
   await page.goto("/procurement");
   await expect(page.getByRole("region", { name: "Purchase list" })).toHaveCount(0);
@@ -43,8 +44,14 @@ test("staff confirm target defaults and dispatch in one action", async ({ page, 
   const row = page.getByRole("row").filter({ hasText: "Handoff basil" });
   const packs = row.getByTitle("Confirmed Pack Count", { exact: true });
   const weight = row.getByTitle("Confirmed Total Weight (kg)", { exact: true });
+  await expect(page.getByRole("link", { name: "Continue to packing", exact: true })).toHaveCount(0);
   const confirm = page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true });
-  await expect(packs).toHaveValue("11");
+  await expect(packs).toHaveValue(pending ? "" : "11");
+  if (pending) {
+    await expect(row).toContainText(pending === "mixed" ? "5 packs + weight orders" : "Ordered by weight");
+    await expect(row).toContainText("Record actual packs");
+    await packs.fill("11");
+  }
   // An older backend must not expose the new substitution action during rollout.
   await expect(page.getByRole("button", { name: "Choose substitute for QA001" })).toHaveCount(0);
   await expect(weight).toHaveValue("11");
@@ -61,10 +68,15 @@ test("staff confirm target defaults and dispatch in one action", async ({ page, 
   await expect(weight).toHaveValue("10");
   await weight.fill("11");
   await confirm.click();
-  await expect(page.getByRole("link", { name: "View related packing orders", exact: true })).toBeVisible();
-  await expect(confirm).toBeDisabled();
+  await expect(page.getByRole("link", { name: "Continue to packing", exact: true }).first()).toBeVisible();
+  await expect(confirm).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Next: Packing", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Continue to packing", exact: true }).first()).toHaveAttribute("href", "/packing/orders?batch_id=handoff-batch&view=all&sort=shipment_date&direction=asc");
+  await expect(page.getByRole("button", { name: "Fill actuals from targets", exact: true })).toHaveCount(0);
   await expect(packs).toBeDisabled();
   await expect(page.getByRole("button", { name: "Dispatch Signed Handoff 01" })).toHaveCount(0);
   expect(confirmations).toBe(1);
   expect(dispatches).toBe(0);
 });
+
+}

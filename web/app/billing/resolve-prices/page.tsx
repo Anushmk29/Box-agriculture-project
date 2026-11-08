@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { LoadingSkeleton } from "@/components/loading-skeleton";
 
 import { useEffect, useState } from "react";
@@ -11,10 +13,11 @@ import { StatusMessage } from "@/components/status-message";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 
 type MissingItem = { product_id: string; product_code: string; product_name: string; pack_size: string };
-type PriceIssue = { order_id: string; order_ref: string; customer_name: string; shipment_date: string; items: MissingItem[] };
+type PriceIssue = { order_id: string; order_ref: string; file_name: string; customer_name: string; shipment_date: string; items: MissingItem[] };
 const priceKey = (orderId: string, item: MissingItem) => JSON.stringify([orderId, item.product_id, item.pack_size]);
 
 export default function ResolvePricesPage() {
+  useLanguage();
   const router = useRouter();
   const [issues, setIssues] = useState<PriceIssue[]>([]);
   const [prices, setPrices] = useState<Record<string, string>>({});
@@ -55,28 +58,28 @@ export default function ResolvePricesPage() {
   }
 
   return <div className="page billing-workspace">
-    <header className="page-header"><div><p className="eyebrow">Billing · Resolve missing prices</p>
-      <h1>Complete selling prices</h1><p>Packing is complete. Enter the selling price per pack for the products below to continue invoicing.</p></div>
-      <Link data-guide={error ? "Choose an order in Billing" : undefined} data-guide-priority="1" data-guide-detail="Open the order whose selling prices need completing." href={returnPath}>Back to billing</Link>
+    <header className="page-header"><div><p className="eyebrow">{t("Billing · Resolve missing prices")}</p>
+      <h1>{t("Complete selling prices")}</h1><p>{t("Packing is complete. Enter the selling price per pack for the products below to continue invoicing.")}</p></div>
+      <Link data-guide={error ? t("Choose an order in Billing") : undefined} data-guide-priority="1" data-guide-detail={t("Open the order whose selling prices need completing.")} href={returnPath}>{t("Back to billing")}</Link>
     </header>
     <StatusMessage error={error} />
-    {loading ? <LoadingSkeleton label="Checking prices for the completed final pack…" compact /> :
+    {loading ? <LoadingSkeleton label={t("Checking prices for the completed final pack…")} compact /> :
       issues.length ? <form onSubmit={savePrices} className="price-resolution-form">
-        <p role="status">{missingCount} prices still need a positive amount.</p><p className="task-note">Prices apply from the shipment date shown and remain until an admin or finance user changes them. Prices do not expire automatically. Currency: THB.</p>
+        <p role="status">{missingCount} {t("prices still need a positive amount.")}</p><p className="task-note">{t("Prices apply from the shipment date shown and remain until an admin or finance user changes them. Prices do not expire automatically. Currency: THB.")}</p>
         {issues.map(issue => <section className="panel price-resolution-order" key={issue.order_id}>
-          <h2>{issue.customer_name}</h2><p>{issue.order_ref}</p>
-          <p><strong>Effective shipment date: {issue.shipment_date}</strong> · {issue.items.length} missing prices</p>
+          <h2>{issue.customer_name}</h2><p>{issue.file_name || t("Source filename unavailable")}</p>
+          <p><strong>{t("Effective shipment date: ")}{issue.shipment_date}</strong> · {issue.items.length} {t("missing prices")}</p>
           <div className="price-resolution-items">{issue.items.map(item => <label className="price-resolution-row" key={priceKey(issue.order_id, item)}>
-            <span><strong>{item.product_code} · {item.product_name}</strong><small>Pack size: {item.pack_size}</small></span>
-            <span>Selling price / pack (THB)<input aria-label={`Selling price for ${item.product_code} ${item.pack_size} ${issue.customer_name}`}
-              data-guide={!(Number(prices[priceKey(issue.order_id, item)]) > 0) ? `Enter the selling price for ${item.product_code}` : undefined} data-guide-detail="Enter the price per pack in THB. Each missing price must be greater than zero."
+            <span><strong>{item.product_code} · {item.product_name}</strong><small>{t("Pack size: ")}{item.pack_size}</small></span>
+            <span>{t("Selling price / pack (THB)")}<input aria-label={t(`Selling price for ${item.product_code} ${item.pack_size} ${issue.customer_name}`)}
+              data-guide={!(Number(prices[priceKey(issue.order_id, item)]) > 0) ? t(`Enter the selling price for ${item.product_code}`) : undefined} data-guide-detail={t("Enter the price per pack in THB. Each missing price must be greater than zero.")}
               type="number" inputMode="decimal" min="0.01" step="0.01" required disabled={busy}
               value={prices[priceKey(issue.order_id, item)] ?? ""}
-              onChange={event => setPrices(current => ({ ...current, [priceKey(issue.order_id, item)]: event.target.value }))} />{prices[priceKey(issue.order_id, item)] !== undefined && !(Number(prices[priceKey(issue.order_id, item)]) > 0) && <small className="field-error">Enter an amount greater than zero.</small>}</span>
+              onChange={event => setPrices(current => ({ ...current, [priceKey(issue.order_id, item)]: event.target.value }))} />{prices[priceKey(issue.order_id, item)] !== undefined && !(Number(prices[priceKey(issue.order_id, item)]) > 0) && <small className="field-error">{t("Enter an amount greater than zero.")}</small>}</span>
           </label>)}</div>
         </section>)}
-        <button type="submit" className="primary-button" disabled={busy}>{busy ? "Saving prices…" : "Save prices and return to billing"}</button>
-      </form> : !error && <section className="panel price-resolution-order"><CheckCircle2 aria-hidden="true" /><h2>All selling prices are available</h2>
-        <p>You can continue with the completed packing.</p><Link className="primary-button" href={returnPath}>Continue to billing</Link></section>}
+        <button type="submit" className="primary-button" disabled={busy}>{busy ? t("Saving prices…") : t("Save prices and return to billing")}</button>
+      </form> : !error && <section className="panel price-resolution-order"><CheckCircle2 aria-hidden="true" /><h2>{t("All selling prices are available")}</h2>
+        <p>{t("You can continue with the completed packing.")}</p><Link className="primary-button" href={returnPath}>{t("Continue to billing")}</Link></section>}
   </div>;
 }

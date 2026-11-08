@@ -21,22 +21,22 @@ from sqlalchemy.orm import backref, relationship
 from app.core.database import Base, uuid_pk
 
 
-class BoxMaterial(str, enum.Enum):
+class BoxMaterial(enum.StrEnum):
     FOAM = "FOAM"
     CARDBOARD = "CARDBOARD"
 
 
-class TemperatureZone(str, enum.Enum):
+class TemperatureZone(enum.StrEnum):
     COLD = "COLD"
     NORMAL = "NORMAL"
 
 
-class ControlStatus(str, enum.Enum):
+class ControlStatus(enum.StrEnum):
     EL = "EL"
     COMBINABLE = "COMBINABLE"
 
 
-class ProduceType(str, enum.Enum):
+class ProduceType(enum.StrEnum):
     LEAFY = "LEAFY"
     FRUIT = "FRUIT"
     HERB = "HERB"
@@ -48,7 +48,7 @@ class ProduceType(str, enum.Enum):
     OTHER = "OTHER"
 
 
-class WeightClass(str, enum.Enum):
+class WeightClass(enum.StrEnum):
     LIGHT = "LIGHT"
     HEAVY = "HEAVY"
 

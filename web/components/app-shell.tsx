@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage, displayLocale } from "@/lib/language";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Boxes, CalendarDays, ChevronRight, ClipboardCheck, LayoutDashboard, LogOut, Menu, PackageOpen, PackageSearch, ReceiptText, ScanLine, Users } from "lucide-react";
@@ -12,6 +14,7 @@ import { SessionContext, type SessionUser } from "@/lib/session-context";
 import { TaskDialog } from "@/components/task-dialog";
 import { useCompactLayout } from "@/lib/use-compact-layout";
 import { WorkspaceGuide } from "@/components/workspace-guide";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 type OperationsBadgeSummary = {
   awaiting_intake?: number;
@@ -21,6 +24,7 @@ type OperationsBadgeSummary = {
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
+  useLanguage();
   const compact = useCompactLayout();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -105,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         .toUpperCase()
     : "";
 
-  const today = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+  const today = new Intl.DateTimeFormat(displayLocale(), { weekday: "long", day: "numeric", month: "long" }).format(new Date());
   const hasPermission = (permission: string) => session?.permissions.includes(permission) ?? false;
   const permission = routePermission(pathname);
   // Once a session is known, render the next page immediately; the background
@@ -146,58 +150,59 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="app-frame">
-      <a className="workspace-skip-link" href="#workspace-content">Skip to main content</a>
+      <a className="workspace-skip-link" href="#workspace-content">{t("Skip to main content")}</a>
       <header className="mobile-workspace-header">
-        <button type="button" className="invoice-secondary-button" aria-haspopup="dialog" aria-expanded={menuOpen && compact} onClick={() => setMenuOpen(true)}><Menu size={18} aria-hidden />Menu</button>
-        <strong>{workspaceName}</strong>
-        {hasPermission("floor_packing") && <Link href="/scan" className="mobile-scan-shortcut"><ScanLine size={18} aria-hidden />Scan box</Link>}
+        <button type="button" className="invoice-secondary-button" aria-haspopup="dialog" aria-expanded={menuOpen && compact} onClick={() => setMenuOpen(true)}><Menu size={18} aria-hidden />{t("Menu")}</button>
+        <LanguageSwitcher />
+        {hasPermission("floor_packing") && <Link href="/scan" className="mobile-scan-shortcut"><ScanLine size={18} aria-hidden />{t("Scan box")}</Link>}
       </header>
-      {compact && menuOpen && <TaskDialog title="Workspaces" description="Choose your next task or return to Today." onClose={() => setMenuOpen(false)}>
-        <nav className="mobile-workspace-menu" aria-label="Primary navigation">
-          {navGroups.map(group => <div className="mobile-nav-group" role="group" aria-label={group.label} key={group.label}>
-            <p className="mobile-nav-group-label">{group.label}</p>
+      {compact && menuOpen && <TaskDialog title={t("Workspaces")} description={t("Choose your next task or return to Today.")} onClose={() => setMenuOpen(false)}>
+        <nav className="mobile-workspace-menu" aria-label={t("Primary navigation")}>
+          {navGroups.map(group => <div className="mobile-nav-group" role="group" aria-label={t(group.label)} key={group.label}>
+            <p className="mobile-nav-group-label">{t(group.label)}</p>
             {group.items.map(({ href, label, icon: Icon, count, hint }) => <Fragment key={href}><Link href={href}
-            aria-current={(label === "Orders" ? pathname === href : isActive(href)) ? "page" : undefined}
+            aria-current={(label === "Orders" || label === "Purchasing" ? pathname === href : isActive(href)) ? "page" : undefined}
             onClick={event => { if (!event.defaultPrevented) setMenuOpen(false); }}>
-            <Icon size={20} aria-hidden /><span>{label}</span>{Boolean(count) && <span aria-label={`${count} ${hint}`}>{count}</span>}
-          </Link>{label === "Orders" && hasPermission("validate_orders") && <div className="mobile-nav-children"><Link href="/orders/files" aria-current={pathname === "/orders/files" ? "page" : undefined} onClick={browseOrderFiles}>Browse order files</Link></div>}</Fragment>)}
+            <Icon size={20} aria-hidden /><span>{t(label)}</span>{Boolean(count) && <span aria-label={`${count} ${t(hint)}`}>{count}</span>}
+          </Link>{label === "Orders" && hasPermission("validate_orders") && <div className="mobile-nav-children"><Link href="/orders/files" aria-current={pathname === "/orders/files" ? "page" : undefined} onClick={browseOrderFiles}>{t("Browse order files")}</Link></div>}
+          {label === "Purchasing" && <div className="mobile-nav-children"><Link href="/procurement/master-purchase" aria-current={pathname === "/procurement/master-purchase" ? "page" : undefined} onClick={event => { if (!event.defaultPrevented) setMenuOpen(false); }}>{t("Master Purchase")}</Link></div>}</Fragment>)}
           </div>)}
         </nav>
-        <div className="mobile-account"><p><strong>{session?.full_name}</strong><br />{session?.role.replaceAll("_", " ").toLowerCase()}</p><button type="button" className="invoice-secondary-button" onClick={signOut}><LogOut size={18} aria-hidden />Sign out everywhere</button></div>
+        <div className="mobile-account"><p><strong>{session?.full_name}</strong><br />{t(session?.role.replaceAll("_", " ").toLowerCase())}</p><button type="button" className="invoice-secondary-button" onClick={signOut}><LogOut size={18} aria-hidden />{t("Sign out everywhere")}</button></div>
       </TaskDialog>}
-      <aside className="sidebar" aria-label="Primary sidebar">
+      <aside className="sidebar" aria-label={t("Primary sidebar")}>
         <Link className="brand" href="/">
           <span className="brand-mark">
             <img src="/logo.png" alt="" />
           </span>
           <span>
-            Agriculture is life
-            <small>Packing &amp; export operations</small>
+            {t("Agriculture is life")}<small>{t("Packing & export operations")}</small>
           </span>
         </Link>
 
-        <nav className="primary-navigation" aria-label="Primary navigation">
-          {navGroups.map(group => <div className="sidebar-nav-group" role="group" aria-label={group.label} key={group.label}>
-            <h2 className="sidebar-section-label">{group.label}</h2>
+        <nav className="primary-navigation" aria-label={t("Primary navigation")}>
+          {navGroups.map(group => <div className="sidebar-nav-group" role="group" aria-label={t(group.label)} key={group.label}>
+            <h2 className="sidebar-section-label">{t(group.label)}</h2>
             {group.items.map(({ href, label, icon: Icon, count, hint }) => {
             const active = isActive(href);
             return (
             <Fragment key={href}><Link
               className={active ? "nav-link active" : "nav-link"}
               href={href}
-              aria-current={(label === "Orders" ? pathname === href : active) ? "page" : undefined}
+              aria-current={(label === "Orders" || label === "Purchasing" ? pathname === href : active) ? "page" : undefined}
             >
               <span className="nav-link-left">
                 <Icon size={18} aria-hidden />
-                <span>{label}</span>
+                <span>{t(label)}</span>
               </span>
               {count ? (
-                <span key={count} className="nav-badge" title={`${count} ${hint}`}>
+                <span key={count} className="nav-badge" title={`${count} ${t(hint)}`}>
                   {count}
                 </span>
               ) : null}
             </Link>
-            {label === "Orders" && hasPermission("validate_orders") && <div className="sidebar-nav-children"><Link href="/orders/files" aria-current={pathname === "/orders/files" ? "page" : undefined} onClick={browseOrderFiles}>Browse order files</Link></div>}
+            {label === "Orders" && hasPermission("validate_orders") && <div className="sidebar-nav-children"><Link href="/orders/files" aria-current={pathname === "/orders/files" ? "page" : undefined} onClick={browseOrderFiles}>{t("Browse order files")}</Link></div>}
+            {label === "Purchasing" && <div className="sidebar-nav-children"><Link href="/procurement/master-purchase" aria-current={pathname === "/procurement/master-purchase" ? "page" : undefined}>{t("Master Purchase")}</Link></div>}
             </Fragment>
             );
           })}
@@ -211,9 +216,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="user-avatar-badge" aria-hidden>{userInitials}</div>
               <div className="user-info-text">
                 <strong>{session.full_name}</strong>
-                <small>{session.role.replaceAll("_", " ").toLowerCase()}</small>
+                <small>{t(session.role.replaceAll("_", " ").toLowerCase())}</small>
               </div>
-              <button className="signout-icon-btn" type="button" onClick={signOut} title="Sign out everywhere" aria-label="Sign out everywhere">
+              <button className="signout-icon-btn" type="button" onClick={signOut} title={t("Sign out everywhere")} aria-label={t("Sign out everywhere")}>
                 <LogOut size={16} />
               </button>
             </div>
@@ -223,14 +228,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="main-content" id="workspace-content" tabIndex={-1}>
         <div className="workspace-topbar">
-          <div className="workspace-breadcrumb"><span>Operations</span><ChevronRight size={14} aria-hidden /><span>{workspaceName}</span></div>
-          <span className="workspace-date" suppressHydrationWarning><CalendarDays size={15} aria-hidden />{today}</span>
+          <div className="workspace-breadcrumb"><span>{t("Operations")}</span><ChevronRight size={14} aria-hidden /><span>{t(workspaceName)}</span></div>
+          <div className="workspace-topbar-actions"><LanguageSwitcher /><span className="workspace-date" suppressHydrationWarning><CalendarDays size={15} aria-hidden />{today}</span></div>
         </div>
         <StatusMessage error={sessionError} />
-        {canRenderPage ? <SessionContext.Provider value={session}><WorkspaceGuide />{children}</SessionContext.Provider>
+        {canRenderPage ? <SessionContext.Provider value={session}>{pathname !== "/procurement" && <WorkspaceGuide />}{children}</SessionContext.Provider>
           : sessionReady && session && !session.must_change_password && permission && !hasPermission(permission)
-            ? <section className="page"><h1>Access unavailable</h1><p>Your access level does not include this workspace. Ask the owner if you need access for your work.</p><Link className="primary-button" href="/">Return to Today</Link></section>
-            : !sessionError && <div className="page" role="status" aria-label="Checking account access"><span className="skeleton skeleton-title" /><span className="skeleton skeleton-line" /><span className="skeleton skeleton-block" /></div>}
+            ? <section className="page"><h1>{t("Access unavailable")}</h1><p>{t("Your access level does not include this workspace. Ask the owner if you need access for your work.")}</p><Link className="primary-button" href="/">{t("Return to Today")}</Link></section>
+            : !sessionError && <div className="page" role="status" aria-label={t("Checking account access")}><span className="skeleton skeleton-title" /><span className="skeleton skeleton-line" /><span className="skeleton skeleton-block" /></div>}
       </main>
     </div>
   );

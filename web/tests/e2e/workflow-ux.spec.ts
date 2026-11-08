@@ -99,10 +99,35 @@ test("accounting starts with billing queues and tabs request correct states", as
 });
 
 test("batch scope reaches the API and survives opening a packing order", async ({ page }) => {
-  const requests = await setup(page); await page.goto("/packing/orders?batch_id=batch-1&view=all");
-  await expect(page.locator(".register-scope")).toContainText("batch-1");
+  const requests = await setup(page); await page.goto("/packing/orders?batch_id=batch-1&view=all&display=orders");
+  await expect(page.locator(".register-scope")).toContainText("this purchase batch");
   await expect(page.getByRole("link", { name: "Resume packing SUNNY", exact: true })).toHaveAttribute("href", /returnTo=.*batch_id/);
   expect(requests.some(path => path.includes("/packing/orders?") && path.includes("batch_id=batch-1"))).toBe(true);
+});
+
+test("Today keeps sibling suborders distinct across refreshes", async ({ page }) => {
+  await setup(page);
+  const keyErrors: string[] = [];
+  page.on("console", message => { if (message.type() === "error" && message.text().includes("same key")) keyErrors.push(message.text()); });
+  const siblings = ["A", "B", "C"].map(code => ({ raw_file_id: "7e442e77-0ce5-46af-9255-9ea95fcc31db",
+    order_id: `order-${code}`, order_ref_id: `ORD-${code}`, customer_name: `Subcustomer ${code}`, customer_code: code,
+    status: "HANDOFF_01_SENT", boxes: 0, outstanding: 0, shipment_date: "2026-11-02", route: "CT" }));
+  let reverse = false;
+  await page.route("**/backend/api/v3/packing/orders?*", route => route.fulfill({ json: {
+    items: reverse ? [...siblings].reverse() : siblings, total: 3, offset: 0, limit: 5, has_more: false,
+  } }));
+  await page.goto("/");
+  const packing = page.getByRole("region", { name: "Pack boxes", exact: true });
+  await expect(packing.locator("li")).toHaveCount(3);
+  expect(keyErrors).toEqual([]);
+  const targets = async () => packing.getByRole("link", { name: "Start packing", exact: true }).evaluateAll(links => links.map(link => new URL((link as HTMLAnchorElement).href).searchParams.get("orderId")));
+  expect(await targets()).toEqual(["order-A", "order-B", "order-C"]);
+  reverse = true;
+  await page.getByRole("button", { name: "Refresh work", exact: true }).click();
+  await expect(packing.locator(".today-customer").first()).toHaveText("Subcustomer C");
+  await expect(packing.locator("li")).toHaveCount(3);
+  expect(await targets()).toEqual(["order-C", "order-B", "order-A"]);
+  expect(keyErrors).toEqual([]);
 });
 
 test("malformed sticker input recovers and valid scan targets exact box", async ({ page }) => {
