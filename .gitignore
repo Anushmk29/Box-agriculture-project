@@ -19,7 +19,6 @@ backend/uploads/
 .codex-artifact/
 web/test-results/
 web/test-results-*/
-graphify-out
 docs
 .impeccable
 
