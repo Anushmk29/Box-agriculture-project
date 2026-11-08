@@ -34,6 +34,7 @@ Customer format holds remain: `440T.xlsx`, `51H-2.xlsx`, `86L.ods` on standby; `
 - Caddy configuration validates. Deployment sequencing passes for initial release, migration failure, promotion, application rollback, HTTPS failure, Hostinger hostname and rejection of a bare IP address.
 - Empty local PostgreSQL upgrades through all migrations to `20261108_0026`. A synthetic database backup restored to a separate database with identical counts in all 30 tables and verified source file hash; local rehearsal duration about three seconds. This is not an estimate for production recovery time.
 - Full Linux backend suite against the production API image and disposable PostgreSQL: **951 passed**, no skips. The PostgreSQL test fixtures now explicitly select their intended legacy packing mode instead of inheriting the developer's local configuration.
+- Private-workbook inventory/regression cases run locally with the source folder and are explicitly optional in CI. Synthetic 19T/931L examples exercise moved headers, identity conflicts, missing columns, Thai pack units, markers/formulas and isolated-worker intake in every CI run.
 - Browser release gate: **40 passed**, with one explicitly optional live-account test skipped. Includes 18 smoke, 9 real API regressions, 2 full client/workspace journeys, 8 language and 3 release-readiness cases. The skipped case requires real account credentials; synthetic workflow and access tests run against disposable data.
 
 ## Hosted staging and production gate

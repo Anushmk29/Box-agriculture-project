@@ -20,6 +20,29 @@ pytest_plugins = ["test_simplified_workflow"]
 SAMPLES = Path(__file__).resolve().parents[2] / "documents/new input format"
 
 
+@pytest.fixture
+def sample_workbooks(tmp_path):
+    # Synthetic layout examples keep edge-case coverage independent of private customer files.
+    examples = {
+        "19T.xlsx": ("Sheet1", [[], ["ORDER FORM Customer: NGA", None, None, None, None, None, None, None, None, None, "19T"],
+            [], ["Code", None, "003319", "Item", None, "Product Name", "Viet", "Thai", "Packge", None, "Order", "Unit"],
+            [1, None, "003319", 11001, "11001-080", "Sample herb", None, None, "80g", 0.08, 3, "Kg"],
+            [2, None, "003319", 11002, "11002-080", "Sample root", None, None, "80g", 0.08, 0.8, "Kg"]]),
+        "931L (1).xlsx": ("Ark1", [[".", None, "Customer no.", None, "931L"],
+            ["Item", "Item", "Description (English)", "Description Thai", "ORDER"],
+            [1001, "11001-080", "Sample herb", "ตะไคร้ 80 กรัม", 0.4, "Kgs."]]),
+    }
+    paths = {}
+    for name, (title, rows) in examples.items():
+        workbook = openpyxl.Workbook()
+        workbook.active.title = title
+        for row in rows:
+            workbook.active.append(row)
+        paths[name] = tmp_path / name
+        workbook.save(paths[name])
+    return paths
+
+
 @pytest.mark.parametrize("definition", references(), ids=lambda d: d["key"])
 def test_every_reference_has_a_matching_profile_and_source_cells(definition):
     path = SAMPLES.parent / definition.get("sample_directory", "new input format") / definition["sample"]
@@ -38,13 +61,15 @@ def test_every_reference_has_a_matching_profile_and_source_cells(definition):
 
 
 def test_inventory_covers_exactly_all_supplied_excel_workbooks():
+    if not SAMPLES.is_dir():
+        pytest.skip("Local client source folder unavailable")
     assert {p.name for p in SAMPLES.iterdir() if p.suffix in {".xlsx", ".xls"}} == {
         d["sample"] for d in references() if not d.get("sample_directory")
     }
 
 
-def test_19t_reads_actual_product_code_and_future_quantities_after_blank_rows(tmp_path):
-    wb = openpyxl.load_workbook(SAMPLES / "19T.xlsx")
+def test_19t_reads_actual_product_code_and_future_quantities_after_blank_rows(tmp_path, sample_workbooks):
+    wb = openpyxl.load_workbook(sample_workbooks["19T.xlsx"])
     ws = wb.active
     ws["K5"] = 0.8
     ws.insert_rows(1, 2)
@@ -63,8 +88,8 @@ def test_19t_reads_actual_product_code_and_future_quantities_after_blank_rows(tm
     assert first.source["quantity_cell"] == "K7"
 
 
-def test_conflicting_customer_and_missing_column_require_review(tmp_path):
-    path = SAMPLES / "19T.xlsx"
+def test_conflicting_customer_and_missing_column_require_review(tmp_path, sample_workbooks):
+    path = sample_workbooks["19T.xlsx"]
     draft = parse_profiles(str(path), references(), original_name="68H.xlsx")[0]
     assert draft.metadata["template"]["issues"]
     resolved = parse_profiles(
@@ -81,8 +106,8 @@ def test_conflicting_customer_and_missing_column_require_review(tmp_path):
     )
 
 
-def test_931l_uses_unlabelled_unit_column_and_explicit_thai_pack_weight():
-    item = parse_profiles(str(SAMPLES / "931L (1).xlsx"), references())[0].items[0]
+def test_931l_uses_unlabelled_unit_column_and_explicit_thai_pack_weight(sample_workbooks):
+    item = parse_profiles(str(sample_workbooks["931L (1).xlsx"]), references())[0].items[0]
     assert (item.product_code, item.quantity, item.unit, item.pack_size) == (
         "11001-080",
         0.4,
@@ -92,8 +117,8 @@ def test_931l_uses_unlabelled_unit_column_and_explicit_thai_pack_weight():
     assert derive_quantity(item).packs == 5
 
 
-def test_unknown_marker_and_uncached_formula_remain_visible(tmp_path):
-    wb = openpyxl.load_workbook(SAMPLES / "19T.xlsx")
+def test_unknown_marker_and_uncached_formula_remain_visible(tmp_path, sample_workbooks):
+    wb = openpyxl.load_workbook(sample_workbooks["19T.xlsx"])
     ws = wb.active
     ws["K5"] = "x"
     ws["K6"] = "=1+1"
@@ -268,7 +293,7 @@ def test_confirm_unit_once_persists_version_and_reuses_it(
     assert float(invoice.total_amount_eur) == 20 and invoice.items[0].billed_pack_count == 10
 
 
-def test_new_upload_uses_profiles_in_isolated_worker(db_session, tmp_path, monkeypatch):
+def test_new_upload_uses_profiles_in_isolated_worker(db_session, sample_workbooks, monkeypatch):
     from app.services.adaptive_order_orchestrator import AdaptiveOrderOrchestrator
 
     raw, _ = _setup(db_session)
@@ -277,7 +302,7 @@ def test_new_upload_uses_profiles_in_isolated_worker(db_session, tmp_path, monke
     db_session.commit()
     monkeypatch.setattr(settings, "EXCEL_TEMPLATE_PROFILES_ENABLED", True)
     result = AdaptiveOrderOrchestrator(db_session).ingest_file(
-        str(SAMPLES / "19T.xlsx"), "2026-10-27", actor, main_customer_id=raw.main_customer_id
+        str(sample_workbooks["19T.xlsx"]), "2026-10-27", actor, main_customer_id=raw.main_customer_id
     )
     from app.models.order import RawOrderFile
 
