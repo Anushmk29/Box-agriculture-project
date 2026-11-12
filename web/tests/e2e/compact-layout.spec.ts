@@ -67,7 +67,7 @@ test("every workspace and working record stays readable at desktop and phone wid
   await setup(page);
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(`${page.url()}: ${error.message}`));
-  const routes = ["/", "/orders", "/orders?fileId=intake", "/procurement?batchId=batch-1", "/procurement/combine", "/packing?orderId=order-1", "/packing/setup", "/billing?orderId=order-1", "/billing?invoiceId=invoice-1", "/billing/resolve-prices?orderId=order-1&mode=individual", "/scan", "/scan/QA-BOX", "/users"];
+  const routes = ["/", "/orders", "/orders?fileId=intake", "/procurement?batchId=batch-1", "/procurement/master-purchase", "/packing?orderId=order-1", "/packing/setup", "/billing?orderId=order-1", "/billing?invoiceId=invoice-1", "/billing/resolve-prices?orderId=order-1&mode=individual", "/scan", "/scan/QA-BOX", "/users"];
   for (const width of [1366, 1024, 390]) {
     await page.setViewportSize({ width, height: 900 });
     for (const [i, route] of routes.entries()) {

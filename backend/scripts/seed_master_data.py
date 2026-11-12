@@ -8,6 +8,7 @@ import openpyxl
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
+from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
 from app.models import (
@@ -38,18 +39,16 @@ def estimate_unit_volume_cm3(pack_size: str) -> float:
 
 
 def seed_all():
+    seed_password = settings.SEED_INITIAL_PASSWORD.get_secret_value()
+    if not 12 <= len(seed_password) <= 128 or seed_password in {
+        "Development-Only-Change-Me!", "replace-with-a-one-time-random-password",
+    }:
+        raise RuntimeError("SEED_INITIAL_PASSWORD must be an explicit unique password of 12–128 characters")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         print("--- 1. Seeding Users & Service Principals ---")
         existing_users = {u.email: u for u in db.query(User).all()}
-        seed_password = os.getenv("SEED_INITIAL_PASSWORD")
-        if not seed_password:
-            if os.getenv("ENVIRONMENT", "development").lower() not in {"development", "test"}:
-                raise RuntimeError(
-                    "SEED_INITIAL_PASSWORD is required when seeding a non-development environment"
-                )
-            seed_password = "Development-Only-Change-Me!"
         users_to_create = [
             ("admin@agricultureislife.com", "Admin System", UserRole.OWNER_ADMIN, False),
             ("staff@agricultureislife.com", "Operations Staff", UserRole.GENERAL, False),
@@ -94,6 +93,7 @@ def seed_all():
                     password_hash=hash_password(seed_password),
                     role=role,
                     is_service_principal=is_sp,
+                    must_change_password=not is_sp,
                 )
                 db.add(u)
         db.commit()

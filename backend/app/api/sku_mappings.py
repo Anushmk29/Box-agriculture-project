@@ -118,12 +118,14 @@ def create_or_update_sku_mapping(
             "client_raw_name": existing.client_raw_name,
             "product_id": existing.product_id,
             "standard_pack_size": existing.standard_pack_size,
+            "is_verified": existing.is_verified,
         }
         existing.client_sku_code = (
             payload.client_sku_code.strip().upper() if payload.client_sku_code else None
         )
         existing.product_id = product.id
         existing.standard_pack_size = payload.standard_pack_size
+        existing.is_verified = True
         mapping = existing
     else:
         mapping = ClientSkuMapping(
@@ -153,6 +155,7 @@ def create_or_update_sku_mapping(
                 "client_raw_name": mapping.client_raw_name,
                 "product_id": mapping.product_id,
                 "standard_pack_size": mapping.standard_pack_size,
+                "is_verified": mapping.is_verified,
             },
         )
     )

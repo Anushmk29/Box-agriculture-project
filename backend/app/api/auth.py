@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import bearer, get_current_user
+from app.core.login_limits import enforce_login_limit
 from app.core.policy import permissions
 from app.core.security import (
     create_access_token,
@@ -42,7 +43,8 @@ class ChangePasswordRequest(BaseModel):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(req: LoginRequest, response: Response, db: Session = Depends(get_db, scope="function")):
+def login(req: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db, scope="function")):
+    enforce_login_limit(db, req.email, request.client.host if request.client else "unknown")
     user = db.query(User).filter(User.email == req.email.strip().lower()).first()
     if not user or not verify_password(req.password, user.password_hash):
         raise HTTPException(

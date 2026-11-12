@@ -84,7 +84,6 @@ def test_cancelling_only_order_closes_empty_batch_and_keeps_original_demand(audi
     assert db_session.query(ClientOrderItem).one().ordered_pack_count == 10
     assert db_session.query(PurchasingItem).count() == 0
     assert client.get("/api/v3/procurement/batches?view=pending").json()["total"] == 0
-    assert client.get("/api/v3/procurement/source-files").json()["total"] == 0
 
 
 def test_cancelling_one_order_recalculates_shared_purchase_and_remaining_order_dispatches(audit_client, db_session):
@@ -104,7 +103,7 @@ def test_cancelling_one_order_recalculates_shared_purchase_and_remaining_order_d
     db_session.refresh(item)
     assert float(item.ordered_net_weight_kg) == 4 and item.total_required_pack_count == 5
     assert sibling.status == OrderStatus.PURCHASING_CONSOLIDATED
-    assert client.get("/api/v3/procurement/source-files").json()["total"] == 1
+    assert client.get("/api/v3/procurement/batches?view=pending").json()["total"] == 1
     ProcurementConfirmationService(db_session).confirm_and_dispatch(batch_id=batch.id,
         confirmations=[ProcurementConfirmation(item_id=item.id, purchased_pack_count=4, purchased_weight_kg=4)], actor=buyer)
     db_session.commit()

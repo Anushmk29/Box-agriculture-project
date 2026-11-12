@@ -8,7 +8,12 @@ from sqlalchemy.orm import selectinload
 from app.models.master_data import Product
 from app.modules.orders.acknowledgment import order_drafts
 from app.modules.orders.intake import OrderIntake
-from app.modules.orders.quantities import derive_quantity, unit_key
+from app.modules.orders.quantities import (
+    derive_quantity,
+    kept_as_ordered,
+    quantity_snapshot,
+    unit_key,
+)
 from app.modules.orders.templates import template_issues
 from app.services.canonical_schema import ActionType
 
@@ -34,6 +39,8 @@ def quantity_review_data(drafts, rows, *, offset=0, limit=50, issues_only=False)
         "issues_only": issues_only,
         "has_more": offset + limit < len(selected),
         "issue_count": sum(bool(row["issue"]) for row in rows) + len(problems),
+        "keepable_issue_count": sum(bool(row["issue"]) and row["can_keep_as_ordered"] for row in rows),
+        "reviewed_count": sum(row["reviewed_unchanged"] for row in rows),
         "unknown_unit_count": sum(
             unit_key(row["unit"]) not in {"kg", "g", "pack", "pc", "box", "bag", "bunch", "tray"}
             for row in rows
@@ -66,11 +73,24 @@ def quantity_rows(db, raw_file, drafts=None, *, resolver=None):
             key = (item.product_code, item.product_name, tuple(item.alt_names))
             try:
                 quantity = derive_quantity(item, products[key])
-                computed = {"pack_count": quantity.packs, "net_weight_kg": float(quantity.net_kg)}
+                computed = {"pack_count": None if quantity.weight_source == "REVIEWED_ORDER_WEIGHT" else quantity.packs,
+                            "net_weight_kg": float(quantity.net_kg)}
                 issue = None
             except ValueError as exc:
                 computed = None
                 issue = str(exc)
+            can_keep = not issue
+            if issue:
+                candidate = item.model_copy(deep=True)
+                candidate.source["quantity_review"] = {
+                    "decision": "KEEP_AS_ORDERED", "reviewed_by": "preview",
+                    "values": quantity_snapshot(candidate),
+                }
+                try:
+                    derive_quantity(candidate, products[key])
+                    can_keep = True
+                except ValueError:
+                    pass
             rows.append(
                 {
                     "row_id": f"{d_index}:{index}",
@@ -82,6 +102,8 @@ def quantity_rows(db, raw_file, drafts=None, *, resolver=None):
                     "pack_size": item.pack_size,
                     "net_weight_kg": item.net_weight_kg,
                     "source": item.source,
+                    "reviewed_unchanged": kept_as_ordered(item),
+                    "can_keep_as_ordered": can_keep,
                     "computed": computed,
                     "issue": issue,
                 }

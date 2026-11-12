@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from pathlib import Path
 from zipfile import BadZipFile
 
@@ -36,7 +37,7 @@ from app.modules.orders.acknowledgment import (
     prepare_acknowledgment,
 )
 from app.modules.orders.intake import OrderIntake
-from app.modules.orders.quantities import pack_key, unit_key
+from app.modules.orders.quantities import pack_key, quantity_snapshot, unit_key
 from app.modules.orders.quantity_review import draft_revision, quantity_review_data, quantity_rows
 from app.modules.orders.validation import OrderValidationService
 from app.modules.procurement.batch import PurchasingBatchService
@@ -48,6 +49,7 @@ from app.services.canonical_schema import (
     CanonicalOrderDraft,
     IngestionChannel,
 )
+from app.services.name_matcher import NameFirstMatcher
 
 router = APIRouter(prefix="/orders", tags=["Stage 01: Order Intake & Splitting"])
 
@@ -478,6 +480,13 @@ class BulkQuantityCorrection(BaseModel):
     preview_only: bool = False
 
 
+class QuantityKeepReview(BaseModel):
+    model_config = {"extra": "forbid"}
+    expected_revision: str = Field(min_length=64, max_length=64)
+    row_ids: list[str] | None = Field(default=None, min_length=1, max_length=200)
+    all_eligible: bool = False
+
+
 def pending_quantity_file(db, identity, *, lock=True):
     raw = (
         bounded_raw(db, identity, lock=lock)
@@ -560,6 +569,7 @@ def correct_order_quantity(
         "reviewed_by": actor.id,
         "review_note": payload.note.strip(),
     }
+    item.source.pop("quantity_review", None)
     item.quantity = payload.quantity
     if payload.quantity == 0:
         item.action = ActionType.CANCEL
@@ -611,6 +621,7 @@ def correct_order_quantities(
         before.append({"row_id": row_id, "item": original})
         item.source = {**item.source, "original": item.source.get("original", original),
                        "reviewed_by": actor.id, "review_note": payload.note.strip()}
+        item.source.pop("quantity_review", None)
         if unit is not None:
             item.unit = unit
         if size is not None:
@@ -626,6 +637,56 @@ def correct_order_quantities(
     if payload.preview_only:
         return {"revision": payload.expected_revision, "items": changed, "changed_count": len(changed)}
     save_quantity_drafts(db, raw, drafts, actor, {"rows": before}, "ORDER_QUANTITIES_BULK_CORRECTED")
+    return {**quantity_review_data(drafts, rows, issues_only=issues_only),
+            "changed_rows": changed, "changed_count": len(changed)}
+
+
+@router.post("/{raw_file_id}/quantity-review/keep")
+def keep_order_quantities(
+    raw_file_id: str,
+    payload: QuantityKeepReview,
+    issues_only: bool = True,
+    db: Session = Depends(get_db, scope="function"),
+    actor: User = Depends(require_action(Action.VALIDATE_ORDERS)),
+):
+    raw = pending_quantity_file(db, raw_file_id)
+    drafts = order_drafts(raw)
+    if draft_revision(drafts) != payload.expected_revision:
+        raise HTTPException(409, "Order quantities changed. Reload the review before saving")
+    if payload.all_eligible == bool(payload.row_ids):
+        raise HTTPException(422, "Choose selected lines or all eligible issues")
+    row_ids = payload.row_ids
+    if payload.all_eligible:
+        rows = quantity_rows(db, raw, drafts)
+        row_ids = [row["row_id"] for row in rows if row["issue"] and row["can_keep_as_ordered"]]
+        if not row_ids:
+            return {**quantity_review_data(drafts, rows, issues_only=issues_only),
+                    "changed_rows": [], "changed_count": 0}
+    if len(set(row_ids)) != len(row_ids):
+        raise HTTPException(422, "Select each order line once")
+    before = []
+    for row_id in row_ids:
+        try:
+            d_index, index = map(int, row_id.split(":"))
+            if d_index < 0 or index < 0 or row_id != f"{d_index}:{index}":
+                raise ValueError()
+            item = drafts[d_index].items[index]
+            if item.action == ActionType.CANCEL or item.quantity <= 0:
+                raise ValueError()
+        except (ValueError, IndexError):
+            raise HTTPException(422, f"Select an existing ordered line: {row_id}") from None
+        before.append({"row_id": row_id, "item": item.model_dump(mode="json")})
+        item.source = {**item.source, "quantity_review": {
+            "decision": "KEEP_AS_ORDERED", "reviewed_by": actor.id,
+            "reviewed_at": datetime.now(UTC).isoformat(), "values": quantity_snapshot(item),
+        }}
+    rows = quantity_rows(db, raw, drafts)
+    selected = set(row_ids)
+    changed = [row for row in rows if row["row_id"] in selected]
+    invalid = next((row for row in changed if row["issue"]), None)
+    if invalid:
+        raise HTTPException(422, f"No reviews saved. {invalid['client_code']} / {invalid['product_name']}: {invalid['issue']}")
+    save_quantity_drafts(db, raw, drafts, actor, {"rows": before}, "ORDER_QUANTITIES_REVIEWED")
     return {**quantity_review_data(drafts, rows, issues_only=issues_only),
             "changed_rows": changed, "changed_count": len(changed)}
 
@@ -726,7 +787,8 @@ def split_order_matrix(
         )
 
     drafts = order_drafts(raw_file)
-    quantity_issues = [row for row in quantity_rows(db, raw_file, drafts) if row["issue"]]
+    matcher = NameFirstMatcher(db)
+    quantity_issues = [row for row in quantity_rows(db, raw_file, drafts, resolver=matcher) if row["issue"]]
     if quantity_issues:
         raise HTTPException(
             409, f"Resolve {len(quantity_issues)} quantity issues in intake review before splitting"
@@ -735,7 +797,7 @@ def split_order_matrix(
     if main_customer_id:
         raw_file.main_customer_id = main_customer_id
     try:
-        client_orders = OrderIntake(db).materialize(raw_file=raw_file, drafts=drafts).orders
+        client_orders = OrderIntake(db, resolver=matcher).materialize(raw_file=raw_file, drafts=drafts).orders
         WorkflowService(db).transition(
             target=raw_file,
             to_status=OrderStatus.SPLIT_AND_VALIDATED,
@@ -764,7 +826,7 @@ def split_order_matrix(
             "items_count": o.total_ordered_items_count,
             "estimated_net_weight_kg": float(o.total_estimated_net_weight_kg),
         }
-        for o in client_orders
+        for o in client_orders[:10]
     ]
 
     return OrderSplitResponse(
@@ -774,7 +836,7 @@ def split_order_matrix(
         total_client_orders_created=len(client_orders),
         total_line_items_created=total_items,
         total_estimated_weight_kg=round(float(total_weight), 2),
-        sample_orders=samples[:10],
+        sample_orders=samples,
     )
 
 

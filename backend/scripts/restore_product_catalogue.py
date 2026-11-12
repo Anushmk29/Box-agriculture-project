@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sqlalchemy import create_engine, make_url, text
+
 from app import models  # noqa: F401
 from app.core.config import settings
 from app.core.database import Base, normalize_database_url

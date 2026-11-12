@@ -1,5 +1,11 @@
 "use client";
 
+import { t, useLanguage, displayLocale } from "@/lib/language";
+
+import { PackingItemEditor, type PackingItem } from "@/components/packing-item-editor";
+import { PackingFitFeedback } from "@/components/packing-fit-feedback";
+import styles from "./packing.module.css";
+
 import { PageLoadingSkeleton, TableLoadingSkeleton } from "@/components/loading-skeleton";
 
 import { Suspense, useState, useEffect, useRef, useCallback } from "react";
@@ -9,8 +15,6 @@ import { useSearchParams } from "next/navigation";
 import {
   Boxes,
   ArrowRightLeft,
-  Truck,
-  Download,
   QrCode,
   ArrowLeft,
   ArrowRight,
@@ -34,16 +38,7 @@ import { WorkflowProgress } from "@/components/workflow-guidance";
 import { safeDestination } from "@/lib/workflow";
 import QRCode from "qrcode";
 
-type BoxItem = {
-  item_id: string;
-  product_id: string;
-  product_code: string;
-  produce_name: string;
-  pack_size: string;
-  packed_count: number;
-  net_weight_kg: number;
-  adjustment_type: string;
-};
+type BoxItem = PackingItem;
 
 type BoxDetail = {
   box_id: string;
@@ -65,7 +60,8 @@ type BoxDetail = {
   packing_mode?: "EL" | "NON_EL" | null;
   needs_replan?: boolean;
   replan_reasons?: string[];
-  volume_cm3?: number;
+  volume_cm3?: number | null;
+  history_evidence?: { source: string; pages: number[]; basis: string } | null;
   usable_volume_cm3?: number;
   volume_utilization_pct?: number | null;
   layers?: Array<{ item_id: string; product_code: string; product_name: string; pack_size: string; packed_count: number; firmness: string; layer: string; volume_source?: string }>;
@@ -73,6 +69,8 @@ type BoxDetail = {
 
 type PackingListResponse = {
   client_order_id: string;
+  raw_file_id?: string;
+  file_name?: string;
   packing_revision: number;
   order_ref_id: string;
   status: string;
@@ -94,44 +92,27 @@ type BoxCatalogue = {
   height_cm: number;
 };
 
-type VehicleLoadExport = {
-  route_code: string;
-  shipment_date: string;
-  total_boxes_count: number;
-  total_gross_weight_kg: number;
-  total_net_weight_kg: number;
-  customers: Array<{
-    customer_code: string;
-    company_name: string;
-    boxes_count: number;
-    box_numbers: number[];
-    total_net_kg: number;
-    total_gross_kg: number;
-  }>;
-  checklist_text: string;
-  csv_content: string;
-};
+type ReplanPreview = { preview_token: string; warning: string; packing_mode: string; boxes: Array<{ box_number: number; box_catalogue_id: string; net_weight_kg: number; volume_cm3: number | null; history_evidence?: { source: string; pages: number[] } | null; items: Array<{ product_id: string; product_name?: string; pack_size: string; count: number }> }> };
 
-type ReplanPreview = { preview_token: string; warning: string; packing_mode: string; boxes: Array<{ box_number: number; box_catalogue_id: string; net_weight_kg: number; volume_cm3: number; items: Array<{ product_id: string; product_name?: string; pack_size: string; count: number }> }> };
-
-type MasterProduct = { id: string; t_code: string; name_en: string; name_vi: string };
 function packingStatus(status = "") {
   if (!status) return "Status unavailable";
   return ({ HANDOFF_01_SENT: "Not started", PACKING_DESIGNED: "Boxes prepared", FLOOR_PACKING: "Packing in progress", FINAL_PACK_LOCKED: "Locked: send to accounting", HANDOFF_02_RETURNED: "Packing complete" } as Record<string, string>)[status] || status.replaceAll("_", " ");
 }
 
 function displayCustomer(value: string) {
-  return value.replace(/_+/g, " ").replace(/\s+/g, " ").trim();
+  return value.replace(/_+/g, " ").replace(/\s+/g, " ").trim() || "Current order";
 }
 
 function shipmentDate(value: string) {
   const date = new Date(`${value}T12:00:00`);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(displayLocale(), { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function PackingPage() { return <Suspense fallback={<PageLoadingSkeleton label="Loading packing…" />}><PackingContent /></Suspense>; }
+export default function PackingPage() {
+  useLanguage(); return <Suspense fallback={<PageLoadingSkeleton label={t("Loading packing…")} />}><PackingContent /></Suspense>; }
 
 function PackingContent() {
+  useLanguage();
   const compact = useCompactLayout();
   const searchParams = useSearchParams();
   const requestedOrderId = searchParams.get("orderId");
@@ -164,28 +145,16 @@ function PackingContent() {
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferError, setTransferError] = useState("");
 
-  const [vehicleExport, setVehicleExport] = useState<VehicleLoadExport | null>(null);
-  const [exportBusy, setExportBusy] = useState(false);
 
   const [previewBox, setPreviewBox] = useState<BoxDetail | null>(null);
   const [previewQrDataUrl, setPreviewQrDataUrl] = useState("");
   const [stickerCodeCopied, setStickerCodeCopied] = useState(false);
   const permissions = useSession()?.permissions ?? [];
-  const [itemSearchBusy, setItemSearchBusy] = useState(false);
-  const [itemSearchError, setItemSearchError] = useState("");
   const orderRequest = useRef(0);
   const selectionBusy = useRef(false);
   const selectionRequest = useRef(0);
   const operationBusy = useRef(false);
-  const [itemEditor, setItemEditor] = useState<{ boxId: string; itemId?: string; revision: number } | null>(null);
-  const [itemSearch, setItemSearch] = useState("");
-  const [itemOffset, setItemOffset] = useState(0);
-  const [itemProducts, setItemProducts] = useState<MasterProduct[]>([]);
-  const [itemProduct, setItemProduct] = useState("");
-  const [selectedItemProduct, setSelectedItemProduct] = useState<MasterProduct | null>(null);
-  const [itemPack, setItemPack] = useState("100g");
-  const [itemQuantity, setItemQuantity] = useState("1");
-  const [itemWeight, setItemWeight] = useState("0.1");
+  const [itemEditor, setItemEditor] = useState<{ boxId: string; item?: PackingItem; revision: number } | null>(null);
   const canEditPacking = !revisionConflict && ["PACKING_DESIGNED", "FLOOR_PACKING"].includes(packingData?.status || "") && permissions.includes("floor_packing");
   const orderStatus = packingData?.client_order_id === orderId ? packingData.status : "";
   const transferSource = packingData?.boxes.find(box => box.box_id === sourceBoxId);
@@ -211,41 +180,9 @@ function PackingContent() {
     return () => { document.removeEventListener("click", dismissOutside); document.removeEventListener("keydown", dismissWithEscape); };
   }, []);
 
-  useEffect(() => {
-    if (!itemEditor) return;
-    let active = true;
-    const timer = window.setTimeout(() => {
-      setItemSearchBusy(true); setItemSearchError(""); setItemProducts([]);
-      api<MasterProduct[]>(`/master-data/products?q=${encodeURIComponent(itemSearch)}&limit=100&offset=${itemOffset}`)
-        .then(products => { if (active) setItemProducts(products); })
-        .catch(reason => { if (active) setItemSearchError(reason instanceof Error ? reason.message : "Unable to search products"); })
-        .finally(() => { if (active) setItemSearchBusy(false); });
-    }, 250);
-    return () => { active = false; window.clearTimeout(timer); };
-  }, [itemEditor, itemSearch, itemOffset]);
-
   function editItem(boxId: string, item?: BoxItem) {
     if (!packingData || revisionConflict) return;
-    setItemEditor({ boxId, itemId: item?.item_id, revision: packingData.packing_revision }); setError("");
-    setSelectedItemProduct(item ? { id: item.product_id, t_code: item.product_code, name_en: item.produce_name, name_vi: "" } : null);
-    setItemSearchBusy(true); setItemSearchError(""); setItemProducts([]);
-    setItemOffset(0);
-    setItemProduct(item?.product_id || ""); setItemSearch(item?.product_code || "");
-    setItemPack(item?.pack_size || "100g"); setItemQuantity(String(item?.packed_count || 1)); setItemWeight(String(item?.net_weight_kg || 0.1));
-  }
-
-  async function saveItem(event: React.FormEvent) {
-    event.preventDefault(); if (!itemEditor || revisionConflict) return;
-    setBusy(true); setError("");
-    try {
-      await api(`/packing/boxes/${itemEditor.boxId}/items`, { method: "PUT", body: JSON.stringify({
-        expected_revision: itemEditor.revision, item_id: itemEditor.itemId, product_id: itemProduct, pack_size: itemPack,
-        quantity: Number(itemQuantity), net_weight_kg: Number(itemWeight),
-      }) });
-      setItemEditor(null); await loadPackingList(orderId); setMessage("Packing item saved. Review the contents before finalizing packing.");
-    } catch (reason) {
-      if (isRevisionConflict(reason)) setRevisionConflict(true); setError(reason instanceof Error ? reason.message : "Unable to save item"); }
-    finally { setBusy(false); }
+    setItemEditor({ boxId, item, revision: packingData.packing_revision }); setError("");
   }
 
   useEffect(() => {
@@ -439,36 +376,6 @@ function PackingContent() {
     }
   }
 
-  async function triggerVehicleLoadExport() {
-    setExportBusy(true);
-    setError("");
-    try {
-      const route = packingData?.route_code || "TETE";
-      const date = packingData?.shipment_date ?? new Date().toISOString().slice(0, 10);
-      const data = await api<VehicleLoadExport>(
-        `/packing/transportation-manifests/export-vehicle-load?route_code=${route}&shipment_date=${date}`
-      );
-      setVehicleExport(data);
-    } catch (reason) {
-      if (isRevisionConflict(reason)) setRevisionConflict(true);
-      setError(reason instanceof Error ? reason.message : "Failed to generate transportation export file");
-    } finally {
-      setExportBusy(false);
-    }
-  }
-
-  function downloadExportFile() {
-    if (!vehicleExport) return;
-    const blob = new Blob([vehicleExport.csv_content], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Vehicle_Load_Totals_${vehicleExport.route_code}_${vehicleExport.shipment_date}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
   const needsReplan = Boolean(packingData?.boxes.some(box => box.needs_replan));
   const packingComplete = orderStatus === "HANDOFF_02_RETURNED";
   const totalNetWeight = (packingData?.boxes || []).reduce((total, box) => total + box.items.reduce((weight, item) => weight + item.net_weight_kg, 0), 0);
@@ -494,56 +401,57 @@ function PackingContent() {
   }, [requestedBox, packingData, visibleBoxes, pageSize]);
 
   return (
-    <div className="page packing-workspace packing-desk">
-      <div className="packing-back"><ArrowLeft size={15} aria-hidden /><RegisterBackLink fallback="/packing/orders" label="Packing orders" /></div>
+    <div className={`page packing-workspace packing-desk ${styles.workspace}`}>
+      <div className="packing-back"><ArrowLeft size={15} aria-hidden /><RegisterBackLink fallback="/packing/orders" label={t("Packing orders")} /></div>
       <header className="packing-workspace-heading">
-        <div className="packing-title-row"><h1>Packing desk</h1>{packingData && <span key={orderStatus} className={`packing-order-status${packingComplete ? " is-complete" : ""}`}>
+        <div className="packing-title-row"><span className={styles.titleIcon}><Boxes size={24} strokeWidth={1.7} aria-hidden /></span><h1>{t("Packing desk")}</h1>{packingData && <span key={orderStatus} className={`packing-order-status${packingComplete ? " is-complete" : ""}`}>
           {packingComplete ? <CheckCircle2 size={16} aria-hidden /> : <span className="packing-status-dot" aria-hidden />}{packingStatus(orderStatus)}
         </span>}</div>
-        {!packingData && !requestedOrderId && <Link className="invoice-secondary-button" href={packingQueue}>Choose an order<ArrowRight size={16} aria-hidden /></Link>}
+        {!packingData && !requestedOrderId && <Link className="invoice-secondary-button" href={packingQueue}>{t("Choose an order")}<ArrowRight size={16} aria-hidden /></Link>}
         {packingComplete && (permissions.includes("manage_billing") && packingData!.boxes.length > 0
-          ? <Link className="primary-button packing-next-action" href={`/billing?orderId=${encodeURIComponent(packingData!.client_order_id)}`}><Receipt size={17} aria-hidden />Continue to billing<ArrowRight size={16} aria-hidden /></Link>
-          : <Link className="primary-button packing-next-action" href={packingQueue}>Pack next order<ArrowRight size={16} aria-hidden /></Link>)}
-        {orderStatus === "FINAL_PACK_LOCKED" && <button type="button" className="primary-button packing-next-action" disabled={busy} onClick={() => void finalizePacking()}>Send Final Packing to Accounting<ArrowRight size={16} aria-hidden /></button>}
+          ? <Link className="primary-button packing-next-action" href={`/billing?orderId=${encodeURIComponent(packingData!.client_order_id)}`}><Receipt size={17} aria-hidden />{t("Continue to billing")}<ArrowRight size={16} aria-hidden /></Link>
+          : <Link className="primary-button packing-next-action" href={packingQueue}>{t("Pack next order")}<ArrowRight size={16} aria-hidden /></Link>)}
+        {orderStatus === "FINAL_PACK_LOCKED" && <button type="button" className="primary-button packing-next-action" disabled={busy} onClick={() => void finalizePacking()}>{t("Send Final Packing to Accounting")}<ArrowRight size={16} aria-hidden /></button>}
       </header>
 
       <StatusMessage error={error} success={message} />
-      {revisionConflict && <button type="button" data-guide="Reload the latest packing before editing" data-guide-priority="1" disabled={busy || transferBusy} onClick={() => void reloadLatestPacking()}>Reload latest packing for review</button>}
+      {revisionConflict && <button type="button" data-guide={t("Reload the latest packing before editing")} data-guide-priority="1" disabled={busy || transferBusy} onClick={() => void reloadLatestPacking()}>{t("Reload latest packing for review")}</button>}
       {requestedBox && packingData && !packingData.boxes.some(box => box.qr_code_uid === requestedBox) && <StatusMessage error="This box is not part of the selected order. Scan the original sticker again." />}
-      {packingData && <section className="packing-order-overview" aria-label="Current task">
+      {packingData && <section className="packing-order-overview" aria-label={t("Current task")}>
         <div className="packing-order-context">
-          <div className="packing-customer"><h2 title={packingData.sub_customer_code}>{displayCustomer(packingData.sub_customer_code)}</h2>
-            <p className="packing-order-meta"><span>{packingData.boxes.length} {packingData.boxes.length === 1 ? "box" : "boxes"}</span><span>{totalNetWeight.toFixed(2)} kg net</span><time dateTime={packingData.shipment_date}>{shipmentDate(packingData.shipment_date)}</time></p>
+          <div className="packing-customer">
+            {packingData.file_name && <p className={styles.sourceFile}>{t("Order file: ")}<Link href={packingData.raw_file_id ? `/packing/orders?raw_file_id=${encodeURIComponent(packingData.raw_file_id)}&view=all` : packingQueue}>{packingData.file_name}</Link></p>}
+            <h2 title={packingData.sub_customer_code}>{displayCustomer(packingData.sub_customer_code)}</h2>
+            <p className="packing-order-meta"><span>{packingData.boxes.length} {packingData.boxes.length === 1 ? t("box") : t("boxes")}</span><span>{totalNetWeight.toFixed(2)} {t("kg net")}</span><time dateTime={packingData.shipment_date}>{shipmentDate(packingData.shipment_date)}</time></p>
           </div>
-          <details className="packing-order-details" name="packing-order-menu"><summary>Order details<ChevronDown size={14} aria-hidden /></summary>
-            <div className="packing-order-detail-body"><dl><div><dt>Order reference</dt><dd>{packingData.order_ref_id}</dd></div><div><dt>Route</dt><dd>{packingData.route_code}</dd></div></dl>
+          <details className="packing-order-details" name="packing-order-menu"><summary>{t("Order details")}<ChevronDown size={14} aria-hidden /></summary>
+            <div className="packing-order-detail-body"><dl><div><dt>{t("Order file")}</dt><dd>{packingData.file_name || t("Source filename unavailable")}</dd></div><div><dt>{t("Route")}</dt><dd>{packingData.route_code}</dd></div></dl>
               <WorkflowProgress current="packing" done links={packingComplete ? { billing: `/billing?orderId=${encodeURIComponent(orderId)}` } : {}} />
             </div>
           </details>
         </div>
         <div className="packing-order-footer">
-          <p className="packing-stage-note">{packingComplete ? <><Check size={16} aria-hidden />Packing complete. Ready for accounting.</> : canEditPacking ? "Open a box to review or adjust its contents." : orderStatus === "FINAL_PACK_LOCKED" ? "Boxes are locked and ready to send to accounting." : "Choose packing rules to prepare this order."}</p>
-          <details className="packing-secondary-tools" name="packing-order-menu"><summary>Order tools<ChevronDown size={14} aria-hidden /></summary><div className="packing-secondary-actions">
-            {canEditPacking && packingData.boxes.length > 1 && <button type="button" disabled={busy} onClick={() => { setSourceBoxId(""); setTargetBoxId(""); setTransferRevision(packingData.packing_revision); setTransferError(""); setTransferModalOpen(true); }}><ArrowRightLeft size={16} aria-hidden />Move items between boxes</button>}
-            <button type="button" disabled={exportBusy} onClick={triggerVehicleLoadExport}><Truck size={16} aria-hidden />Export vehicle load</button>
-            <Link href="/packing/setup">Products &amp; box settings</Link>
-            <Link href={packingQueue}>{packingComplete ? "Pack next order" : "Change order"}</Link>
+          <p className="packing-stage-note">{packingComplete ? <><Check size={16} aria-hidden />{t("Packing complete. Ready for accounting.")}</> : canEditPacking ? t("Open a box to review or adjust its contents.") : orderStatus === "FINAL_PACK_LOCKED" ? t("Boxes are locked and ready to send to accounting.") : t("Choose packing rules to prepare this order.")}</p>
+          <details className="packing-secondary-tools" name="packing-order-menu"><summary>{t("Order tools")}<ChevronDown size={14} aria-hidden /></summary><div className="packing-secondary-actions">
+            {canEditPacking && packingData.boxes.length > 1 && <button type="button" disabled={busy} onClick={() => { setSourceBoxId(""); setTargetBoxId(""); setTransferRevision(packingData.packing_revision); setTransferError(""); setTransferModalOpen(true); }}><ArrowRightLeft size={16} aria-hidden />{t("Move items between boxes")}</button>}
+            <Link href="/packing/setup">{t("Products & box settings")}</Link>
+            <Link href={packingQueue}>{packingComplete ? t("Pack next order") : t("Change order")}</Link>
           </div></details>
         </div>
       </section>}
 
-      {packingData && orderStatus === "HANDOFF_01_SENT" && <section className="packing-mode-start" aria-label="Choose packing rules"><h2>Choose the rules for these boxes</h2><p>Staff choose EL or Non-EL. The destination country does not select this mode.</p><label>Packing rules<select data-guide={!packingMode ? "Choose EL or Non-EL packing rules" : undefined} data-guide-detail="Choose the rules for this shipment. Country alone does not determine EL or Non-EL." value={packingMode} onChange={event => setPackingMode(event.target.value)}><option value="">Choose EL or Non-EL</option><option value="EL">EL rules</option><option value="NON_EL">Non-EL rules</option></select></label><button type="button" className="primary-button" disabled={busy || !packingMode} data-guide={packingMode ? "Generate the packing boxes" : undefined} onClick={() => void generateBoxes()}>Generate packing boxes</button></section>}
-      {canEditPacking && <details className="packing-mode-start" aria-label="Review packing plan" open={needsReplan || undefined}><summary><strong>{needsReplan ? "Packing data changed" : "Review another box plan"}</strong></summary>{needsReplan && <p role="alert">Review and apply a current plan before finalizing. Your current packed quantities remain unchanged until you apply a preview.</p>}<label>Rules for the reviewed plan<select data-guide={needsReplan && !packingMode ? "Choose rules for the replacement plan" : undefined} data-guide-priority="10" value={packingMode} onChange={event => setPackingMode(event.target.value)}><option value="">Choose EL or Non-EL</option><option value="EL">EL rules</option><option value="NON_EL">Non-EL rules</option></select></label><button type="button" data-guide={needsReplan ? "Preview the updated packing plan" : undefined} data-guide-priority="10" data-guide-detail="Review the proposed boxes before applying them. Your saved quantities stay unchanged until you apply the plan." disabled={busy || !packingMode} onClick={() => void previewReplan()}>Preview replan</button></details>}
+      {packingData && orderStatus === "HANDOFF_01_SENT" && <section className="packing-mode-start" aria-label={t("Choose packing rules")}><h2>{t("Choose the rules for these boxes")}</h2><p>{t("Staff choose EL or Non-EL. The destination country does not select this mode.")}</p><label>{t("Packing rules")}<select data-guide={!packingMode ? t("Choose EL or Non-EL packing rules") : undefined} data-guide-detail={t("Choose the rules for this shipment. Country alone does not determine EL or Non-EL.")} value={packingMode} onChange={event => setPackingMode(event.target.value)}><option value="">{t("Choose EL or Non-EL")}</option><option value="EL">{t("EL rules")}</option><option value="NON_EL">{t("Non-EL rules")}</option></select></label><button type="button" className="primary-button" disabled={busy || !packingMode} data-guide={packingMode ? t("Generate the packing boxes") : undefined} onClick={() => void generateBoxes()}>{t("Generate packing boxes")}</button></section>}
+      {canEditPacking && <details className={`packing-mode-start ${styles.plan}`} aria-label={t("Review packing plan")} open={needsReplan || undefined}><summary><SlidersHorizontal size={16} aria-hidden /><strong>{needsReplan ? t("Packing data changed") : t("Review another box plan")}</strong><ChevronDown size={16} aria-hidden /></summary>{needsReplan && <p role="alert">{t("Review and apply a current plan before finalizing. Your current packed quantities remain unchanged until you apply a preview.")}</p>}<label>{t("Rules for the reviewed plan")}<select data-guide={needsReplan && !packingMode ? t("Choose rules for the replacement plan") : undefined} data-guide-priority="10" value={packingMode} onChange={event => setPackingMode(event.target.value)}><option value="">{t("Choose EL or Non-EL")}</option><option value="EL">{t("EL rules")}</option><option value="NON_EL">{t("Non-EL rules")}</option></select></label><button type="button" data-guide={needsReplan ? t("Preview the updated packing plan") : undefined} data-guide-priority="10" data-guide-detail={t("Review the proposed boxes before applying them. Your saved quantities stay unchanged until you apply the plan.")} disabled={busy || !packingMode} onClick={() => void previewReplan()}>{t("Preview replan")}</button></details>}
       {/* Review each box and open details to adjust contents. */}
       {packingData ? (
         <div className="packing-boxes-section">
-          <div className="packing-list-head"><h2>Boxes <span className="packing-box-count">{packingData.boxes.length}</span></h2>
-            {packingData.boxes.length > 1 && <div className="packing-list-controls"><label className="packing-box-search"><Search size={17} aria-hidden /><span className="sr-only">Find box or product</span><input type="search" placeholder="Find a box or product" value={boxSearch} onChange={event => { setBoxSearch(event.target.value); setBoxPage(0); }} /></label>
-              {!compact && <details className="packing-list-options"><summary aria-label="View options"><SlidersHorizontal size={18} aria-hidden /></summary><label>Boxes per page<select value={boxLimit} onChange={event => { setBoxLimit(Number(event.target.value)); setBoxPage(0); }}>{[25, 50, 100].map(size => <option key={size}>{size}</option>)}</select></label></details>}
+          <div className="packing-list-head"><h2>{t("Boxes ")}<span className="packing-box-count">{packingData.boxes.length}</span></h2>
+            {packingData.boxes.length > 1 && <div className="packing-list-controls"><label className="packing-box-search"><Search size={17} aria-hidden /><span className="sr-only">{t("Find box or product")}</span><input type="search" placeholder={t("Find a box or product")} value={boxSearch} onChange={event => { setBoxSearch(event.target.value); setBoxPage(0); }} /></label>
+              {!compact && <details className="packing-list-options"><summary aria-label={t("View options")}><SlidersHorizontal size={18} aria-hidden /></summary><label>{t("Boxes per page")}<select value={boxLimit} onChange={event => { setBoxLimit(Number(event.target.value)); setBoxPage(0); }}>{[25, 50, 100].map(size => <option key={size}>{size}</option>)}</select></label></details>}
             </div>}
           </div>
-          {(matchingBoxes.length > pageSize || boxSearch) && <div className="register-pagination box-navigation"><span>{compact ? `Box ${matchingBoxes.length ? visibleStart + 1 : 0} of ${matchingBoxes.length}` : `${matchingBoxes.length} matching boxes · Page ${Math.floor(visibleStart / pageSize) + 1}`}</span>{matchingBoxes.length > pageSize && <><button type="button" disabled={visibleStart === 0} onClick={() => setBoxPage(Math.max(0, visibleStart - pageSize))}>{compact ? "Previous box" : "Previous boxes"}</button><button type="button" disabled={visibleStart + pageSize >= matchingBoxes.length} onClick={() => setBoxPage(visibleStart + pageSize)}>{compact ? "Next box" : "Next boxes"}</button></>}</div>}
-          {!matchingBoxes.length && <p role="status">No matching boxes. Clear the search to see all boxes.</p>}
+          {(matchingBoxes.length > pageSize || boxSearch) && <div className="register-pagination box-navigation"><span>{compact ? t(`Box ${matchingBoxes.length ? visibleStart + 1 : 0} of ${matchingBoxes.length}`) : t(`${matchingBoxes.length} matching boxes · Page ${Math.floor(visibleStart / pageSize) + 1}`)}</span>{matchingBoxes.length > pageSize && <><button type="button" disabled={visibleStart === 0} onClick={() => setBoxPage(Math.max(0, visibleStart - pageSize))}>{compact ? t("Previous box") : t("Previous boxes")}</button><button type="button" disabled={visibleStart + pageSize >= matchingBoxes.length} onClick={() => setBoxPage(visibleStart + pageSize)}>{compact ? t("Next box") : t("Next boxes")}</button></>}</div>}
+          {!matchingBoxes.length && <p role="status">{t("No matching boxes. Clear the search to see all boxes.")}</p>}
 
           <ol id="packing-boxes" className="packing-box-list">
             {visibleBoxes.map(box => {
@@ -554,42 +462,42 @@ function PackingContent() {
               const preview = box.items.slice(0, 2).map(item => item.produce_name.split(" / ").at(-1) || item.produce_name).join(" · ");
               return <li key={box.box_id} id={`box-${box.box_id}`} tabIndex={-1} className={`packing-box-row${box.qr_code_uid === requestedBox ? " scanned-box" : ""}${box.is_locked ? " is-locked" : ""}`}>
                 <details className="packing-box-details" name="packing-box" open={box.qr_code_uid === requestedBox || undefined} onToggle={event => { if (event.currentTarget.open) setReviewedBoxes(current => { const key = `${orderId}:${box.box_id}`; return current.has(key) ? current : new Set([...current, key]); }); }}>
-                  <summary className="packing-box-main" data-guide={editable && !needsReplan && !reviewedBoxes.has(`${orderId}:${box.box_id}`) ? `Review Box ${box.box_number}` : undefined} data-guide-detail="Open the box and check products, packs and net weights. Edit a line only when it needs correcting.">
+                  <summary className="packing-box-main" data-guide={editable && !needsReplan && !reviewedBoxes.has(`${orderId}:${box.box_id}`) ? t(`Review Box ${box.box_number}`) : undefined} data-guide-detail={t("Open the box and check products, packs and net weights. Edit a line only when it needs correcting.")}>
                     <span className="packing-box-number" aria-hidden>{String(box.box_number).padStart(2, "0")}</span>
-                    <span className="packing-box-id"><strong>Box {box.box_number}</strong><small>{size ? `${size.size_name} · ${size.box_type.toLowerCase()}` : box.box_type_name || "Box"}</small></span>
-                    <span className="packing-box-items"><span className="packing-product-preview">{preview || "No items yet"}{box.items.length > 2 && <small> +{box.items.length - 2} more</small>}</span><small>{box.items.length} {box.items.length === 1 ? "product" : "products"} · {packs} packs</small></span>
-                    <span className="packing-box-saved"><strong>{box.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} <small>kg</small></strong><small>net weight</small></span>
-                    <span key={state.label} className={`packing-box-state tone-${state.tone}`}>{box.is_locked ? <CheckCircle2 size={16} aria-hidden /> : <span aria-hidden />}{state.label}</span>
+                    <span className="packing-box-id"><strong>{t("Box ")}{box.box_number}</strong><small>{size ? `${size.size_name} · ${t(size.box_type.toLowerCase())}` : box.box_type_name || t("Box")}</small></span>
+                    <span className="packing-box-items"><span className="packing-product-preview">{preview || t("No items yet")}{box.items.length > 2 && <small> +{box.items.length - 2} {t("more")}</small>}</span><small>{box.items.length} {box.items.length === 1 ? t("product") : t("products")} · {packs} {t("packs")}</small></span>
+                    <span className="packing-box-saved"><strong>{box.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} <small>{t("kg")}</small></strong><small>{t("net weight")}</small></span>
+                    <span key={state.label} className={`packing-box-state tone-${state.tone}`}>{box.is_locked ? <CheckCircle2 size={16} aria-hidden /> : <span aria-hidden />}{t(state.label)}</span>
                     <ChevronRight className="packing-box-chevron" size={18} aria-hidden />
                   </summary>
                   <div className="packing-box-content">
-                  <div className="packing-contents-heading"><h3>Packed items</h3><button type="button" className="invoice-secondary-button btn-sm" onClick={() => { setStickerCodeCopied(false); setPreviewBox(box); }}><QrCode size={15} aria-hidden />Sticker</button></div>
+                  <div className="packing-contents-heading"><h3>{t("Packed items")}</h3><div>{permissions.includes("floor_packing") && <PackingFitFeedback key={`${box.box_id}:${packingData.packing_revision}`} boxId={box.box_id} boxNumber={box.box_number} revision={packingData.packing_revision} />}<button type="button" className="invoice-secondary-button btn-sm" onClick={() => { setStickerCodeCopied(false); setPreviewBox(box); }}><QrCode size={15} aria-hidden />{t("Sticker")}</button></div></div>
                   {editable && <div className="packing-box-tools">
-                    <label>Box packing rules<select aria-label={`Box ${box.box_number} packing rules`} value={box.packing_mode || ""} disabled={busy || box.is_locked || !canEditPacking || box.needs_replan} onChange={event => void changePackingMode(box.box_id, event.target.value)}><option value="" disabled>{box.is_locked ? "Historical rules" : "Needs review"}</option><option value="EL">EL rules</option><option value="NON_EL">Non-EL rules</option></select></label>
-                    <label>Box size
-                      <select value={box.box_catalogue_id} disabled={busy || box.is_locked || !canEditPacking}
+                    <label>{t("Box packing rules")}<select aria-label={t(`Box ${box.box_number} packing rules`)} value={box.packing_mode || ""} disabled={busy || box.is_locked || !canEditPacking || box.needs_replan} onChange={event => void changePackingMode(box.box_id, event.target.value)}><option value="" disabled>{box.is_locked ? t("Historical rules") : t("Needs review")}</option><option value="EL">{t("EL rules")}</option><option value="NON_EL">{t("Non-EL rules")}</option></select></label>
+                    <label>{t("Box size")}<select value={box.box_catalogue_id} disabled={busy || box.is_locked || !canEditPacking}
                         onChange={event => { const catalogue = boxCatalogues.find(item => item.id === event.target.value); if (catalogue) changeBoxSize(box.box_id, catalogue.id); }}>
                         {boxCatalogues.map(catalogue => <option value={catalogue.id} key={catalogue.id}>{catalogue.size_name} · {catalogue.box_type} ({catalogue.length_cm}×{catalogue.width_cm}×{catalogue.height_cm})</option>)}
                       </select>
                     </label>
                   </div>}
                   {box.needs_replan && <p className="message error">{box.replan_reasons?.join(". ")}</p>}
-                  {editable && Boolean(box.layers?.length) && <div className="packing-layer-list"><strong>Pack from bottom to top</strong><ol>{box.layers!.map(item => <li key={item.item_id}>{item.layer}: {item.packed_count} × {item.product_name} {item.pack_size}{["RESEARCH", "PROXY"].includes(item.volume_source || "") && <small> (reviewed volume estimate)</small>}</li>)}</ol></div>}
+                  {editable && Boolean(box.layers?.length) && <div className="packing-layer-list"><strong>{t("Pack from bottom to top")}</strong><ol>{box.layers!.map(item => <li key={item.item_id}>{item.layer}: {item.packed_count} × {item.product_name} {item.pack_size}{["RESEARCH", "PROXY"].includes(item.volume_source || "") && <small> {t("(reviewed volume estimate)")}</small>}</li>)}</ol></div>}
                   <div className="packing-items-scroll"><table className="packing-items-table">
-                    <thead><tr><th>Product</th><th>Pack</th><th className="numeric">Packed</th><th className="numeric">Net kg</th>{editable && <th scope="col"><span className="sr-only">Adjust</span></th>}</tr></thead>
+                    <thead><tr><th>{t("Product")}</th><th>{t("Pack")}</th><th className="numeric">{t("Packed")}</th><th className="numeric">{t("Net kg")}</th>{editable && <th scope="col"><span className="sr-only">{t("Adjust")}</span></th>}</tr></thead>
                     <tbody>{box.items.map((item, index) => <tr key={index}>
-                      <td className="packing-item-product"><strong>{item.produce_name}</strong><small>{item.product_code}</small></td><td data-label="Pack">{item.pack_size}</td>
-                      <td className="numeric" data-label="Packed">{item.packed_count} packs</td><td className="numeric" data-label="Net kg">{item.net_weight_kg.toFixed(2)}</td>
-                      {editable && <td><button type="button" className="ghost-button" disabled={busy || box.needs_replan} onClick={() => editItem(box.box_id, item)}>Edit / substitute</button></td>}
+                      <td className="packing-item-product"><strong>{item.produce_name}</strong><small>{item.product_code}</small></td><td data-label={t("Pack")}>{item.pack_size}</td>
+                      <td className="numeric" data-label={t("Packed")}>{item.packed_count} {t("packs")}</td><td className="numeric" data-label={t("Net kg")}>{item.net_weight_kg.toFixed(2)}</td>
+                      {editable && <td><button type="button" className="ghost-button" disabled={busy || box.needs_replan} onClick={() => editItem(box.box_id, item)}>{t("Edit / substitute")}</button></td>}
                     </tr>)}</tbody>
                   </table></div>
                   <div className="packing-box-foot">
-                    {editable && <button type="button" className="invoice-secondary-button btn-sm" disabled={busy || box.needs_replan} onClick={() => editItem(box.box_id)}>Add packing item</button>}
-                    <details className="packing-box-notes"><summary>Packing &amp; label details<ChevronDown size={14} aria-hidden /></summary><div>
-                      <p><strong>Label</strong> {box.sticker_label || `${packingData.route_code}-${packingData.sub_customer_code} / ${box.box_number} of ${packingData.total_boxes_count}`}</p>
-                      <p><strong>Rules</strong> {box.packing_mode === "EL" ? "EL" : box.packing_mode === "NON_EL" ? "Non-EL" : "Historical rules"} · <strong>Box</strong> {size ? `${size.size_name} · ${size.box_type} (${size.length_cm} × ${size.width_cm} × ${size.height_cm} cm)` : box.box_type_name}</p>
-                      {box.usable_volume_cm3 ? <p><strong>Occupied volume</strong> {((box.volume_cm3 || 0) / 1000).toFixed(2)} L of {(box.usable_volume_cm3 / 1000).toFixed(2)} L{box.volume_utilization_pct != null && ` (${box.volume_utilization_pct.toFixed(1)}%)`}</p> : null}
-                      {!editable && Boolean(box.layers?.length) && <div><strong>Pack from bottom to top</strong><ol>{box.layers!.map(item => <li key={item.item_id}>{item.layer}: {item.packed_count} × {item.product_name} {item.pack_size}</li>)}</ol></div>}
+                    {editable && <button type="button" className="invoice-secondary-button btn-sm" disabled={busy || box.needs_replan} onClick={() => editItem(box.box_id)}>{t("Add packing item")}</button>}
+                    <details className="packing-box-notes"><summary>{t("Packing & label details")}<ChevronDown size={14} aria-hidden /></summary><div>
+                      <p><strong>{t("Label")}</strong> {box.sticker_label || t(`${packingData.route_code}-${packingData.sub_customer_code} / ${box.box_number} of ${packingData.total_boxes_count}`)}</p>
+                      <p><strong>{t("Rules")}</strong> {box.packing_mode === "EL" ? t("EL") : box.packing_mode === "NON_EL" ? t("Non-EL") : t("Historical rules")} · <strong>{t("Box")}</strong> {size ? t(`${size.size_name} · ${size.box_type} (${size.length_cm} × ${size.width_cm} × ${size.height_cm} cm)`) : box.box_type_name}</p>
+                      {box.history_evidence && <p><strong>{t("Reviewed historical combination")}</strong> {box.history_evidence.source} {t("· pages ")}{box.history_evidence.pages.join(", ")}{t(". Occupied volume has not been measured.")}</p>}
+                      {box.usable_volume_cm3 && box.volume_cm3 != null ? <p><strong>{t("Occupied volume")}</strong> {(box.volume_cm3 / 1000).toFixed(2)} {t("L of ")}{(box.usable_volume_cm3 / 1000).toFixed(2)} {t("L")}{box.volume_utilization_pct != null && ` (${box.volume_utilization_pct.toFixed(1)}%)`}</p> : null}
+                      {!editable && Boolean(box.layers?.length) && <div><strong>{t("Pack from bottom to top")}</strong><ol>{box.layers!.map(item => <li key={item.item_id}>{item.layer}: {item.packed_count} × {item.product_name} {item.pack_size}</li>)}</ol></div>}
                       {box.allocation_explanation && <p>{box.allocation_explanation}</p>}
                     </div></details>
                   </div>
@@ -598,98 +506,68 @@ function PackingContent() {
               </li>;
             })}
           </ol>
-          {canEditPacking && <div className="packing-action-bar" role="region" aria-label="Packing progress">
+          {canEditPacking && <div className="packing-action-bar" role="region" aria-label={t("Packing progress")}>
             <div className="packing-action-progress">
-              <strong>{readyBoxes.length} of {packingData.boxes.length} boxes ready for review</strong>
+              <strong>{readyBoxes.length} {t("of ")}{packingData.boxes.length} {t("boxes ready for review")}</strong>
               <span className="packing-progress-track" aria-hidden><span style={{ transform: `scaleX(${packingData.boxes.length ? readyBoxes.length / packingData.boxes.length : 0})` }} /></span>
             </div>
-            <button type="button" className="primary-button" data-guide="Finalize the reviewed packing" data-guide-priority="40" data-guide-detail="Check all boxes before finalizing. This locks packed quantities and sends the shipment to accounting." disabled={busy || needsReplan || !packingData.boxes.length || readyBoxes.length !== packingData.boxes.length} onClick={() => void finalizePacking()}>Finalize Packing</button>
+            <button type="button" className="primary-button" data-guide={t("Finalize the reviewed packing")} data-guide-priority="40" data-guide-detail={t("Check all boxes before finalizing. This locks packed quantities and sends the shipment to accounting.")} disabled={busy || needsReplan || !packingData.boxes.length || readyBoxes.length !== packingData.boxes.length} onClick={() => void finalizePacking()}>{t("Finalize Packing")}</button>
           </div>}
 
         </div>
       ) : requestedOrderId && !error ? (
-        <TableLoadingSkeleton label="Loading packing order" columns={["Code", "Product", "Pack", "Packed", "Net kg", "Adjust"]} />
+        <TableLoadingSkeleton label={t("Loading packing order")} columns={["Code", "Product", "Pack", "Packed", "Net kg", "Adjust"]} />
       ) : (
         <div className="panel packing-empty-state" style={{ textAlign: "center", padding: "40px" }}>
           <Boxes size={40} color="var(--muted)" style={{ margin: "0 auto 12px" }} />
-          <h2>Choose the customer you are packing for</h2>
+          <h2>{t("Choose the customer you are packing for")}</h2>
           <p style={{ color: "var(--muted)", maxWidth: "480px", margin: "0 auto 16px" }}>
-            Select a customer order to prepare or resume its boxes, review contents, and finalize packing.
-          </p>
-          <Link className="primary-button" href="/packing/orders">Browse customer orders</Link>
+            {t("Select a customer order to prepare or resume its boxes, review contents, and finalize packing.")}</p>
+          <Link className="primary-button" href="/packing/orders">{t("Browse customer orders")}</Link>
         </div>
       )}
 
-      {replanPreview && <TaskDialog title="Review replacement packing plan" description={replanPreview.warning} size="lg" busy={busy} onClose={() => setReplanPreview(null)}><StatusMessage error={replanError} /><p>{replanPreview.boxes.length} boxes using {replanPreview.packing_mode === "EL" ? "EL" : "Non-EL"} rules. Existing stickers will be replaced.</p><ol>{replanPreview.boxes.map(box => <li key={box.box_number}><strong>Box {box.box_number}: {boxCatalogues.find(c => c.id === box.box_catalogue_id)?.size_name || "Box"}</strong> ? {box.net_weight_kg.toFixed(2)} kg, {(box.volume_cm3 / 1000).toFixed(2)} L<ul>{box.items.map((item, index) => <li key={index}>{item.count} ? {item.product_name || "Product"} {item.pack_size}</li>)}</ul></li>)}</ol><div className="packing-setup-actions"><button type="button" disabled={busy} onClick={() => setReplanPreview(null)}>Keep current boxes</button><button type="button" className="primary-button" disabled={busy} onClick={() => void applyReplan()}>Apply reviewed plan and replace boxes</button></div></TaskDialog>}
-      {itemEditor && <TaskDialog title={itemEditor.itemId ? "Adjust packing item" : "Add packing item"} description="Choose the product, pack size and actual quantity in this box. Review the updated contents before finalizing packing." busy={busy} onClose={() => setItemEditor(null)}>
-          <StatusMessage error={error} />{revisionConflict && <button type="button" disabled={busy || transferBusy} onClick={() => void reloadLatestPacking()}>Reload latest packing for review</button>}
-          <form onSubmit={saveItem} style={{ display: "grid", gap: 12 }}>
-            <label>Find product <input value={itemSearch} onChange={event => { setItemSearch(event.target.value); setItemOffset(0); setItemSearchBusy(true); setItemSearchError(""); setItemProducts([]); }} /></label>
-            <StatusMessage error={itemSearchError} /><div className="register-pagination"><button type="button" disabled={!itemOffset || itemSearchBusy} onClick={() => setItemOffset(value => Math.max(0, value - 100))}>Previous products</button><span>Products {itemOffset + 1}?{itemOffset + itemProducts.length}</span><button type="button" disabled={itemSearchBusy || itemProducts.length < 100} onClick={() => setItemOffset(value => value + 100)}>Next products</button></div>
-            {itemSearchBusy && <p role="status">Searching products...</p>}
-            {!itemSearchBusy && !itemSearchError && !itemProducts.length && <p>No matching products. Try a partial name or SKU.</p>}
-            <label>Master product <select required value={itemProduct} onChange={event => { setItemProduct(event.target.value); setSelectedItemProduct(itemProducts.find(product => product.id === event.target.value) || null); }}>
-              <option value="">Choose product</option>{selectedItemProduct && !itemProducts.some(product => product.id === selectedItemProduct.id) && <option value={selectedItemProduct.id}>{selectedItemProduct.t_code} · {selectedItemProduct.name_en || selectedItemProduct.name_vi}</option>}{itemProducts.map(product => <option value={product.id} key={product.id}>{product.t_code} · {product.name_en || product.name_vi}</option>)}
-            </select></label>
-            <label>Pack size <input required maxLength={64} value={itemPack} onChange={event => setItemPack(event.target.value)} /></label>
-            <label>Packed quantity <input type="number" required min={itemEditor.itemId ? 0 : 1} step={1} value={itemQuantity} onChange={event => setItemQuantity(event.target.value)} /></label>
-            <label>Total item net weight (kg) <input type="number" required min={0} step="0.0001" value={itemWeight} onChange={event => setItemWeight(event.target.value)} /></label>
-            {itemEditor.itemId && <p>Quantity zero removes this item. Replacing the master product records a substitution.</p>}
-            <p>Box totals are calculated from the saved items when packing is finalized.</p>
-            <div className="task-dialog-actions"><button type="submit" className="primary-button" disabled={busy || !itemProduct}>Save packing adjustment</button>{" "}<button type="button" disabled={busy} onClick={() => setItemEditor(null)}>Cancel</button></div>
-          </form>
-        </TaskDialog>}
+      {replanPreview && <TaskDialog title={t("Review replacement packing plan")} description={replanPreview.warning} size="lg" busy={busy} onClose={() => setReplanPreview(null)}><StatusMessage error={replanError} /><p>{replanPreview.boxes.length} {t("boxes using ")}{replanPreview.packing_mode === "EL" ? t("EL") : t("Non-EL")} {t("rules. Existing stickers will be replaced.")}</p><ol>{replanPreview.boxes.map(box => <li key={box.box_number}><strong>{t("Box ")}{box.box_number}: {boxCatalogues.find(c => c.id === box.box_catalogue_id)?.size_name || t("Box")}</strong> ? {box.net_weight_kg.toFixed(2)} {t("kg, ")}{box.volume_cm3 == null ? t("reviewed historical fit") : t(`${(box.volume_cm3 / 1000).toFixed(2)} L`)}<ul>{box.items.map((item, index) => <li key={index}>{item.count} ? {item.product_name || t("Product")} {item.pack_size}</li>)}</ul></li>)}</ol><div className="packing-setup-actions"><button type="button" disabled={busy} onClick={() => setReplanPreview(null)}>{t("Keep current boxes")}</button><button type="button" className="primary-button" disabled={busy} onClick={() => void applyReplan()}>{t("Apply reviewed plan and replace boxes")}</button></div></TaskDialog>}
+      {itemEditor && <PackingItemEditor {...itemEditor} onClose={() => setItemEditor(null)} onConflict={() => setRevisionConflict(true)} onReload={reloadLatestPacking} onSaved={async () => {
+        setItemEditor(null);
+        if (await loadPackingList(orderId)) setMessage("Packing item saved. Review the contents before finalizing packing.");
+        else setRevisionConflict(true);
+      }} />}
       {transferModalOpen && packingData && (
-        <TaskDialog title="Move items between boxes" description="Combine what is left in a smaller box into a larger one. Products and weights move with them." size="sm" busy={transferBusy} onClose={() => setTransferModalOpen(false)}>
+        <TaskDialog title={t("Move items between boxes")} description={t("Combine what is left in a smaller box into a larger one. Products and weights move with them.")} size="sm" busy={transferBusy} onClose={() => setTransferModalOpen(false)}>
           <form className="task-dialog-pad dialog-form" onSubmit={handleTransferContents}>
             {(transferError || (sourceBoxId && eligibleTransferTargets.length === 0)) &&
-              <p role="alert" className="message warning">{transferError || "These boxes cannot be combined. Choose a box of the same material with enough safe capacity."}</p>}
-            {revisionConflict && <button type="button" disabled={transferBusy} onClick={() => void reloadLatestPacking()}>Reload latest packing for review</button>}
-            <label>Move from box
-              <select value={sourceBoxId} onChange={event => { setSourceBoxId(event.target.value); setTargetBoxId(""); setTransferError(""); }} required>
-                <option value="">Choose a box</option>
-                {packingData.boxes.filter(box => !box.is_locked && box.items.length > 0).map(box => <option key={box.box_id} value={box.box_id}>Box #{box.box_number} ({box.box_type_name} · {box.box_material} · {box.items.length} items · {box.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} kg)</option>)}
+              <p role="alert" className="message warning">{transferError || t("These boxes cannot be combined. Choose a box of the same material with enough safe capacity.")}</p>}
+            {revisionConflict && <button type="button" disabled={transferBusy} onClick={() => void reloadLatestPacking()}>{t("Reload latest packing for review")}</button>}
+            <label>{t("Move from box")}<select value={sourceBoxId} onChange={event => { setSourceBoxId(event.target.value); setTargetBoxId(""); setTransferError(""); }} required>
+                <option value="">{t("Choose a box")}</option>
+                {packingData.boxes.filter(box => !box.is_locked && box.items.length > 0).map(box => <option key={box.box_id} value={box.box_id}>{t("Box #")}{box.box_number} ({box.box_type_name} · {box.box_material} · {box.items.length} {t("items · ")}{box.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} {t("kg)")}</option>)}
               </select>
             </label>
-            <label>Into box
-              <select value={targetBoxId} onChange={event => setTargetBoxId(event.target.value)} disabled={!sourceBoxId || eligibleTransferTargets.length === 0} required>
-                <option value="">{sourceBoxId && eligibleTransferTargets.length === 0 ? "No compatible box" : "Choose a box"}</option>
-                {eligibleTransferTargets.map(box => <option key={box.box_id} value={box.box_id}>Box #{box.box_number} ({box.box_type_name} · {box.box_material} · {box.items.length} items)</option>)}
+            <label>{t("Into box")}<select value={targetBoxId} onChange={event => setTargetBoxId(event.target.value)} disabled={!sourceBoxId || eligibleTransferTargets.length === 0} required>
+                <option value="">{sourceBoxId && eligibleTransferTargets.length === 0 ? t("No compatible box") : t("Choose a box")}</option>
+                {eligibleTransferTargets.map(box => <option key={box.box_id} value={box.box_id}>{t("Box #")}{box.box_number} ({box.box_type_name} · {box.box_material} · {box.items.length} {t("items)")}</option>)}
               </select>
             </label>
-            <div className="task-dialog-actions"><button type="button" className="invoice-secondary-button" onClick={() => setTransferModalOpen(false)}>Cancel</button>
-              <button type="submit" className="primary-button" disabled={transferBusy || !sourceBoxId || !targetBoxId}>{transferBusy ? "Moving…" : "Move items"}</button></div>
+            <div className="task-dialog-actions"><button type="button" className="invoice-secondary-button" onClick={() => setTransferModalOpen(false)}>{t("Cancel")}</button>
+              <button type="submit" className="primary-button" disabled={transferBusy || !sourceBoxId || !targetBoxId}>{transferBusy ? t("Moving…") : t("Move items")}</button></div>
           </form>
-        </TaskDialog>
-      )}
-
-      {vehicleExport && (
-        <TaskDialog title="Vehicle load check" description="Check the box totals per customer before loading the vehicle." size="md" onClose={() => setVehicleExport(null)}>
-          <div className="task-dialog-pad">
-            <ul className="vehicle-load-list">
-              {vehicleExport.customers.map((customer, index) => <li key={`${customer.customer_code}-${index}`}><strong>{customer.customer_code}: {customer.boxes_count} boxes</strong>
-                <span>Boxes #{customer.box_numbers.join(", #")} · {customer.total_net_kg.toFixed(2)} kg</span></li>)}
-            </ul>
-            <p className="message success">Total load: {vehicleExport.total_boxes_count} boxes · {vehicleExport.total_gross_weight_kg.toFixed(2)} kg gross</p>
-            <div className="task-dialog-actions"><button type="button" className="invoice-secondary-button" onClick={() => setVehicleExport(null)}>Close</button>
-              <button type="button" className="primary-button" onClick={downloadExportFile}><Download size={16} /> Download CSV</button></div>
-          </div>
         </TaskDialog>
       )}
 
       {previewBox && (
-        <TaskDialog title="Box sticker" description="Print the sticker or copy its code to label this box." size="sm" onClose={() => setPreviewBox(null)}>
+        <TaskDialog title={t("Box sticker")} description={t("Print the sticker or copy its code to label this box.")} size="sm" onClose={() => setPreviewBox(null)}>
           <div className="task-dialog-pad">
             <div className="print-sticker sticker-preview">
               <strong className="sticker-label">{previewBox.sticker_label}</strong>
-              <div className="sticker-qr">{previewQrDataUrl ? <Image unoptimized src={previewQrDataUrl} alt={`QR code for ${previewBox.sticker_label}`} width={136} height={136} /> : <QrCode size={90} />}</div>
-              <small>Sticker code</small>
+              <div className="sticker-qr">{previewQrDataUrl ? <Image unoptimized src={previewQrDataUrl} alt={t(`QR code for ${previewBox.sticker_label}`)} width={136} height={136} /> : <QrCode size={90} />}</div>
+              <small>{t("Sticker code")}</small>
               <code>{previewBox.qr_code_uid}</code>
-              <p>Size <strong>{previewBox.box_type_name}</strong> · Net <strong>{previewBox.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} kg</strong></p>
+              <p>{t("Size ")}<strong>{previewBox.box_type_name}</strong> {t("· Net ")}<strong>{previewBox.items.reduce((total, item) => total + item.net_weight_kg, 0).toFixed(2)} {t("kg")}</strong></p>
             </div>
-            <div className="task-dialog-actions"><button type="button" className="invoice-secondary-button" onClick={() => setPreviewBox(null)}>Close</button>
-              <button type="button" onClick={copyStickerCode} className="invoice-secondary-button" aria-live="polite">{stickerCodeCopied ? "Copied" : "Copy code"}</button>
-              <button type="button" onClick={() => window.print()} className="primary-button">Print sticker</button></div>
+            <div className="task-dialog-actions"><button type="button" className="invoice-secondary-button" onClick={() => setPreviewBox(null)}>{t("Close")}</button>
+              <button type="button" onClick={copyStickerCode} className="invoice-secondary-button" aria-live="polite">{stickerCodeCopied ? t("Copied") : t("Copy code")}</button>
+              <button type="button" onClick={() => window.print()} className="primary-button">{t("Print sticker")}</button></div>
           </div>
         </TaskDialog>
       )}

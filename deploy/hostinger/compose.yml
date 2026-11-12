@@ -1,0 +1,90 @@
+name: ${COMPOSE_PROJECT_NAME:?Set a unique project name in the VPS .env}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-api: &api
+  image: ${API_IMAGE:?Use the digest from a tested release}
+  env_file:
+    - path: ${APP_ENV_FILE:?deploy.sh sets the absolute app.env path}
+      format: raw
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  logging: *logging
+
+services:
+  api:
+    <<: *api
+    restart: unless-stopped
+    # Only containers on this private Compose network can reach the API.
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    expose: ["8000"]
+    mem_limit: 1536m
+    cpus: 1.5
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=8)"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 4
+
+  web:
+    image: ${WEB_IMAGE:?Use the digest from a tested release}
+    environment:
+      BACKEND_ORIGIN: http://api:8000
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    init: true
+    restart: unless-stopped
+    expose: ["3000"]
+    mem_limit: 768m
+    cpus: 1
+    pids_limit: 128
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    logging: *logging
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/login').then(r=>process.exit(r.status===200?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 4
+
+  proxy:
+    image: ${CADDY_IMAGE:-caddy:2-alpine}
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set the DNS hostname without https://}
+      ACME_EMAIL: ${ACME_EMAIL:?Set a certificate contact address}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    mem_limit: 256m
+    logging: *logging
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # Explicitly invoked by deploy.sh; never run at every API restart.
+  migrate:
+    <<: *api
+    profiles: [tools]
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+volumes:
+  caddy_data:
+  caddy_config:

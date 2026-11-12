@@ -4,7 +4,7 @@ const permissions = ["validate_orders", "confirm_procurement", "floor_packing", 
 const cases = [
   { path: "/", endpoint: "/operations/summary", heading: "Today", title: "Loading operations", data: { permissions } },
   { path: "/orders/files", endpoint: "/orders/files", heading: "Order files", title: "Loading order intake", data: { items: [], total: 0, offset: 0, limit: 25, has_more: false } },
-  { path: "/packing/orders", endpoint: "/packing/orders", heading: "Packing orders", title: "Loading packing floor", data: { items: [], total: 0, offset: 0, limit: 25, has_more: false } },
+  { path: "/packing/orders", endpoint: "/packing/files", heading: "Packing orders", title: "Loading packing floor", data: { items: [], total: 0, offset: 0, limit: 25, has_more: false } },
   { path: "/billing", endpoint: "/invoicing/orders", heading: "Billing desk", title: "Loading billing", data: [] },
   { path: "/users", endpoint: "/admin/users/register", heading: "Team & access", title: "Loading users", data: [] },
   { path: "/scan/QA-BOX", endpoint: "/packing/scan/QA-BOX", heading: "Box traceability", title: "Loading box record", data: {
@@ -63,7 +63,7 @@ test("switching tabs stays interactive while procurement is still fetching", asy
     await route.fulfill({ json: path.endsWith("/auth/me")
       ? { full_name: "QA", role: "OWNER_ADMIN", must_change_password: false, permissions }
       : path.endsWith("/operations/summary") ? { permissions }
-      : path.endsWith("/source-orders") ? [] : [] });
+      : [] });
   });
   await page.goto("/billing");
   await expect(page.getByRole("heading", { name: "Billing desk", exact: true })).toBeVisible();

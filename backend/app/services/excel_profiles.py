@@ -32,6 +32,14 @@ def normalized(value):
     return " ".join(str(value or "").casefold().split())
 
 
+def filename_customer(filename):
+    stem = re.sub(r"^[0-9a-fA-F-]{36}_", "", Path(filename).stem)
+    codes = {re.sub(r"\s+", "", code).upper() for code in re.findall(
+        r"(?<!\w)(\d+[HLT](?:\s*-\s*\d+)?)(?!\w)", stem.replace("_", " "), re.I
+    )}
+    return " / ".join(sorted(codes)) or None
+
+
 def load_sheets(path):
     inspect_document(path)
     result = []
@@ -98,7 +106,8 @@ def identity_score(filename, located, definition):
         if v is not None
     )
     filename = re.sub(r"^[0-9a-fA-F-]{36}_", "", Path(filename).stem).casefold()
-    tokens = definition.get("identity_tokens", [])
+    # Supplied workbooks reuse numeric custno values across different filename customers.
+    tokens = [t for t in definition.get("identity_tokens", []) if not str(t).isdigit()]
 
     def contains(text, token):
         return bool(re.search(r"(?<!\w)" + re.escape(normalized(token)) + r"(?!\w)", text))
@@ -125,8 +134,15 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
         if located:
             score = identity_score(original_name or path, located, definition)
             candidates.append((score, profile, located))
-    best = max((c[0] for c in candidates), default=0)
-    choices = [c for c in candidates if c[0] == best]
+    filename_code = filename_customer(original_name or path)
+    eligible = candidates
+    if filename_code:
+        # Shared layouts and copied custno values must never change the filename's customer.
+        eligible = [(max(c[0], 2), c[1], c[2]) for c in candidates
+                    if normalized(c[1].get("definition", c[1]).get("client_code"))
+                    == normalized(filename_code)]
+    best = max((c[0] for c in eligible), default=0)
+    choices = [c for c in eligible if c[0] == best]
     explicit = next(
         (c for c in candidates if c[1].get("definition", c[1])["key"] == selected_key), None
     )
@@ -153,6 +169,16 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
             )
     else:
         chosen = None
+    if chosen and not explicit and filename_code:
+        printed = {
+            str(v).strip().upper()
+            for _, rows, _, index, _ in chosen[2]
+            for row in rows[:index] for v in row
+            if re.fullmatch(r"\d+[HLT](?:-\d+)?", str(v or "").strip(), re.I)
+        }
+        if printed - {filename_code, filename_code.split("-")[0]}:
+            issues.append("Filename and workbook customer identity conflict; select the correct template")
+            chosen = None
     if not chosen:
         return [
             CanonicalOrderDraft(
@@ -162,7 +188,7 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                 metadata={
                     "template": {
                         "status": "REVIEW_REQUIRED",
-                        "issues": [
+                        "issues": issues or [
                             "Select a customer template with matching columns, or configure a new version"
                         ],
                         "candidates": [c[1].get("definition", c[1])["key"] for c in candidates],
@@ -183,6 +209,7 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
         "default_unit": definition.get("default_unit"),
         "candidates": [c[1].get("definition", c[1])["key"] for c in candidates],
     }
+    metadata["issues"].extend(definition.get("review_issues", []))
     metadata["shipment_references"] = list(
         dict.fromkeys(
             " | ".join(str(v) for v in row if v is not None)[:2048]
@@ -201,10 +228,38 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
         customers = spec.get("customers") or {
             str(fields.get("quantity", 1)): definition["client_code"]
         }
+        mapped = {int(c) for c in customers}
+        product_columns = {c for c in fields.values() if isinstance(c, int)} | set(fields.get("alt", []))
+        totals = {"total", "gross weight", "weight", "unit", "ทุน", "ขาย", "ราคาทุน", "ราคาขาย"}
+        for column, label in enumerate(rows[header], 1):
+            if spec.get("customers") and column >= min(mapped) and normalized(label) in totals:
+                continue
+            known_ignored = spec.get("ignored_columns", {}).get(str(column))
+            if column in product_columns or column in mapped or (
+                known_ignored is not None and normalized(known_ignored) == normalized(label)
+            ):
+                continue
+            order_header = bool(re.search(r"\b(order|quantity|amount)\b", normalized(label)))
+            if not ((spec.get("customers") and column >= min(mapped)) or order_header):
+                continue
+            if any((cell(row, column) not in (None, "", 0, 0.0, "0", "0.0") or (r, column) in formulas)
+                   and (cell(row, fields["name"]) or cell(row, fields.get("code")))
+                   for r, row in enumerate(rows[header + 1:], header + 2)):
+                metadata["issues"].append(
+                    f"Unmapped customer/order column {sheet_name}!{openpyxl.utils.get_column_letter(column)}: {label or 'no heading'}; review the format"
+                )
         for row_index, row in enumerate(rows[header + 1 :], header + 2):
             name = cell(row, fields["name"])
             if not name:
                 name = next((cell(row, c) for c in fields.get("alt", []) if cell(row, c)), None)
+            if any(normalized(v).rstrip(".:") in {"customer", "customer no", "total", "รวม"}
+                   for v in row[:fields["name"]]):
+                continue  # Customer footer totals are not product orders.
+            if spec.get("customers") and not name and not cell(row, fields.get("code")) and all(
+                normalized(cell(row, int(c))) in {"", normalized(customer)}
+                for c, customer in customers.items()
+            ) and any(normalized(cell(row, int(c))) == normalized(customer) for c, customer in customers.items()):
+                continue  # Repeated customer column headings, including ones without CODE.
             for quantity_column, customer in customers.items():
                 quantity_column = int(quantity_column)
                 raw = cell(row, quantity_column)
@@ -232,16 +287,20 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                         product_text = re.sub(r"\bSTOP\b", "", text, flags=re.I).strip()
                     else:
                         match = re.search(
-                            r"([+-]?\d+(?:[.,]\d+)?)\s*(kg|kgs|gms|g|pkts|packs|pcs)?\s*$",
+                            r"([+-]?\d+(?:[.,]\d+)?)\s*([^\d\s]*)\s*$",
                             text,
                             re.I,
                         )
-                        product_text = text[: match.start()].strip() if match else text
+                        product_text = text[: match.start()].strip().rstrip("= ") if match else text
+                        if match and match[1].startswith("-") and definition.get("text_quantity_separator") == "-":
+                            amount_text = match[1][1:]
+                        else:
+                            amount_text = match[1] if match else None
                         raw_unit = match[2] if match else None
                         try:
                             amount, unit = (
                                 source_amount(
-                                    match[1],
+                                    amount_text,
                                     raw_unit or definition.get("default_unit") or "unknown",
                                 )
                                 if match
@@ -252,6 +311,8 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                         except ValueError as exc:
                             amount, unit = 0, "unknown"
                             problems.append(str(exc))
+                        if unit_key(unit) not in {"kg", "g", "pack", "pc", "box", "bag", "bunch", "tray"}:
+                            problems.append(f"Confirm the quantity unit from this text order: {raw_unit or 'not stated'}")
                         action = "ORDER"
                     code_match = re.match(r"([A-Z0-9]+(?:-[A-Z0-9]+)?)\s+(.+)", product_text)
                     code = (
@@ -263,9 +324,6 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                 else:
                     action = "ORDER"
                     code = cell(row, fields.get("code"))
-                    # Repeated headers and separators are not candidate order entries.
-                    if not name and not code and not formula:
-                        continue
                     try:
                         amount, unit = source_amount(
                             raw, str(raw_unit or definition.get("default_unit") or "unknown")
@@ -313,6 +371,7 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                     "raw_unit": raw_unit,
                     "raw_pack_size": raw_pack,
                     "raw_product_code": cell(row, fields.get("code")),
+                    "raw_customer_product_code": cell(row, fields.get("customer_product_code")),
                     "raw_product_name": cell(row, fields["name"]),
                     "raw_alt_names": [cell(row, c) for c in fields.get("alt", [])],
                     "alt_name_cells": [
@@ -325,6 +384,7 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                     "supplier_code": cell(row, fields.get("supplier_code")),
                     "requires_packing_review": not pack,
                     "formula": formula,
+                    "raw_notes": cell(row, fields.get("notes")),
                 }
                 if isinstance(code, float) and code.is_integer():
                     code = int(code)
@@ -341,6 +401,7 @@ def parse_profiles(path, profiles, *, original_name=None, selected_key=None):
                         pack_size=pack,
                         quantity_issues=problems,
                         source=source,
+                        notes=str(cell(row, fields["notes"])) if fields.get("notes") and cell(row, fields["notes"]) is not None else None,
                         action=action,
                     )
                 )

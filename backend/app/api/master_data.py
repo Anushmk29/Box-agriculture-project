@@ -222,16 +222,13 @@ def create_product(
     name_en = (payload.name_en or "").strip()
     name_th = (payload.name_th or "").strip()
 
-    if not name_en and not name_vi:
+    if not any([name_en, name_vi, name_th]):
         raise HTTPException(
             status_code=422,
-            detail="At least one produce name (English or Vietnamese) must be specified",
+            detail="At least one Thai, Vietnamese or English produce name must be specified",
         )
 
-    # Automatic multilingual fallbacks
-    name_en = name_en or name_vi or clean_code
-    name_vi = name_vi or name_en or clean_code
-    name_th = name_th or name_en or clean_code
+    # Keep missing translations empty so they do not become false matching evidence.
 
     existing = db.query(Product).filter(Product.t_code == clean_code).first()
     if existing:

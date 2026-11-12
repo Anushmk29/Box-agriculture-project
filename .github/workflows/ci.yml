@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      ENVIRONMENT: test
+      FILE_STORAGE_PROVIDER: local
+      SECRET_KEY: ci-only-not-a-production-credential
+      DATABASE_URL: postgresql://postgres:ci-only@127.0.0.1:5432/box_migrations
+      BOX_TEST_POSTGRES_URL: postgresql://postgres:ci-only@127.0.0.1:5432/box_tests
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: box_migrations
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d box_migrations"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install uv==0.12.5
+      - run: uv sync --locked --dev
+      - name: Backend lint
+        run: uv run --no-sync ruff check .
+      - name: Deployment failure and rollback sequencing
+        run: bash scripts/test-vps-deploy.sh
+        working-directory: .
+      - name: Create separate disposable concurrency database
+        run: |
+          uv run --no-sync python - <<'PY'
+          import os
+          import psycopg2
+          connection = psycopg2.connect(os.environ["DATABASE_URL"])
+          connection.autocommit = True
+          with connection.cursor() as cursor:
+              cursor.execute("CREATE DATABASE box_tests")
+          connection.close()
+          PY
+      - name: Rehearse all Alembic migrations on empty PostgreSQL
+        run: |
+          uv run --no-sync alembic upgrade head
+          uv run --no-sync alembic current
+      - name: Backend regressions including guarded PostgreSQL races
+        run: uv run --no-sync pytest --junitxml=../test-results/backend.xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: backend-results
+          path: test-results/backend.xml
+          retention-days: 14
+
+  web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      BACKEND_ORIGIN: http://127.0.0.1:8106
+      PLAYWRIGHT_JUNIT_OUTPUT_DIR: ../test-results/browser
+      PLAYWRIGHT_JUNIT_OUTPUT_NAME: results.xml
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install uv==0.12.5
+      - run: uv sync --locked --dev
+        working-directory: backend
+      - run: npm ci
+        working-directory: web
+      - run: npm run lint
+        working-directory: web
+      - run: npm run test:unit
+        working-directory: web
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - run: npx tsc --noEmit
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - name: Mocked release coverage plus disposable real API/browser workflows
+        run: bash scripts/ci-browser.sh
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: browser-results
+          path: |
+            test-results/
+            web/test-results/
+          retention-days: 14
+
+  images:
+    needs: [backend, web]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build deployment images
+        run: |
+          release_id="$GITHUB_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          prefix="ghcr.io/${GITHUB_REPOSITORY,,}"
+          printf 'RELEASE_ID=%s\nAPI_TAG=%s-api:%s\nWEB_TAG=%s-web:%s\n' \
+            "$release_id" "$prefix" "$release_id" "$prefix" "$release_id" >> "$GITHUB_ENV"
+          docker build --pull -t "$prefix-api:$release_id" backend
+          docker build --pull --build-arg BACKEND_ORIGIN=http://api:8000 -t "$prefix-web:$release_id" web
+      - name: Check backend package and frontend container
+        run: |
+          docker run --rm \
+            -e ENVIRONMENT=test -e FILE_STORAGE_PROVIDER=local \
+            -e DATABASE_URL=postgresql://ci:ci@127.0.0.1:1/unused \
+            "$API_TAG" python -c 'from app.main import app; from fastapi.testclient import TestClient; assert TestClient(app).get("/health").status_code == 200'
+          docker run -d --name web-smoke -p 127.0.0.1:3000:3000 "$WEB_TAG"
+          trap 'docker rm -f web-smoke' EXIT
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:3000/login; then break; fi
+            sleep 1
+          done
+          curl --fail --silent --output /dev/null http://127.0.0.1:3000/login
+          curl --fail --silent http://127.0.0.1:3000/logo.png -o /tmp/container-logo.png
+          cmp web/public/logo.png /tmp/container-logo.png
+      - name: Validate HTTPS proxy configuration
+        run: |
+          docker run --rm -e APP_DOMAIN=app.example.com -e ACME_EMAIL=ops@example.com \
+            -v "$PWD/deploy/hostinger/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          bash -n deploy/hostinger/deploy.sh scripts/ci-browser.sh
+      - name: Publish images and prepare immutable release bundle
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$API_TAG"
+          docker push "$WEB_TAG"
+          mkdir -p dist/vps-release
+          cp deploy/hostinger/{compose.yml,Caddyfile,deploy.sh,README.md,PLAN.md,RELEASE_READINESS.md,STAFF_PILOT.md,vps.env.example,app.env.example} dist/vps-release/
+          printf 'RELEASE_ID=%s\nAPI_IMAGE=%s\nWEB_IMAGE=%s\n' \
+            "$RELEASE_ID" \
+            "$(docker inspect --format '{{index .RepoDigests 0}}' "$API_TAG")" \
+            "$(docker inspect --format '{{index .RepoDigests 0}}' "$WEB_TAG")" \
+            > dist/vps-release/release.env
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: vps-release
+          path: dist/vps-release/
+          retention-days: 90
+          if-no-files-found: error

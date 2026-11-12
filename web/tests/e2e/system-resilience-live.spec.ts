@@ -21,7 +21,7 @@ test("audit: real disposable workflow from intake through final invoice", async 
   await page.getByRole("button", { name: "Confirm orders and create purchase batch", exact: true }).click();
   await page.getByRole("link", { name: "Open purchase batch", exact: true }).first().click();
   await page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true }).click();
-  await page.getByRole("link", { name: "View related packing orders", exact: true }).click();
+  await page.getByRole("link", { name: "Continue to packing", exact: true }).first().click();
   await page.getByRole("row").filter({ hasText: "CT-QA-A" }).getByRole("link", { name: /Start packing/ }).click();
   await page.getByRole("combobox", { name: "Packing rules", exact: true }).selectOption("EL");
   await page.getByRole("button", { name: "Generate packing boxes", exact: true }).click();

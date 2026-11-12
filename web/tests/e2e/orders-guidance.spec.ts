@@ -54,14 +54,14 @@ test("a confirmed file clearly separates the next action, linked orders and expa
   await expect(next).toHaveText("Open purchase batch");
   await expect(page.getByRole("heading", { name: "Linked customer orders", exact: true })).toBeVisible();
   await expect(page.getByText("Check the original order before confirming.")).toHaveCount(0);
-  const shops = page.locator(".order-shops");
-  await expect(shops).not.toHaveAttribute("open");
-  await shops.locator("summary").focus();
+  const subcustomers = page.locator(".order-shops");
+  await expect(subcustomers).not.toHaveAttribute("open");
+  await subcustomers.locator("summary").focus();
   await page.keyboard.press("Enter");
-  await expect(shops).toHaveAttribute("open", "");
-  await expect(shops.locator(".code-cloud")).toContainText("P-PUI");
-  await shops.locator("summary").click();
-  await expect(shops).not.toHaveAttribute("open");
+  await expect(subcustomers).toHaveAttribute("open", "");
+  await expect(subcustomers.locator(".code-cloud")).toContainText("P-PUI");
+  await subcustomers.locator("summary").click();
+  await expect(subcustomers).not.toHaveAttribute("open");
   await page.screenshot({ path: "../outputs/orders-ui-confirmed-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -145,7 +145,7 @@ test("a large pending order keeps review work and support tools in one desktop v
     raw_file_id: "order-ui", file_name: "Order Tonio 10.07.26 FULL.xlsx", status: "PARSED",
     total_sub_customers_detected: 68, sub_customer_codes: Array.from({ length: 68 }, (_, i) => `SHOP-${i + 1}`),
     sheets_detected: [], group_summary: { BE: 19, CT: 10, PL: 8, OTHER: 31 },
-    verification_notice: "Found 68 shops across 11 sheets. Please verify before confirming split.",
+    verification_notice: "Found 68 subcustomers across 11 sheets. Please verify before confirming split.",
   } }));
   await page.route("**/backend/api/v3/orders/order-ui/validate", route => route.fulfill({ json: {
     can_split: false, quantity_issue_count: 20,
@@ -184,6 +184,48 @@ test("a large pending order keeps review work and support tools in one desktop v
 });
 
 for (const width of [1440, 390]) {
+  test(`support actions open focused modals and preserve drafts at ${width}px`, async ({ page, context }) => {
+    await setup(page, context);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/orders?fileId=order-ui");
+    for (const title of ["Upload another order", "Add More Products", "Order file format guide", "File tools"]) {
+      const section = page.locator(".order-disclosure").filter({ has: page.locator("summary").filter({ hasText: title }) });
+      await expect(section).not.toHaveAttribute("open");
+      await expect(section.locator("summary")).toHaveText(title);
+      await expect(section.locator(".order-disclosure-description")).not.toBeVisible();
+      await section.locator("summary").click();
+      await expect(section.locator(".order-disclosure-description")).toBeVisible();
+      const trigger = page.getByRole("button", { name: title, exact: true });
+      await expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+      await trigger.click();
+      const dialog = page.getByRole("dialog", { name: title, exact: true });
+      await expect(dialog).toBeVisible();
+      expect(await dialog.evaluate(el => el.matches(":modal"))).toBe(true);
+      await expect.poll(() => dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
+      if (title === "Upload another order") {
+        await dialog.locator("input[type=file]").setInputFiles({ name: "another.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buffer: Buffer.from("draft") });
+        await dialog.getByRole("combobox", { name: "Billing customer", exact: true }).selectOption("alpha");
+      }
+      if (title === "Add More Products") await dialog.getByLabel("Produce Item (Code or Name)").fill("T001");
+      if (title === "Order file format guide") await expect(dialog.getByRole("heading", { name: "Single customer order", exact: true })).toBeVisible();
+      if (title === "File tools") await expect(dialog.getByRole("button", { name: "Download original file", exact: true })).toBeVisible();
+      expect(await dialog.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+    }
+    await page.getByRole("button", { name: "Upload another order", exact: true }).click();
+    const upload = page.getByRole("dialog", { name: "Upload another order", exact: true });
+    await expect(upload.getByText("another.xlsx", { exact: true })).toBeVisible();
+    await expect(upload.getByRole("combobox", { name: "Billing customer", exact: true })).toHaveValue("alpha");
+    expect(await upload.locator("input[type=file]").evaluate(el => (el as HTMLInputElement).validity.valid)).toBe(true);
+    await upload.getByRole("button", { name: "Close Upload another order", exact: true }).click();
+    await page.getByRole("button", { name: "Add More Products", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Add More Products", exact: true }).getByLabel("Produce Item (Code or Name)")).toHaveValue("T001");
+    await page.screenshot({ path: `../outputs/order-action-modal-${width}.png`, animations: "disabled" });
+  });
+
   test(`optional Excel format is tucked into File tools at ${width}px`, async ({ page, context }) => {
     await setup(page, context);
     await page.setViewportSize({ width, height: 900 });
@@ -193,9 +235,10 @@ for (const width of [1440, 390]) {
     await expect(page.locator("#order-review").getByText("Optional.", { exact: true })).toHaveCount(0);
     const tools = page.locator(".order-file-reference");
     await expect(tools).not.toHaveAttribute("open");
-    await expect(tools.locator("summary")).toContainText("File tools");
     await tools.locator("summary").click();
-    await tools.getByRole("button", { name: "Adjust Excel format", exact: true }).click();
+    await expect(tools.getByRole("button", { name: "File tools", exact: true })).toContainText("File tools");
+    await tools.getByRole("button", { name: "File tools", exact: true }).click();
+    await page.getByRole("dialog", { name: "File tools", exact: true }).getByRole("button", { name: "Adjust Excel format", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Customer Excel format", exact: true })).toBeVisible();
   });
 

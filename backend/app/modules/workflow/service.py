@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from sqlalchemy.orm import Session
+from sqlalchemy import tuple_, update
+from sqlalchemy.orm import Session, attributes
+from sqlalchemy.orm.exc import StaleDataError
 
 from app.core.policy import Action, require
 from app.models.audit import AuditLog
-from app.models.order import OrderStatus
+from app.models.order import ClientOrder, OrderStatus
 from app.models.user import User
 
 
@@ -59,8 +61,9 @@ class WorkflowService:
     rows may only be *created* at their initial status.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, *, defer_flush: bool = False):
         self.db = db
+        self.defer_flush = defer_flush
 
     def terminate(self, *, target, to_status, actor, target_table, reason):
         require(actor, Action.RESOLVE_ORDERS)
@@ -106,6 +109,32 @@ class WorkflowService:
                 target=target, to_status=to_status, actor=actor, target_table=target_table
             )
 
+    def transition_orders(self, *, orders, to_status: OrderStatus, actor: User) -> None:
+        """Advance a shipment together, retaining each order's revision check and audit."""
+        orders = list(orders)
+        if not orders:
+            return
+        before = {order.id: (OrderStatus(order.status), order.packing_revision) for order in orders}
+        for current, _ in before.values():
+            if to_status not in NEXT_STATUS[current]:
+                raise WorkflowTransitionError(f"Illegal workflow transition: {current.value} -> {to_status.value}")
+        with self.db.no_autoflush:
+            updated = dict(self.db.execute(update(ClientOrder).where(
+                tuple_(ClientOrder.id, ClientOrder.packing_revision, ClientOrder.status).in_(
+                    [(identity, revision, current) for identity, (current, revision) in before.items()]),
+            ).values(status=to_status, packing_revision=ClientOrder.packing_revision + 1)
+                .returning(ClientOrder.id, ClientOrder.packing_revision)
+                .execution_options(synchronize_session=False)).all())
+            if len(updated) != len(before):
+                raise StaleDataError("Orders changed while purchases were being confirmed; reload the batch")
+            for order in orders:
+                self._write(order, before[order.id][0], to_status, actor, "client_orders",
+                            "WORKFLOW_TRANSITION", flush=False)
+                attributes.set_committed_value(order, "status", to_status)
+                attributes.set_committed_value(order, "packing_revision", updated[order.id])
+        if not self.defer_flush:
+            self.db.flush()
+
     def fast_track_to_final_pack(
         self, *, target: WorkflowTarget, actor: User, target_table: str
     ) -> None:
@@ -132,6 +161,8 @@ class WorkflowService:
         target_table: str,
         event_type: str,
         reason: str | None = None,
+        *,
+        flush: bool = True,
     ) -> None:
         target.status = to_status
         self.db.add(
@@ -145,4 +176,5 @@ class WorkflowService:
                 after_state={"status": to_status.value, **({"reason": reason} if reason else {})},
             )
         )
-        self.db.flush()
+        if flush and not self.defer_flush:
+            self.db.flush()

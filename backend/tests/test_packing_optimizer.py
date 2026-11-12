@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from app.models.master_data import (
     BoxMaterial,
     ControlStatus,
@@ -5,7 +7,6 @@ from app.models.master_data import (
     TemperatureZone,
     WeightClass,
 )
-from dataclasses import replace
 from app.modules.packing.optimizer import (
     DeterministicPackingOptimizer,
     PackingDemand,

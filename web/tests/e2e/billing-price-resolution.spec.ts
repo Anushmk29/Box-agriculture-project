@@ -8,7 +8,7 @@ test("missing selling prices navigate to resolution and return to invoice genera
   await page.route("**/backend/api/v3/**", async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith("/auth/me")) return route.fulfill({ json: { full_name: "Accounts", role: "OWNER_ADMIN", permissions: ["draft_invoice", "manage_billing"], must_change_password: false } });
-    if (path.endsWith("/order-record/order-a")) return route.fulfill({ json: { order_id: "order-a", order_ref_id: "ORD-A", customer_code: "LY", customer_name: "LY Customer", order_status: "HANDOFF_02_RETURNED", invoice_id: null } });
+    if (path.endsWith("/order-record/order-a")) return route.fulfill({ json: { order_id: "order-a", order_ref_id: "ORD-A", file_name: "A.xlsx", customer_code: "LY", customer_name: "LY Customer", order_status: "HANDOFF_02_RETURNED", invoice_id: null } });
     if (path.endsWith("/generate-on-behalf")) {
       if (!saved) return route.fulfill({ status: 409, json: { detail: { code: "MISSING_SELLING_PRICES", order_id: "order-a", message: "Missing selling prices" } } });
       generated = true;
@@ -17,7 +17,7 @@ test("missing selling prices navigate to resolution and return to invoice genera
     if (path.endsWith("/invoicing/invoice-a")) return route.fulfill({ json: { invoice_id: "invoice-a", client_order_id: "order-a", invoice_number: "INV-A", invoice_type: "ON_BEHALF_SUB_CUSTOMER", currency: "THB", status: "INVOICE_DRAFT", total_amount_eur: 25.5, amount_paid_eur: 0, items: [] } });
     if (path.endsWith("/price-check")) {
       expect(route.request().postDataJSON()).toEqual({ order_ids: ["order-a"] });
-      return route.fulfill({ json: { issues: [{ order_id: "order-a", order_ref: "ORD-A", customer_name: "LY Customer", shipment_date: "2026-10-06", items: [{ product_id: "leek", product_code: "11-039", product_name: "Chinese leek", pack_size: "150Gr." }] }] } });
+      return route.fulfill({ json: { issues: [{ order_id: "order-a", order_ref: "ORD-A", file_name: "A.xlsx", customer_name: "LY Customer", shipment_date: "2026-10-06", items: [{ product_id: "leek", product_code: "11-039", product_name: "Chinese leek", pack_size: "150Gr." }] }] } });
     }
     if (path.endsWith("/resolve-prices")) {
       expect(route.request().postDataJSON()).toEqual({ items: [{ order_id: "order-a", product_id: "leek", pack_size: "150Gr.", selling_price: 12.75 }] });
@@ -27,9 +27,11 @@ test("missing selling prices navigate to resolution and return to invoice genera
     return route.fulfill({ json: [] });
   });
   await page.goto("/billing?orderId=order-a");
+  await expect(page.locator(".billing-order-reference")).toContainText("A.xlsx");
   await page.getByRole("button", { name: "Generate from final pack" }).click();
   await expect(page).toHaveURL(/\/billing\/resolve-prices\?/);
   await expect(page.getByRole("heading", { name: "Complete selling prices" })).toBeVisible();
+  await expect(page.getByText("A.xlsx", { exact: true })).toBeVisible();
   await expect(page.getByText(/Prices do not expire automatically/)).toBeVisible();
   await expect(page.getByText("Effective shipment date: 2026-10-06")).toBeVisible();
   await page.getByRole("spinbutton", { name: "Selling price for 11-039 150Gr. LY Customer" }).fill("12.75");

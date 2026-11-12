@@ -7,16 +7,17 @@ async function setup(page: Page, context: BrowserContext) {
     const url = new URL(route.request().url()); const path = url.pathname;
     if (path.endsWith("/auth/me")) return route.fulfill({ json: { full_name: "Register Owner", role: "OWNER_ADMIN", permissions: ["validate_orders", "confirm_procurement", "floor_packing", "manage_billing", "manage_users", "edit_buffers", "merge_products"], must_change_password: false } });
     if (path.endsWith("/operations/summary")) return route.fulfill({ json: {} });
-    if (path.endsWith("/procurement/batches/chosen")) return route.fulfill({ json: { batch_id: "chosen", batch_reference: "PUR-CHOSEN", status: "HANDOFF_01_SENT", total_skus: 0, items: [], total_ordered_weight_kg: 0, total_buffer_weight_kg: 0, total_required_weight_kg: 0 } });
+    if (path.endsWith("/procurement/batches/chosen")) return route.fulfill({ json: { batch_id: "chosen", batch_reference: "PUR-CHOSEN", status: "HANDOFF_01_SENT", total_skus: 0, items: [], total_ordered_weight_kg: 0, total_buffer_weight_kg: 0, total_required_weight_kg: 0, source_files: [{ file_id: "source", file_name: "Sunny.xlsx", customer: "Sunny Client", shipment_date: "2026-10-06", route: "BKK" }] } });
     if (path.endsWith("/invoicing/invoice-1")) return route.fulfill({ json: { invoice_id: "invoice-1", invoice_number: "INV-1", client_order_id: "order-1", invoice_type: "ON_BEHALF_SUB_CUSTOMER", main_customer_seller: "LY", sub_customer_buyer: "Buyer", subtotal_eur: 10, total_amount_eur: 10, currency: "THB", amount_paid_eur: 0, status: "INVOICE_DRAFT", internal_notes: null, source_order_count: 1, items: [] } });
-    const endpoints = ["/procurement/batches", "/orders/files", "/packing/orders", "/invoicing/orders", "/invoicing/records", "/procurement/source-files", "/admin/users/register"];
+    const endpoints = ["/procurement/batches", "/orders/files", "/packing/orders", "/packing/files", "/invoicing/orders", "/invoicing/records", "/admin/users/register"];
     if (endpoints.some(endpoint => path.endsWith(endpoint))) {
       const offset = Number(url.searchParams.get("offset")) || 0; const limit = Number(url.searchParams.get("limit")) || 25;
       const q = url.searchParams.get("q") || ""; const total = q === "Nothing" ? 0 : q ? 1 : 52;
       const items = Array.from({ length: Math.max(0, Math.min(limit, total - offset)) }, (_, index) => {
         const number = index + offset + 1;
-        return { batch_id: number === 1 ? "chosen" : `batch-${number}`, display_name: q || `Client ${number} · 06 Oct 2026 · BKK`, batch_reference: `PUR-${number}`, customers: ["LY"], files: ["order.xlsx"], shipment_date: "2026-10-06", route_code: "BKK", total_skus: 10, outstanding_items: 2,
+        return { batch_id: number === 1 ? "chosen" : `batch-${number}`, display_name: q || `Client ${number} · 06 Oct 2026 · BKK`, batch_reference: `PUR-${number}`, customers: ["LY"], files: [q === "Sunny" ? "Sunny.xlsx" : `order-${number}.xlsx`], shipment_date: "2026-10-06", route_code: "BKK", total_skus: 10, outstanding_items: 2,
           raw_file_id: `file-${number}`, file_name: `order-${number}.xlsx`, customer: "LY", route: "BKK", customer_count: 3, unresolved_rows: 0,
+          order_count: 3, pending_count: 2, completed_count: 1, subcustomers: ["LY-A", "LY-B", "LY-C"],
           order_id: `order-${number}`, order_ref_id: `ORD-${number}`, customer_code: `LY-${number}`, customer_name: "Client LY", boxes: 5, outstanding: 2, can_invoice: true,
           invoice_id: `invoice-${number}`, invoice_number: `INV-${number}`, currency: "THB", amount: 10, paid: 0,
           status: path.endsWith("/invoicing/records") ? "INVOICE_DRAFT" : path.endsWith("/invoicing/orders") ? "HANDOFF_02_RETURNED" : path.endsWith("/packing/orders") ? "FLOOR_PACKING" : "PURCHASING_CONSOLIDATED" };
@@ -27,6 +28,36 @@ async function setup(page: Page, context: BrowserContext) {
   });
 }
 
+for (const width of [1440, 390]) {
+  test(`scope banners use filenames even with no matching rows at ${width}px`, async ({ page, context }) => {
+    await setup(page, context);
+    await page.setViewportSize({ width, height: 900 });
+    const filename = "Order YACHI shipment ETD 07.08.2026.xlsx";
+    await page.route("**/backend/api/v3/procurement/batches?**", route => {
+      const params = new URL(route.request().url()).searchParams;
+      const items = params.get("q") ? [] : [{ batch_id: "batch-internal", batch_reference: "PUR-INTERNAL", files: [filename],
+        file_name: filename, customers: ["YACHI"], shipment_date: "2026-11-06", route_code: "YACHI", status: "PURCHASING_CONSOLIDATED" }];
+      return route.fulfill({ json: { items, total: items.length, offset: 0, limit: Number(params.get("limit") || 25), has_more: false, scope_label: filename } });
+    });
+    await page.goto("/procurement/batches?raw_file_id=file-internal&view=all");
+    await expect(page.locator(".register-scope")).toContainText(filename);
+    await expect(page.locator(".register-scope")).not.toContainText("file-internal");
+    await expect(page.getByText("PUR-INTERNAL", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("columnheader", { name: "Reference", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: `Confirm purchases ${filename}`, exact: true })).toHaveAttribute("href", /batchId=batch-internal/);
+    await page.getByLabel("Search records", { exact: true }).fill("Nothing");
+    await expect(page.getByText(/No matching records/)).toBeVisible();
+    await expect(page.locator(".register-scope")).toContainText(filename);
+    await page.getByLabel("Search records", { exact: true }).fill("");
+    await expect(page.getByText("1–1 of 1 records")).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: `../outputs/filename-purchase-register-${width}.png`, fullPage: true });
+    await page.getByRole("button", { name: "Show all records", exact: true }).click();
+    await expect(page.locator(".register-scope")).toHaveCount(0);
+    expect(new URL(page.url()).searchParams.has("raw_file_id")).toBe(false);
+  });
+}
+
 test("batch register preserves filters and page through opening, Back and reload", async ({ page, context }) => {
   await setup(page, context); await page.goto("/procurement/batches?view=all&limit=25&offset=25");
   await expect(page.getByText("26–50 of 52 records")).toBeVisible();
@@ -34,14 +65,14 @@ test("batch register preserves filters and page through opening, Back and reload
   await page.getByLabel("Search records").fill("Sunny");
   await expect(page.getByText("1–1 of 1 records")).toBeVisible();
   expect(new URL(page.url()).searchParams.has("offset")).toBe(false);
-  await page.getByRole("link", { name: "Confirm purchases Sunny" }).click();
-  await expect(page.getByLabel("Batch Reference:", { exact: true })).toHaveValue("PUR-CHOSEN");
+  await page.getByRole("link", { name: "Confirm purchases Sunny.xlsx" }).click();
+  await expect(page.getByText("Sunny.xlsx", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Back to register" }).click();
   await expect(page.getByLabel("Search records")).toHaveValue("Sunny");
   await page.reload(); await expect(page.getByLabel("Search records")).toHaveValue("Sunny");
-  await page.getByRole("link", { name: "Confirm purchases Sunny" }).click();
+  await page.getByRole("link", { name: "Confirm purchases Sunny.xlsx" }).click();
   await expect(page).toHaveURL(/\/procurement\?batchId=chosen/);
-  await expect(page.getByLabel("Batch Reference:", { exact: true })).toHaveValue("PUR-CHOSEN");
+  await expect(page.getByText("Sunny.xlsx", { exact: true })).toBeVisible();
   await page.goBack();
   await expect(page.getByLabel("Search records")).toHaveValue("Sunny");
 });
@@ -50,6 +81,7 @@ for (const [path, heading] of [["/orders/files", "Order files"], ["/packing/orde
   test(`${heading} uses bounded pages, filters, sorting and empty states`, async ({ page, context }) => {
     await setup(page, context); await page.goto(path);
     await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Order reference", exact: true })).toHaveCount(0);
     // Billing uses its own single tab row ("Ready to invoice" already means pending).
     if (path !== "/billing") await expect(page.getByRole("button", { name: "Pending work", exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText("1–25 of 52 records")).toBeVisible();
@@ -64,8 +96,8 @@ for (const [path, heading] of [["/orders/files", "Order files"], ["/packing/orde
   });
 }
 
-test("bulk file selection persists across pages and resets when filtering", async ({ page, context }) => {
-  await setup(page, context); await page.goto("/procurement/combine");
+test("Master Purchase selection persists across pages and resets when filtering", async ({ page, context }) => {
+  await setup(page, context); await page.goto("/procurement/master-purchase");
   await expect(page.getByText("1–25 of 52 records")).toBeVisible();
   await page.getByRole("checkbox", { name: "Select order-1.xlsx", exact: true }).check();
   await page.getByRole("button", { name: "Next", exact: true }).click(); await expect(page.getByText("26–50 of 52 records")).toBeVisible();
@@ -100,10 +132,11 @@ test("completed intake shows source details and linked orders without validation
   await page.route("**/backend/api/v3/orders/files/file-closed/orders?**", route => route.fulfill({ json: { items: [{ order_id: "historic-order", customer_code: "LY", customer_name: "Historic Client", order_ref_id: "ORD-HISTORIC", status: "HANDOFF_01_SENT" }], total: 1, offset: 0, limit: 25, has_more: false } }));
   await page.goto("/orders?fileId=file-closed");
   await expect(page.getByRole("heading", { name: "Original file details", exact: true })).toBeVisible();
-  await expect(page.getByText("ORD-HISTORIC", { exact: true })).toBeVisible();
+  await expect(page.getByText("ORD-HISTORIC", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Confirm orders and create purchase batch" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "View acknowledgment", exact: true })).toHaveCount(0);
   await page.locator(".order-file-reference summary").click();
+  await page.getByRole("button", { name: "File tools", exact: true }).click();
   await expect(page.getByRole("button", { name: "Download original file", exact: true })).toBeVisible();
   expect(validations).toBe(0);
 });
@@ -127,5 +160,5 @@ test("narrow-screen packing records keep keyboard access without sideways scroll
   await page.screenshot({ path: "../outputs/register-mobile.png", fullPage: true });
   expect(await region.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
   await region.focus(); await expect(region).toBeFocused();
-  await page.getByRole("link", { name: "Resume packing LY-1", exact: true }).focus(); await expect(page.getByRole("link", { name: "Resume packing LY-1", exact: true })).toBeFocused();
+  await page.getByRole("link", { name: "View suborders order-1.xlsx", exact: true }).focus(); await expect(page.getByRole("link", { name: "View suborders order-1.xlsx", exact: true })).toBeFocused();
 });

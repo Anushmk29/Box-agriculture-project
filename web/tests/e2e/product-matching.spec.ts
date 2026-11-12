@@ -10,7 +10,7 @@ async function setup(page: Page, count = 26, suggestionCount = 1) {
     const url = new URL(route.request().url()); const path = url.pathname;
     if (path.endsWith("/auth/me")) return route.fulfill({ json: { user_id: "match-user", full_name: "Order staff", role: "GENERAL", permissions: ["validate_orders"], must_change_password: false } });
     if (path.endsWith("/customer-register")) return route.fulfill({ json: { items: [], total: 0, has_more: false } });
-    if (path.endsWith("/orders/files/match-file")) return route.fulfill({ json: { raw_file_id: "match-file", file_name: "Guava order.xlsx", main_customer_id: "main", status: "PARSED", total_sub_customers_detected: 1, sub_customer_codes: ["SHOP"], sheets_detected: [], verification_notice: "Review this order." } });
+    if (path.endsWith("/orders/files/match-file")) return route.fulfill({ json: { raw_file_id: "match-file", file_name: "Guava order.xlsx", main_customer_id: "main", status: "PARSED", total_sub_customers_detected: 1, sub_customer_codes: ["Subcustomer"], sheets_detected: [], verification_notice: "Review this order." } });
     if (path.endsWith("/validate")) return route.fulfill({ json: { can_split: mappings.length > 0, quantity_issue_count: 0, unresolved: mappings.length ? [] : [{ product_code: "T298", name_vi: "Order guava", name_en: "RED GUAVA", pack_size: "loose", suggestions: Array.from({ length: suggestionCount }, (_, i) => ({ ...suggestion, id: i ? `suggested-${i}` : suggestion.id, name_en: i ? `Guava variety ${i}` : suggestion.name_en })) }] } });
     if (path.endsWith("/master-data/products")) {
       const query = url.searchParams.get("q");
@@ -25,6 +25,31 @@ async function setup(page: Page, count = 26, suggestionCount = 1) {
   await page.goto("/orders?fileId=match-file");
   await page.getByRole("button", { name: "Match product", exact: true }).click();
   return mappings;
+}
+
+for (const width of [1440, 390]) {
+  test(`unresolved rows distinguish new names from SKU conflicts at ${width}px`, async ({ page }) => {
+    await setup(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.route("**/backend/api/v3/orders/match-file/validate", route => route.fulfill({ json: {
+      can_split: false, quantity_issue_count: 0, unresolved: [
+        { product_code: "NEW", name_vi: "New dragon fruit variety", catalog_name_match: false, pack_size: "100g" },
+        { product_code: "11-028", name_vi: "GREEN PAPAYA", catalog_name_match: true, pack_size: "1pc" },
+      ],
+    } }));
+    await page.reload();
+    const rows = page.locator(".unmatched-products li");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0)).toContainText("No catalogue name match");
+    await expect(rows.nth(1)).toContainText("Name found — review SKU or catalogue conflict");
+    await expect(rows.nth(0)).toHaveCSS("background-color", "rgb(248, 225, 220)");
+    await expect(rows.nth(1)).toHaveCSS("background-color", "rgb(251, 239, 207)");
+    await expect(page.getByRole("button", { name: "Confirm orders and create purchase batch", exact: true })).toBeDisabled();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: `../outputs/product-match-indicators-${width}.png`, fullPage: true });
+    await rows.nth(0).getByRole("button", { name: "Match product", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Match to a catalog product", exact: true })).toBeVisible();
+  });
 }
 
 test("matching keeps source, choices and save action visible across screen sizes", async ({ page }) => {
@@ -99,6 +124,28 @@ test("a suggestion can be chosen without being in the current results", async ({
   await dialog.getByRole("button", { name: "Save match", exact: true }).click();
   await expect(dialog).toHaveCount(0);
   expect(writes[0]).toMatchObject({ product_id: "suggested" });
+});
+
+test("saving a mapping reports success only after the order line resolves", async ({ page }) => {
+  await setup(page);
+  await page.route("**/backend/api/v3/orders/match-file/validate", route => route.fulfill({ json: {
+    can_split: false, quantity_issue_count: 0,
+    unresolved: [{ product_code: "T298", name_vi: "Order guava", name_en: "RED GUAVA", pack_size: "loose" }],
+  } }));
+  const dialog = page.getByRole("dialog", { name: "Match to a catalog product", exact: true });
+  await dialog.getByRole("radio").first().check();
+  await dialog.getByRole("button", { name: "Save match", exact: true }).click();
+  await expect(dialog.getByRole("alert")).toContainText("this order line is still unmatched");
+  await expect(page.getByText(/Successfully mapped/)).toHaveCount(0);
+
+  await page.route("**/backend/api/v3/orders/match-file/validate", route => route.fulfill({ json: {
+    can_split: false, quantity_issue_count: 1, unresolved: [],
+  } }));
+  await dialog.getByRole("button", { name: "Save match", exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText(/Successfully mapped/)).toBeVisible();
+  await expect(page.locator(".unmatched-products")).toHaveCount(0);
+  await expect(page.locator("[data-next-action='true']")).toHaveText("Review weights and pack counts");
 });
 
 test("catalog failures offer retry and empty searches explain the next action", async ({ page }) => {

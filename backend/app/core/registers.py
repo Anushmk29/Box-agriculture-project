@@ -13,6 +13,7 @@ class Page[T](BaseModel):
     offset: int
     limit: int
     has_more: bool
+    scope_label: str | None = None
 
 
 class RegisterQuery:
@@ -70,6 +71,6 @@ class RegisterQuery:
         rows = query.order_by(*ordering).offset(self.offset).limit(self.limit).all()
         return rows, total
 
-    def page(self, items, total):
+    def page(self, items, total, *, scope_label=None):
         return Page[dict](items=items, total=total, offset=self.offset, limit=self.limit,
-                          has_more=self.offset + len(items) < total)
+                          has_more=self.offset + len(items) < total, scope_label=scope_label)

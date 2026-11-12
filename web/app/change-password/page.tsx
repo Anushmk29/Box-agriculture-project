@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole } from "lucide-react";
@@ -10,6 +12,7 @@ import { api } from "@/lib/api";
 import { safeDestination } from "@/lib/workflow";
 
 export default function ChangePasswordPage() {
+  useLanguage();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -42,19 +45,17 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Account security" title="Choose a new password" description="Replace your temporary password to start using the platform." />
+      <PageHeader eyebrow="Account security" title={t("Choose a new password")} description={t("Replace your temporary password to start using the platform.")} />
       <form className="panel form-panel" style={{ maxWidth: "520px" }} onSubmit={submit}>
         <label>
-          Temporary password
-          <PasswordInput aria-label="Temporary password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
+          {t("Temporary password")}<PasswordInput aria-label={t("Temporary password")} autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required />
         </label>
         <label>
-          New password
-          <PasswordInput aria-label="New password" autoComplete="new-password" minLength={12} value={newPassword} onChange={event => setNewPassword(event.target.value)} required aria-describedby="new-password-hint" />
-          <small id="new-password-hint" className={`password-hint${passwordLength >= 12 && passwordLength <= 128 ? " is-ok" : ""}`} aria-live="polite">{passwordLength > 128 ? "Use 128 characters or fewer" : passwordLength >= 12 ? "Long enough" : `At least 12 characters · ${12 - passwordLength} to go`}</small>
+          {t("New password")}<PasswordInput aria-label={t("New password")} autoComplete="new-password" minLength={12} value={newPassword} onChange={event => setNewPassword(event.target.value)} required aria-describedby="new-password-hint" />
+          <small id="new-password-hint" className={`password-hint${passwordLength >= 12 && passwordLength <= 128 ? " is-ok" : ""}`} aria-live="polite">{passwordLength > 128 ? t("Use 128 characters or fewer") : passwordLength >= 12 ? t("Long enough") : t(`At least 12 characters · ${12 - passwordLength} to go`)}</small>
         </label>
         <StatusMessage error={error} />
-        <button className="primary-button" disabled={busy}><LockKeyhole size={17} /> {busy ? "Saving…" : "Save password"}</button>
+        <button className="primary-button" disabled={busy}><LockKeyhole size={17} /> {busy ? t("Saving…") : t("Save password")}</button>
       </form>
     </div>
   );

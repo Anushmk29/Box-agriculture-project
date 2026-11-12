@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-11-03T18:55:31.666953+00:00",
+  "nodes": {
+    "backend_app_models_excel_template_exceltemplate": {
+      "code_fingerprint": "329d97ff5b3d78f218754a93e08445cc102c5f70ec86bf1aac0c7ed8a81c6134",
+      "label": "ExcelTemplate",
+      "last": "2026-11-02T08:03:09.485110+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-02T08:03:09.485110+00:00",
+          "outcome": "useful",
+          "q": "How many Excel files per customer have we supplied so the system can learn their structures?"
+        }
+      ],
+      "score": 0.966985067,
+      "source_file": "backend/app/models/excel_template.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_app_modules_orders_reconciliation_merge_products": {
+      "code_fingerprint": "87d3e27be5769b4deb8d7e81081ae2248630f5a766fb9cfaf7ca1b745acf1954",
+      "label": "merge_products()",
+      "last": "2026-11-01T17:37:33.316117+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-01T17:37:33.316117+00:00",
+          "outcome": "useful",
+          "q": "How should duplicate Riềng trắng Galanga white catalog matches be handled?"
+        }
+      ],
+      "score": 0.953647773,
+      "source_file": "backend/app/modules/orders/reconciliation.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_app_modules_packing_planning": {
+      "code_fingerprint": "e64329c6d03c757951d92b3ea91839173e9a34037b072b998ef48c8d20719cfd",
+      "label": "planning.py",
+      "last": "2026-11-02T15:57:17.371763+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-02T15:57:17.371763+00:00",
+          "outcome": "useful",
+          "q": "when i clicked on generate paking boxes the database generation failed"
+        }
+      ],
+      "score": 0.974369434,
+      "source_file": "backend/app/modules/packing/planning.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_app_modules_packing_service_packingplanningservice": {
+      "code_fingerprint": "b0f148f76eab623ef0fa202ae75690d5ad80f39c028f22d5d229976eb7ad02a1",
+      "label": "PackingPlanningService",
+      "last": "2026-11-02T15:57:17.371763+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-02T15:57:17.371763+00:00",
+          "outcome": "useful",
+          "q": "when i clicked on generate paking boxes the database generation failed"
+        }
+      ],
+      "score": 0.974369434,
+      "source_file": "backend/app/modules/packing/service.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_app_services_excel_profiles": {
+      "code_fingerprint": "68e92c95badc87089164d48df51291a0946facfde079950901f94ea04b6b3d40",
+      "label": "excel_profiles.py",
+      "last": "2026-11-02T08:03:09.485110+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-02T08:03:09.485110+00:00",
+          "outcome": "useful",
+          "q": "How many Excel files per customer have we supplied so the system can learn their structures?"
+        }
+      ],
+      "score": 0.966985067,
+      "source_file": "backend/app/services/excel_profiles.py",
+      "status": "tentative",
+      "uses": 1
+    },
+    "backend_docker_compose_document": {
+      "code_fingerprint": "3eee773307b37ab1cf23450d8160df3ea73a6993c37b4e26ff92ccec0a21a57d",
+      "label": "backend/docker-compose.yml",
+      "last": "2026-11-01T06:40:01.602724+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-01T06:40:01.602724+00:00",
+          "outcome": "useful",
+          "q": "how can i deploy it and where can i deploy it ? and wat about the ci and cd pipeline for deployment and testing"
+        }
+      ],
+      "score": 0.943639585,
+      "source_file": "backend/docker-compose.yml",
+      "status": "tentative",
+      "uses": 1
+    },
+    "docker_compose_document": {
+      "code_fingerprint": "ea4f582622d3775bf142b14997eb680f68a31ac70643cc14fb820fe1056fc2f9",
+      "label": "docker-compose.yml",
+      "last": "2026-11-01T06:40:01.602724+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-01T06:40:01.602724+00:00",
+          "outcome": "useful",
+          "q": "how can i deploy it and where can i deploy it ? and wat about the ci and cd pipeline for deployment and testing"
+        }
+      ],
+      "score": 0.943639585,
+      "source_file": "docker-compose.yml",
+      "status": "tentative",
+      "uses": 1
+    },
+    "readme_supabase_database": {
+      "code_fingerprint": "f2f37b0ed7e379a909ed55123dc4ec46124167797f3d3ea4c4a845531dac31d5",
+      "label": "Supabase Database",
+      "last": "2026-11-01T06:40:01.602724+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-01T06:40:01.602724+00:00",
+          "outcome": "useful",
+          "q": "how can i deploy it and where can i deploy it ? and wat about the ci and cd pipeline for deployment and testing"
+        }
+      ],
+      "score": 0.943639585,
+      "source_file": "README.md",
+      "status": "tentative",
+      "uses": 1
+    },
+    "web_tests_e2e_release_smoke_spec": {
+      "code_fingerprint": "0354c472804f2bec29feaedeb22af30fae52eb743869028d65feeecae8f88e15",
+      "label": "release-smoke.spec.ts",
+      "last": "2026-11-01T06:40:01.602724+00:00",
+      "provenance": [
+        {
+          "date": "2026-11-01T06:40:01.602724+00:00",
+          "outcome": "useful",
+          "q": "how can i deploy it and where can i deploy it ? and wat about the ci and cd pipeline for deployment and testing"
+        }
+      ],
+      "score": 0.943639585,
+      "source_file": "web/tests/e2e/release-smoke.spec.ts",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

@@ -14,6 +14,7 @@ from app.core.read_models import (
     bounded_raw,
     purchase_file_links,
     raw_headers,
+    scope_file_names,
 )
 from app.core.registers import Page, RegisterQuery
 from app.models.audit import AuditLog
@@ -102,13 +103,14 @@ def order_query(db, params, eligible, pending):
     return query.options(selectinload(ClientOrder.customer), selectinload(ClientOrder.raw_file).load_only(*RAW_HEADERS))
 
 
-ORDER_SORTS = {"created_at": ClientOrder.created_at, "reference": ClientOrder.order_ref_id,
+ORDER_SORTS = {"created_at": ClientOrder.created_at, "reference": ClientOrder.order_ref_id, "name": RawOrderFile.file_name,
                "customer": Customer.client_code, "shipment_date": RawOrderFile.shipment_target_date,
                "route": RawOrderFile.route_line, "status": ClientOrder.status}
 
 
 def order_summary(order):
     return {"order_id": order.id, "order_ref_id": order.order_ref_id,
+            "raw_file_id": order.raw_order_file_id, "file_name": order.raw_file.file_name,
             "customer_code": order.customer.client_code if order.customer else "General",
             "customer_name": order.customer.company_name if order.customer else "General",
             "shipment_date": order.raw_file.shipment_target_date, "route": order.raw_file.route_line,
@@ -116,9 +118,27 @@ def order_summary(order):
 
 
 @router.get("/packing/orders", response_model=Page[dict], dependencies=[Depends(require_action(Action.FLOOR_PACKING))])
-def packing_orders(params: RegisterQuery = Depends(), db: Session = Depends(get_db, scope="function"), batch_id: str | None = None, approval: Literal["pending"] | None = None):
+def packing_orders(params: RegisterQuery = Depends(), db: Session = Depends(get_db, scope="function"), batch_id: str | None = None, raw_file_id: str | None = None, approval: Literal["pending"] | None = None):
     eligible = PACKING_PENDING | BILLING_STATUSES
     query = order_query(db, params, eligible, PACKING_PENDING)
+    query = packing_scope(db, query, batch_id, raw_file_id)
+    if approval == "pending":
+        query = query.filter(ClientOrder.packing_approval_status == "PENDING", ClientOrder.status == OrderStatus.FLOOR_PACKING)
+    stats = db.query(Box.client_order_id.label("order_id"), func.count(Box.id).label("boxes"),
+        func.sum(case((Box.is_locked.is_(False), 1), else_=0)).label("missing")
+    ).group_by(Box.client_order_id).subquery()
+    query = query.outerjoin(stats, stats.c.order_id == ClientOrder.id).add_columns(stats.c.boxes, stats.c.missing)
+    rows, total = params.rows(query, ORDER_SORTS | {"boxes": stats.c.boxes, "outstanding": stats.c.missing}, ClientOrder.id)
+    return params.page([{**order_summary(order), "boxes": boxes or 0, "outstanding": missing or 0,
+                         "weight_kg": float(order.total_estimated_net_weight_kg or 0)} for order, boxes, missing in rows], total,
+                       scope_label=scope_file_names(db, raw_file_id, batch_id))
+
+
+def packing_scope(db, query, batch_id=None, raw_file_id=None):
+    if raw_file_id:
+        if not db.get(RawOrderFile, raw_file_id):
+            raise HTTPException(404, "Order file no longer exists. Choose another packing file.")
+        query = query.filter(ClientOrder.raw_order_file_id == raw_file_id)
     if batch_id:
         batch = db.get(MasterPurchasingList, batch_id)
         if not batch:
@@ -133,15 +153,63 @@ def packing_orders(params: RegisterQuery = Depends(), db: Session = Depends(get_
                                  ClientOrder.id.in_(source_orders),
                                  ClientOrder.raw_order_file_id == batch.raw_order_file_id
                                  if batch.raw_order_file_id else False))
-    if approval == "pending":
-        query = query.filter(ClientOrder.packing_approval_status == "PENDING", ClientOrder.status == OrderStatus.FLOOR_PACKING)
-    stats = db.query(Box.client_order_id.label("order_id"), func.count(Box.id).label("boxes"),
-        func.sum(case((Box.is_locked.is_(False), 1), else_=0)).label("missing")
-    ).group_by(Box.client_order_id).subquery()
-    query = query.outerjoin(stats, stats.c.order_id == ClientOrder.id).add_columns(stats.c.boxes, stats.c.missing)
-    rows, total = params.rows(query, ORDER_SORTS | {"boxes": stats.c.boxes, "outstanding": stats.c.missing}, ClientOrder.id)
-    return params.page([{**order_summary(order), "boxes": boxes or 0, "outstanding": missing or 0,
-                         "weight_kg": float(order.total_estimated_net_weight_kg or 0)} for order, boxes, missing in rows], total)
+    return query
+
+
+@router.get("/packing/files", response_model=Page[dict], dependencies=[Depends(require_action(Action.FLOOR_PACKING))])
+def packing_files(params: RegisterQuery = Depends(), db: Session = Depends(get_db, scope="function"),
+                  batch_id: str | None = None, raw_file_id: str | None = None):
+    eligible = packing_scope(db, db.query(ClientOrder).filter(
+        ClientOrder.status.in_(PACKING_PENDING | BILLING_STATUSES)), batch_id, raw_file_id).with_entities(
+            ClientOrder.id.label("order_id"), ClientOrder.raw_order_file_id.label("file_id"),
+            ClientOrder.customer_id, ClientOrder.order_ref_id, ClientOrder.status).subquery()
+    stats = db.query(eligible.c.file_id, func.count().label("orders"),
+        func.sum(case((eligible.c.status.in_(PACKING_PENDING), 1), else_=0)).label("pending"),
+        func.sum(case((eligible.c.status.in_({OrderStatus.PACKING_DESIGNED, OrderStatus.FLOOR_PACKING,
+                                            OrderStatus.FINAL_PACK_LOCKED}), 1), else_=0)).label("started")
+    ).group_by(eligible.c.file_id).subquery()
+    query = db.query(RawOrderFile, stats.c.orders, stats.c.pending, stats.c.started).join(
+        stats, stats.c.file_id == RawOrderFile.id).outerjoin(Customer, Customer.id == RawOrderFile.main_customer_id).options(
+            raw_headers(), selectinload(RawOrderFile.main_customer))
+    if params.view == "pending":
+        query = query.filter(stats.c.pending > 0)
+    elif params.view == "completed":
+        query = query.filter(stats.c.pending == 0)
+    children = db.query(eligible.c.file_id).outerjoin(Customer, Customer.id == eligible.c.customer_id)
+    if params.q:
+        matching_files = params.search(db.query(RawOrderFile.id), [RawOrderFile.file_name])
+        matching_children = params.search(children, [Customer.company_name, Customer.client_code, eligible.c.order_ref_id])
+        query = query.filter(or_(RawOrderFile.id.in_(matching_files.statement), RawOrderFile.id.in_(matching_children.statement)))
+    if params.customer:
+        matching_children = params.search(children, [Customer.company_name, Customer.client_code], params.customer)
+        matching_clients = params.search(db.query(Customer.id), [Customer.company_name, Customer.client_code], params.customer)
+        query = query.filter(or_(RawOrderFile.id.in_(matching_children.statement), RawOrderFile.main_customer_id.in_(matching_clients.statement)))
+    if params.status:
+        if params.status not in ClientOrder.status.type.enums:
+            raise HTTPException(422, "Unsupported status")
+        query = query.filter(RawOrderFile.id.in_(select(eligible.c.file_id).where(eligible.c.status == params.status)))
+    if params.route:
+        query = query.filter(RawOrderFile.route_line == params.route)
+    query = params.dates(query, RawOrderFile.shipment_target_date)
+    rows, total = params.rows(query, {"created_at": RawOrderFile.created_at, "name": RawOrderFile.file_name,
+        "customer": Customer.company_name, "shipment_date": RawOrderFile.shipment_target_date,
+        "route": RawOrderFile.route_line, "orders": stats.c.orders, "outstanding": stats.c.pending}, RawOrderFile.id)
+    # A short preview per file, bounded independently of the number of suborders.
+    ranked = db.query(eligible.c.file_id, Customer.client_code,
+        func.row_number().over(partition_by=eligible.c.file_id,
+                               order_by=(Customer.client_code, eligible.c.order_id)).label("position")
+    ).outerjoin(Customer, Customer.id == eligible.c.customer_id).filter(
+        eligible.c.file_id.in_([raw.id for raw, *_ in rows])).subquery()
+    previews = {}
+    for file_id, code in db.query(ranked.c.file_id, ranked.c.client_code).filter(ranked.c.position <= 4).order_by(ranked.c.file_id, ranked.c.position):
+        previews.setdefault(file_id, []).append(code or "General")
+    return params.page([{ "raw_file_id": raw.id, "file_name": raw.file_name,
+        "customer": raw.main_customer.company_name if raw.main_customer else "General",
+        "shipment_date": raw.shipment_target_date, "route": raw.route_line, "created_at": raw.created_at,
+        "order_count": count, "pending_count": pending, "completed_count": count - pending,
+        "subcustomers": previews.get(raw.id, []),
+        "status": "HANDOFF_02_RETURNED" if not pending else "FLOOR_PACKING" if started else "HANDOFF_01_SENT",
+    } for raw, count, pending, started in rows], total, scope_label=scope_file_names(db, raw_file_id, batch_id))
 
 
 def invoice_memberships(db):
@@ -189,11 +257,11 @@ def invoice_records(params: RegisterQuery = Depends(), db: Session = Depends(get
         query = query.filter(Invoice.status.in_(groups[invoice_group]))
     query = status_view(query, params, Invoice.status, {InvoiceStatus.INVOICE_DRAFT, InvoiceStatus.INVOICE_SENT, InvoiceStatus.PARTIALLY_PAID})
     source_query = db.query(InvoiceLineItem.invoice_id).join(ClientOrder, ClientOrder.id == InvoiceLineItem.source_order_id).join(RawOrderFile).outerjoin(Customer, Customer.id == ClientOrder.customer_id)
-    for term, columns in [(params.q, [Invoice.invoice_number, Customer.company_name, Customer.client_code, ClientOrder.order_ref_id]),
+    for term, columns in [(params.q, [Invoice.invoice_number, Customer.company_name, Customer.client_code, ClientOrder.order_ref_id, RawOrderFile.file_name]),
                           (params.customer, [Customer.company_name, Customer.client_code])]:
         if term:
             pattern = "%" + term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
-            sources = params.search(source_query, [Customer.company_name, Customer.client_code, ClientOrder.order_ref_id], term)
+            sources = params.search(source_query, [Customer.company_name, Customer.client_code, ClientOrder.order_ref_id, RawOrderFile.file_name], term)
             query = query.filter(or_(*(column.ilike(pattern, escape="\\") for column in columns),
                 Invoice.seller_customer.has(or_(Customer.company_name.ilike(pattern, escape="\\"), Customer.client_code.ilike(pattern, escape="\\"))),
                 Invoice.id.in_(sources.statement)))
@@ -208,21 +276,21 @@ def invoice_records(params: RegisterQuery = Depends(), db: Session = Depends(get
             dates.append(RawOrderFile.shipment_target_date <= params.date_to)
         query = query.filter(or_(and_(*dates), Invoice.id.in_(params.dates(source_query, RawOrderFile.shipment_target_date).statement)))
     rows, total = params.rows(query.add_columns(Customer.company_name, ClientOrder.order_ref_id,
-        RawOrderFile.shipment_target_date, RawOrderFile.route_line), {
+        RawOrderFile.shipment_target_date, RawOrderFile.route_line, RawOrderFile.file_name), {
         "created_at": Invoice.created_at, "reference": Invoice.invoice_number, "customer": Customer.company_name,
         "shipment_date": RawOrderFile.shipment_target_date, "route": RawOrderFile.route_line,
         "status": Invoice.status, "amount": Invoice.total_amount_eur}, Invoice.id)
     # Fetch distinct source headers only for this page; never load invoice lines or amounts per source.
     source_query = db.query(InvoiceLineItem.invoice_id, Customer.company_name, ClientOrder.order_ref_id,
-        RawOrderFile.shipment_target_date, RawOrderFile.route_line).join(ClientOrder, ClientOrder.id == InvoiceLineItem.source_order_id).join(RawOrderFile).outerjoin(Customer, Customer.id == ClientOrder.customer_id).filter(
+        RawOrderFile.shipment_target_date, RawOrderFile.route_line, RawOrderFile.file_name).join(ClientOrder, ClientOrder.id == InvoiceLineItem.source_order_id).join(RawOrderFile).outerjoin(Customer, Customer.id == ClientOrder.customer_id).filter(
         InvoiceLineItem.invoice_id.in_([invoice.id for invoice, *_ in rows])).distinct()
     source_headers = bounded_headers(source_query) if rows else []
     headers = {}
-    for invoice_id, customer, ref, day, route in source_headers:
-        headers.setdefault(invoice_id, []).append((customer, ref, day, route))
+    for invoice_id, customer, ref, day, route, filename in source_headers:
+        headers.setdefault(invoice_id, []).append((customer, ref, day, route, filename))
     items = []
-    for invoice, customer, ref, day, route in rows:
-        sources = headers.get(invoice.id, [(customer, ref, day, route)])
+    for invoice, customer, ref, day, route, filename in rows:
+        sources = headers.get(invoice.id, [(customer, ref, day, route, filename)])
         clients = sorted({header[0] for header in sources if header[0]})
         days = sorted({header[2] for header in sources if header[2]})
         routes = sorted({header[3] for header in sources if header[3]})
@@ -230,26 +298,11 @@ def invoice_records(params: RegisterQuery = Depends(), db: Session = Depends(get
             "revision": invoice.revision,
             "customer": ", ".join(clients[:2]) + (f" +{len(clients) - 2} clients" if len(clients) > 2 else "") or "General",
             "order_ref_id": ref if len(sources) == 1 else f"{len(sources)} orders",
+            "file_name": ", ".join(sorted({header[4] for header in sources if header[4]})),
             "shipment_date": ", ".join(days), "route": ", ".join(routes),
             "status": invoice.status.value, "created_at": invoice.created_at, "currency": invoice.currency,
             "amount": float(invoice.total_amount_eur), "paid": float(invoice.amount_paid_eur or 0)})
     return params.page(items, total)
-
-
-@router.get("/procurement/source-files", response_model=Page[dict], dependencies=[Depends(require_action(Action.CONFIRM_PROCUREMENT))])
-def source_files(params: RegisterQuery = Depends(), db: Session = Depends(get_db, scope="function")):
-    query = db.query(RawOrderFile, RawOrderFile.acknowledgment_summary["validation"]["unresolved_product_rows"].as_integer(),
-        RawOrderFile.acknowledgment_summary["validation"]["can_split"].as_boolean()).options(raw_headers()).outerjoin(Customer, Customer.id == RawOrderFile.main_customer_id).filter(
-        RawOrderFile.status == OrderStatus.PURCHASING_CONSOLIDATED,
-        RawOrderFile.client_orders.any(ClientOrder.status == OrderStatus.PURCHASING_CONSOLIDATED), ~RawOrderFile.client_orders.any((ClientOrder.status != OrderStatus.PURCHASING_CONSOLIDATED) & (ClientOrder.status != OrderStatus.CANCELLED)))
-    query = params.search(query, [RawOrderFile.file_name, Customer.company_name, Customer.client_code])
-    query = params.search(query, [Customer.company_name, Customer.client_code], params.customer)
-    if params.route:
-        query = query.filter(RawOrderFile.route_line == params.route)
-    query = params.dates(query, RawOrderFile.shipment_target_date).options(selectinload(RawOrderFile.main_customer))
-    rows, total = params.rows(query, {"created_at": RawOrderFile.created_at, "name": RawOrderFile.file_name,
-        "customer": Customer.company_name, "shipment_date": RawOrderFile.shipment_target_date, "route": RawOrderFile.route_line}, RawOrderFile.id)
-    return params.page([file_summary(raw, unresolved, can_split) for raw, unresolved, can_split in rows], total)
 
 
 @router.get("/master-data/customer-register", response_model=Page[dict], dependencies=[Depends(require_action(Action.VALIDATE_ORDERS))])
@@ -277,6 +330,7 @@ def procurement_batches(db, params, raw_file_id=None):
         return MasterPurchasingList.id.in_(select(links.c.batch_id).where(links.c.file_id.in_(ids)))
     source_match = batches_for_files(matching_ids)
     metadata = db.query(links.c.batch_id, func.min(Customer.company_name).label("customer"),
+        func.min(RawOrderFile.file_name).label("filename"),
         func.min(RawOrderFile.shipment_target_date).label("day"), func.min(RawOrderFile.route_line).label("route")
     ).join(RawOrderFile, RawOrderFile.id == links.c.file_id).outerjoin(Customer, Customer.id == RawOrderFile.main_customer_id).group_by(links.c.batch_id).subquery()
     query = status_view(db.query(MasterPurchasingList).outerjoin(metadata, metadata.c.batch_id == MasterPurchasingList.id), params, MasterPurchasingList.status, PROCUREMENT_PENDING)
@@ -301,7 +355,7 @@ def procurement_batches(db, params, raw_file_id=None):
     ).group_by(PurchasingItem.purchasing_list_id).subquery()
     query = query.outerjoin(missing, missing.c.batch_id == MasterPurchasingList.id).add_columns(missing.c.outstanding)
     rows, total = params.rows(query, {"created_at": MasterPurchasingList.created_at,
-        "reference": MasterPurchasingList.batch_reference, "name": metadata.c.customer, "customer": metadata.c.customer,
+        "reference": MasterPurchasingList.batch_reference, "name": metadata.c.filename, "customer": metadata.c.customer,
         "shipment_date": func.coalesce(MasterPurchasingList.shipment_date, metadata.c.day),
         "route": func.coalesce(MasterPurchasingList.route_code, metadata.c.route), "status": MasterPurchasingList.status,
         "products": MasterPurchasingList.total_skus_count, "outstanding": missing.c.outstanding}, MasterPurchasingList.id)
@@ -329,8 +383,9 @@ def procurement_batches(db, params, raw_file_id=None):
             "created_at": batch.created_at.isoformat() if batch.created_at else None,
             "shipment_date": day, "route_code": route, "total_skus": batch.total_skus_count,
             "outstanding_items": outstanding or 0, "customers": customers, "files": sorted({raw.file_name for raw in sources}),
+            "file_name": ", ".join(sorted({raw.file_name for raw in sources})),
             "next_action": "Review and confirm purchases" if batch.status == OrderStatus.PURCHASING_CONSOLIDATED else "Send purchases to packing" if batch.status == OrderStatus.PROCUREMENT_CONFIRMED else "Purchases sent to packing"})
-    return params.page(items, total)
+    return params.page(items, total, scope_label=scope_file_names(db, raw_file_id))
 
 
 @router.get("/admin/users/register", response_model=Page[dict], dependencies=[Depends(require_action(Action.MANAGE_USERS))])

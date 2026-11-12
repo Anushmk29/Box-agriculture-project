@@ -76,6 +76,13 @@ def validate_definition(definition):
         "numeric_pack_unit"
     ) not in {None, "g", "kg"}:
         raise HTTPException(422, "Select a supported layout and packing unit")
+    if definition.get("text_quantity_separator") not in {None, "-"}:
+        raise HTTPException(422, "Select a supported text quantity separator")
+    review_issues = definition.get("review_issues", [])
+    if not isinstance(review_issues, list) or len(review_issues) > 30 or any(
+        not isinstance(issue, str) or not 1 <= len(issue) <= 512 for issue in review_issues
+    ):
+        raise HTTPException(422, "Use short format review notes")
     tokens = definition.get("identity_tokens", [])
     if (
         not isinstance(tokens, list)
@@ -97,14 +104,22 @@ def validate_definition(definition):
         if not isinstance(fields, dict) or not isinstance(fields.get("alt", []), list):
             raise HTTPException(422, "Choose valid product columns")
         columns = [v for v in fields.values() if isinstance(v, int)] + fields.get("alt", [])
+        ignored = sheet.get("ignored_columns", {})
+        if not isinstance(ignored, dict) or len(ignored) > 512 or any(
+            not isinstance(label, str) or len(label.strip()) > 256 for label in ignored.values()
+        ):
+            raise HTTPException(422, "Choose valid ignored column headings")
         try:
             columns += [int(c) for c in sheet.get("anchors", {})] + [
                 int(c) for c in (sheet.get("customers") or {})
             ]
+            columns += [int(c) for c in ignored]
         except (TypeError, ValueError):
             raise HTTPException(422, "Use valid column numbers") from None
         if any(type(c) is not int or not 1 <= c <= 512 for c in columns):
             raise HTTPException(422, "Columns must be between 1 and 512")
+        if len(set(fields.get("alt", []))) != len(fields.get("alt", [])):
+            raise HTTPException(422, "Alternate product columns must be unique")
         allowed = {
             "code",
             "supplier_code",
@@ -116,6 +131,7 @@ def validate_definition(definition):
             "adjacent",
             "description_pack",
             "alt",
+            "notes",
         }
         if set(fields) - allowed or any(
             type(v) is not int for k, v in fields.items() if k != "alt"

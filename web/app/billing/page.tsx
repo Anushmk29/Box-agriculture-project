@@ -1,4 +1,6 @@
-﻿"use client";
+"use client";
+
+import { t, useLanguage } from "@/lib/language";
 
 import { PageLoadingSkeleton, TableLoadingSkeleton } from "@/components/loading-skeleton";
 
@@ -9,6 +11,7 @@ import { api, apiBlob, ApiError } from "@/lib/api";
 import { StatusMessage } from "@/components/status-message";
 import { useUnsavedChanges } from "@/lib/use-unsaved-changes";
 import { BillingRegister } from "@/components/billing-register";
+import { BillingCustomerDetails } from "@/components/billing-customer-details";
 import { RegisterBackLink, type RegisterRow } from "@/components/record-register";
 import { TaskDialog } from "@/components/task-dialog";
 import { TaskPanel, WorkflowProgress } from "@/components/workflow-guidance";
@@ -18,7 +21,7 @@ import { confirmAction } from "@/lib/confirm";
 const confirmDiscard = () => confirmAction({ title: "Discard invoice changes?", body: "Your edits to this draft have not been saved.", confirmLabel: "Discard changes", tone: "danger" });
 
 type InvoiceLine = {
-  line_item_id: string; source_order_id: string; source_order_ref: string; source_customer_code: string;
+  line_item_id: string; source_order_id: string; source_order_ref: string; source_file_name: string; source_customer_code: string;
   product_code: string; product_name: string; box_number: number;
   pack_size: string; billed_packs: number; billed_weight_kg: number;
   unit_price_eur: number; line_total_eur: number;
@@ -32,7 +35,7 @@ type Invoice = {
 };
 
 type BillingQueueItem = {
-  order_id: string; order_ref_id: string; customer_code: string; customer_name: string;
+  order_id: string; order_ref_id: string; file_name: string; customer_code: string; customer_name: string;
   order_status: string; invoice_id: string | null; invoice_number: string | null; invoice_status: string | null;
 };
 
@@ -41,9 +44,11 @@ function money(value: number, currency = "THB") {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(value);
 }
 
-export default function BillingPage() { return <Suspense fallback={<PageLoadingSkeleton label="Loading billing…" />}><BillingContent /></Suspense>; }
+export default function BillingPage() {
+  useLanguage(); return <Suspense fallback={<PageLoadingSkeleton label={t("Loading billing…")} />}><BillingContent /></Suspense>; }
 
 function BillingContent() {
+  useLanguage();
   const searchParams = useSearchParams();
   const query = searchParams.toString();
   const [resolvedRead, setResolvedRead] = useState<string>();
@@ -60,6 +65,7 @@ function BillingContent() {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
   const [invoice, setInvoice] = useState<Invoice>();
+  const [customerInvoiceId, setCustomerInvoiceId] = useState<string>();
   const [invoiceBaseline, setInvoiceBaseline] = useState("");
   const [revisionConflict, setRevisionConflict] = useState(false);
   useUnsavedChanges(Boolean(invoice && invoiceBaseline && JSON.stringify(invoice) !== invoiceBaseline));
@@ -105,6 +111,8 @@ function BillingContent() {
     setBusy(true); setError(""); setMessage("");
     try { return await action(); }
     catch (reason) {
+      if (reason instanceof ApiError && reason.detail && typeof reason.detail === "object" && "code" in reason.detail &&
+          reason.detail.code === "MISSING_CUSTOMER_DETAILS" && "invoice_id" in reason.detail) setCustomerInvoiceId(String(reason.detail.invoice_id));
       if (reason instanceof ApiError && reason.detail && typeof reason.detail === "object" && "code" in reason.detail &&
           ["STALE_REVISION", "REVISION_REQUIRED"].includes(String(reason.detail.code))) setRevisionConflict(true);
       if (reason instanceof ApiError && reason.detail && typeof reason.detail === "object" &&
@@ -162,6 +170,15 @@ function BillingContent() {
     setInvoice(next); setInvoiceBaseline(JSON.stringify(next)); setRevisionConflict(false);
   }
 
+  function customerDetailsSaved(invoiceId: string, revision: number) {
+    setCustomerInvoiceId(undefined); setError(""); setMessage("Customer details saved. Review and approve the invoice when ready.");
+    setApprovalRows(current => current.map(row => row.invoice_id === invoiceId ? { ...row, revision } : row));
+    if (invoice?.invoice_id === invoiceId) {
+      setInvoice(current => current ? { ...current, revision } : current);
+      setInvoiceBaseline(current => current ? JSON.stringify({ ...JSON.parse(current), revision }) : current);
+    }
+  }
+
   async function reloadConflictedInvoice() {
     if (!invoice) { setBillingTask(null); setSelectedInvoices([]); setRevisionConflict(false); setError(""); await refreshData(); return; }
     if (JSON.stringify(invoice) !== invoiceBaseline && !await confirmDiscard()) return;
@@ -201,25 +218,26 @@ function BillingContent() {
   const editable = invoice?.status === "INVOICE_DRAFT";
   const invoiceSections = invoice ? Array.from(invoice.items.reduce((sections, item) => {
     const key = item.source_order_id || invoice.client_order_id;
-    const section = sections.get(key) || { orderId: key, orderRef: item.source_order_ref, customerCode: item.source_customer_code, items: [] as InvoiceLine[] };
+    const section = sections.get(key) || { orderId: key, fileName: item.source_file_name, customerCode: item.source_customer_code, items: [] as InvoiceLine[] };
     section.items.push(item); sections.set(key, section); return sections;
-  }, new Map<string, { orderId: string; orderRef: string; customerCode: string; items: InvoiceLine[] }>()).values()) : [];
+  }, new Map<string, { orderId: string; fileName: string; customerCode: string; items: InvoiceLine[] }>()).values()) : [];
 
   return (
     <div className="page billing-workspace">
+      {customerInvoiceId && <BillingCustomerDetails invoiceId={customerInvoiceId} onClose={() => setCustomerInvoiceId(undefined)} onSaved={customerDetailsSaved} />}
       <header className="page-header billing-header">
-        <div><h1>Billing desk</h1><p>Create and print final invoices for your team.</p></div>
-        <div className="billing-tabs" role="tablist" aria-label="Billing sections">
-          <button role="tab" aria-selected={tab === "create"} onClick={() => changeTab("create")}>Ready to invoice</button>
-          {[["drafts", "Drafts"], ["final", "Final invoices"]].map(([group, label]) => <button key={group} role="tab" aria-selected={tab === "invoices" && searchParams.get("invoice_group") === group} onClick={() => changeTab("invoices", group)}>{label}</button>)}
-          <button role="tab" aria-selected={tab === "invoices" && !searchParams.get("invoice_group")} onClick={() => changeTab("invoices")}>All invoices</button>
+        <div><h1>{t("Billing desk")}</h1><p>{t("Create and print final invoices for your team.")}</p></div>
+        <div className="billing-tabs" role="tablist" aria-label={t("Billing sections")}>
+          <button role="tab" aria-selected={tab === "create"} onClick={() => changeTab("create")}>{t("Ready to invoice")}</button>
+          {[["drafts", "Drafts"], ["final", "Final invoices"]].map(([group, label]) => <button key={group} role="tab" aria-selected={tab === "invoices" && searchParams.get("invoice_group") === group} onClick={() => changeTab("invoices", group)}>{t(label)}</button>)}
+          <button role="tab" aria-selected={tab === "invoices" && !searchParams.get("invoice_group")} onClick={() => changeTab("invoices")}>{t("All invoices")}</button>
         </div>
       </header>
       <StatusMessage error={error} success={message} />
-      {revisionConflict && <button type="button" disabled={busy} onClick={() => void reloadConflictedInvoice()}>Reload latest invoice for review</button>}
+      {revisionConflict && <button type="button" disabled={busy} onClick={() => void reloadConflictedInvoice()}>{t("Reload latest invoice for review")}</button>}
       {(invoice || orderId) && <WorkflowProgress current="billing" done />}
-      {detailLoading && <TableLoadingSkeleton label="Loading invoice details…" columns={["Produce", "Pack", "Qty", "Weight", "Unit price", "Amount"]} />}
-      {!detailLoading && invoice && <TaskPanel reference={invoice.invoice_number} title={statusLabel(invoice.status)}
+      {detailLoading && <TableLoadingSkeleton label={t("Loading invoice details…")} columns={["Produce", "Pack", "Qty", "Weight", "Unit price", "Amount"]} />}
+      {!detailLoading && invoice && <TaskPanel reference={invoice.invoice_number} title={t(statusLabel(invoice.status))}
         detail={editable ? "Review packed quantities, selling prices and notes. Approval locks the invoice amounts." : "Invoice creation is complete. Print or download it; your team handles the next steps outside this system."}
         primary={editable ? { label: "Review invoice details", href: "#invoice-details" } : { label: "Review final invoice", href: "#invoice-details" }} />}
       {!detailLoading && !invoice && !orderId && <BillingRegister invoices={tab === "invoices"} busy={busy} refreshKey={refreshKey}
@@ -227,37 +245,38 @@ function BillingContent() {
         approve={rows => { setApprovalRows(rows); setSelectedInvoices(rows.map(row => String(row.invoice_id))); setBillingTask("approve"); }} />}
       {!detailLoading && orderId && !invoice && <section className="panel billing-order-panel" aria-labelledby="billing-order-title">
         <div className="billing-order-topbar"><RegisterBackLink fallback="/billing" />
-          {readyOrders.some(item => item.order_id === orderId) && <span className="billing-order-ready"><CircleCheckBig size={16} aria-hidden="true" />Packing completed</span>}
+          {readyOrders.some(item => item.order_id === orderId) && <span className="billing-order-ready"><CircleCheckBig size={16} aria-hidden="true" />{t("Packing completed")}</span>}
         </div>
         <div className="billing-order-content">
-          <div className="billing-order-customer"><p className="billing-order-label">Invoice for</p>
+          <div className="billing-order-customer"><p className="billing-order-label">{t("Invoice for")}</p>
             <h2 id="billing-order-title">{selectedCustomerName}</h2>
-            <dl className="billing-order-reference"><dt>Order reference</dt><dd>{selectedQueueItem?.order_ref_id || orderId}</dd></dl>
+            <dl className="billing-order-reference"><dt>{t("Order file")}</dt><dd>{selectedQueueItem?.file_name || t("Source filename unavailable")}</dd></dl>
           </div>
-          <div className="billing-order-summary"><FileText size={24} aria-hidden="true" /><h3>Prepare invoice draft</h3>
-            <p>Use the final packed quantities, then review the draft before approving it.</p>
-            {pricesResolved && <span className="billing-order-prices"><CircleCheckBig size={16} aria-hidden="true" />Selling prices saved</span>}
+          <div className="billing-order-summary"><FileText size={24} aria-hidden="true" /><h3>{t("Prepare invoice draft")}</h3>
+            <p>{t("Use the final packed quantities, then review the draft before approving it.")}</p>
+            {pricesResolved && <span className="billing-order-prices"><CircleCheckBig size={16} aria-hidden="true" />{t("Selling prices saved")}</span>}
           </div>
         </div>
-        <footer className="billing-order-actions"><p>The draft stays editable until you approve it.</p>
-          <button type="button" className="primary-button" disabled={busy || !readyOrders.some(item => item.order_id === orderId)} onClick={createIndividualDraft}>{busy ? "Generating draft…" : "Generate from final pack"}<ArrowRight size={17} aria-hidden="true" /></button>
+        <footer className="billing-order-actions"><p>{t("The draft stays editable until you approve it.")}</p>
+          <button type="button" className="primary-button" disabled={busy || !readyOrders.some(item => item.order_id === orderId)} onClick={createIndividualDraft}>{busy ? t("Generating draft…") : t("Generate from final pack")}<ArrowRight size={17} aria-hidden="true" /></button>
         </footer>
       </section>}
-      {!invoice && selectedOrders.length > 0 && pricesResolved && <section className="panel"><p>{selectedOrders.length} orders ready after price resolution.</p><button type="button" className="primary-button" disabled={busy} onClick={() => mode === "master" ? createMasterDrafts() : createBulkDrafts()}>Generate drafts</button></section>}
-      {billingTask === "approve" && <TaskDialog title="Approve reviewed drafts" description="Approval locks prices and issues the selected invoices. Review each draft before approving." busy={busy} onClose={() => setBillingTask(null)}>
-        <StatusMessage error={error} />{revisionConflict && <button type="button" disabled={busy} onClick={() => void reloadConflictedInvoice()}>Reload invoice selection for review</button>}
-        <p>{selectedInvoices.length} drafts selected.</p><p>{Array.from(new Set(approvalRows.map(row => String(row.currency)))).map(currency => `${currency} ${approvalRows.filter(row => row.currency === currency).reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2)}`).join(" / ")}</p>
-        <button type="button" className="primary-button" disabled={busy || revisionConflict} onClick={approveSelectedInvoices}>Approve and issue {selectedInvoices.length} invoices</button>
+      {!invoice && selectedOrders.length > 0 && pricesResolved && <section className="panel"><p>{selectedOrders.length} {t("orders ready after price resolution.")}</p><button type="button" className="primary-button" disabled={busy} onClick={() => mode === "master" ? createMasterDrafts() : createBulkDrafts()}>{t("Generate drafts")}</button></section>}
+      {billingTask === "approve" && <TaskDialog title={t("Approve reviewed drafts")} description={t("Approval locks prices and issues the selected invoices. Review each draft before approving.")} busy={busy} onClose={() => setBillingTask(null)}>
+        <StatusMessage error={error} />{revisionConflict && <button type="button" disabled={busy} onClick={() => void reloadConflictedInvoice()}>{t("Reload invoice selection for review")}</button>}
+        <p>{selectedInvoices.length} {t("drafts selected.")}</p><p>{Array.from(new Set(approvalRows.map(row => String(row.currency)))).map(currency => `${currency} ${approvalRows.filter(row => row.currency === currency).reduce((sum, row) => sum + Number(row.amount), 0).toFixed(2)}`).join(" / ")}</p>
+        <button type="button" className="primary-button" disabled={busy || revisionConflict} onClick={approveSelectedInvoices}>{t("Approve and issue ")}{selectedInvoices.length} {t("invoices")}</button>
       </TaskDialog>}
 
       {!detailLoading && invoice && <div><RegisterBackLink fallback="/billing" /><section className="invoice-modal invoice-record" aria-labelledby="invoice-preview-title" style={{ width: "100%", maxHeight: "none", marginTop: 16 }}>
-        <header className="invoice-record-header"><div><p>{invoice.invoice_type === "MASTER_SUMMARY" ? `Master invoice · ${invoice.source_order_count} sub-orders · ${money(invoice.total_amount_eur, invoice.currency)}` : "Invoice details"}</p><h2 id="invoice-preview-title">{invoice.invoice_number}</h2></div><button type="button" className="invoice-secondary-button" aria-label="Back to invoice queue" onClick={async () => { if (invoice && JSON.stringify(invoice) !== invoiceBaseline && !await confirmDiscard()) return; const back = new URLSearchParams(window.location.search).get("returnTo"); router.push(back && (back === "/billing" || back.startsWith("/billing?")) ? back : "/billing?tab=invoices"); }}>Back to invoice queue</button></header>
+        <header className="invoice-record-header"><div><p>{invoice.invoice_type === "MASTER_SUMMARY" ? t(`Master invoice · ${invoice.source_order_count} sub-orders · ${money(invoice.total_amount_eur, invoice.currency)}`) : t("Invoice details")}</p><h2 id="invoice-preview-title">{invoice.invoice_number}</h2></div><button type="button" className="invoice-secondary-button" aria-label={t("Back to invoice queue")} onClick={async () => { if (invoice && JSON.stringify(invoice) !== invoiceBaseline && !await confirmDiscard()) return; const back = new URLSearchParams(window.location.search).get("returnTo"); router.push(back && (back === "/billing" || back.startsWith("/billing?")) ? back : "/billing?tab=invoices"); }}>{t("Back to invoice queue")}</button></header>
+        {editable && <button type="button" className="invoice-secondary-button" disabled={busy} onClick={() => setCustomerInvoiceId(invoice.invoice_id)}>{t("Edit customer details")}</button>}
         <div id="invoice-details" className="invoice-paper" onFocusCapture={() => setReviewedInvoice(invoice.invoice_id)}>
-          <div className="invoice-paper-parties"><div><span>Seller</span><strong>{invoice.main_customer_seller}</strong></div><div><span>Bill to</span><strong>{invoice.sub_customer_buyer}</strong></div><div><span>Status</span><StatusChip status={invoice.status} /></div></div>
-          <div className="invoice-line-table"><div className="invoice-line-head"><span>Produce</span><span>Pack</span><span>Qty</span><span>Weight</span><span>Unit price</span><span>Amount</span></div>{invoiceSections.map(section => <div className="invoice-order-section" key={section.orderId}>{invoice.invoice_type === "MASTER_SUMMARY" && <div className="invoice-order-heading"><strong>{section.customerCode}</strong><span>{section.orderRef}</span></div>}{section.items.map(item => <div className="invoice-line-row" key={item.line_item_id}><span><strong>{item.product_code}</strong><small>{item.product_name}</small></span><span>{item.pack_size}</span><span>{item.billed_packs}</span><span>{item.billed_weight_kg.toFixed(2)} kg</span><span>{editable ? <input aria-label={`Unit price for ${item.product_code}${invoice.invoice_type === "MASTER_SUMMARY" ? ` ${item.source_customer_code}` : ""}`} type="number" min="0.01" step="0.01" value={item.unit_price_eur} onChange={event => setInvoice(current => current ? { ...current, items: current.items.map(line => line.line_item_id === item.line_item_id ? { ...line, unit_price_eur: Number(event.target.value) } : line) } : current)} /> : money(item.unit_price_eur, invoice.currency)}</span><strong>{money(item.billed_packs * item.unit_price_eur, invoice.currency)}</strong></div>)}</div>)}</div>
-          <div className="invoice-paper-bottom"><label>Internal notes<textarea rows={3} readOnly={!editable} value={invoice.internal_notes ?? ""} onChange={event => setInvoice(current => current ? { ...current, internal_notes: event.target.value } : current)} placeholder="Private accounting note" /></label><div><span>Invoice total</span><strong>{money(invoice.items.reduce((total, item) => total + item.billed_packs * item.unit_price_eur, 0), invoice.currency)}</strong></div></div>
+          <div className="invoice-paper-parties"><div><span>{t("Seller")}</span><strong>{invoice.main_customer_seller}</strong></div><div><span>{t("Bill to")}</span><strong>{invoice.sub_customer_buyer}</strong></div><div><span>{t("Status")}</span><StatusChip status={invoice.status} /></div></div>
+          <div className="invoice-line-table"><div className="invoice-line-head"><span>{t("Produce")}</span><span>{t("Pack")}</span><span>{t("Qty")}</span><span>{t("Weight")}</span><span>{t("Unit price")}</span><span>{t("Amount")}</span></div>{invoiceSections.map(section => <div className="invoice-order-section" key={section.orderId}>{invoice.invoice_type === "MASTER_SUMMARY" && <div className="invoice-order-heading"><strong>{section.customerCode}</strong><span>{section.fileName || t("Source filename unavailable")}</span></div>}{section.items.map(item => <div className="invoice-line-row" key={item.line_item_id}><span><strong>{item.product_code}</strong><small>{item.product_name}</small></span><span>{item.pack_size}</span><span>{item.billed_packs}</span><span>{item.billed_weight_kg.toFixed(2)} {t("kg")}</span><span>{editable ? <input aria-label={t(`Unit price for ${item.product_code}${invoice.invoice_type === "MASTER_SUMMARY" ? ` ${item.source_customer_code}` : ""}`)} type="number" min="0.01" step="0.01" value={item.unit_price_eur} onChange={event => setInvoice(current => current ? { ...current, items: current.items.map(line => line.line_item_id === item.line_item_id ? { ...line, unit_price_eur: Number(event.target.value) } : line) } : current)} /> : money(item.unit_price_eur, invoice.currency)}</span><strong>{money(item.billed_packs * item.unit_price_eur, invoice.currency)}</strong></div>)}</div>)}</div>
+          <div className="invoice-paper-bottom"><label>{t("Internal notes")}<textarea rows={3} readOnly={!editable} value={invoice.internal_notes ?? ""} onChange={event => setInvoice(current => current ? { ...current, internal_notes: event.target.value } : current)} placeholder={t("Private accounting note")} /></label><div><span>{t("Invoice total")}</span><strong>{money(invoice.items.reduce((total, item) => total + item.billed_packs * item.unit_price_eur, 0), invoice.currency)}</strong></div></div>
         </div>
-        {editable ? <footer className="invoice-modal-actions"><button type="button" className="invoice-secondary-button" data-guide={JSON.stringify(invoice) !== invoiceBaseline ? "Save the invoice changes" : undefined} data-guide-priority="10" disabled={busy || revisionConflict} onClick={saveDraft}>Save changes</button><button type="button" className="primary-button" data-guide={reviewedInvoice === invoice.invoice_id ? "Approve the reviewed invoice" : undefined} data-guide-detail="Check quantities, prices and notes first. Approval locks the invoice amounts." data-guide-priority="20" disabled={busy || revisionConflict} onClick={approveDraft}><CircleCheckBig size={18} /> Approve and create final invoice</button></footer> : <div className="invoice-modal-actions"><button type="button" className="invoice-secondary-button" data-guide={reviewedInvoice === invoice.invoice_id ? "Open the printable final invoice" : undefined} data-guide-priority="20" onClick={() => openDocument(`/invoicing/${invoice.invoice_id}/html`)}><FileText size={17} /> Open printable invoice</button></div>}
+        {editable ? <footer className="invoice-modal-actions"><button type="button" className="invoice-secondary-button" data-guide={JSON.stringify(invoice) !== invoiceBaseline ? t("Save the invoice changes") : undefined} data-guide-priority="10" disabled={busy || revisionConflict} onClick={saveDraft}>{t("Save changes")}</button><button type="button" className="primary-button" data-guide={reviewedInvoice === invoice.invoice_id ? t("Approve the reviewed invoice") : undefined} data-guide-detail={t("Check quantities, prices and notes first. Approval locks the invoice amounts.")} data-guide-priority="20" disabled={busy || revisionConflict} onClick={approveDraft}><CircleCheckBig size={18} /> {t("Approve and create final invoice")}</button></footer> : <div className="invoice-modal-actions"><button type="button" className="invoice-secondary-button" data-guide={reviewedInvoice === invoice.invoice_id ? t("Open the printable final invoice") : undefined} data-guide-priority="20" onClick={() => openDocument(`/invoicing/${invoice.invoice_id}/html`)}><FileText size={17} /> {t("Open printable invoice")}</button></div>}
       </section></div>}
     </div>
   );

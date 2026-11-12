@@ -75,7 +75,7 @@ class PlannedItem:
     control_status: ControlStatus
     produce_type: ProduceType
     weight_class: WeightClass
-    unit_volume_cm3: float
+    unit_volume_cm3: float | None
 
     @property
     def net_weight_kg(self) -> float:
@@ -87,13 +87,16 @@ class PlannedBox:
     option: PackingOption
     compatibility_key: tuple[str, ...]
     items: list[PlannedItem] = field(default_factory=list)
+    history_evidence: dict | None = None
 
     @property
     def total_net_weight_kg(self) -> float:
         return round(sum(item.net_weight_kg for item in self.items), 4)
 
     @property
-    def total_volume_cm3(self) -> float:
+    def total_volume_cm3(self) -> float | None:
+        if any(item.unit_volume_cm3 is None for item in self.items):
+            return None
         return round(sum(item.pack_count * item.unit_volume_cm3 for item in self.items), 2)
 
 

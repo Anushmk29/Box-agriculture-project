@@ -21,26 +21,25 @@ from app.models.procurement import MasterPurchasingList, PurchasingOrderSource
 from app.modules.packing.boxes import orders_in_group
 from app.modules.pricing import PriceCatalogue
 
-ROUTES = ["/orders/intake-queue", "/orders/{raw}/client-orders", "/procurement/source-orders",
+ROUTES = ["/orders/intake-queue", "/orders/{raw}/client-orders",
           "/packing/approval-queue", "/invoicing/work-queue", "/invoicing"]
 
 
 def seed(db, actor, route, count=101):
     _, _, customer, product = _setup(db)
     raw = make_file(db, actor)
-    if route == ROUTES[0]:
+    if route == '/orders/intake-queue':
         for index in range(count - 1):
             make_file(db, actor, f"history-{index:04}.xlsx")
         return raw.id, customer, product
     for index in range(count):
-        source = make_file(db, actor, f"source-{index:04}.xlsx", OrderStatus.PURCHASING_CONSOLIDATED) if route == ROUTES[2] else raw
-        order = ClientOrder(raw_order_file_id=source.id, customer_id=customer.id,
-            order_ref_id=f"ORDER-{index:04}", status=(OrderStatus.FLOOR_PACKING if route == ROUTES[3]
-                else OrderStatus.PURCHASING_CONSOLIDATED if route == ROUTES[2] else OrderStatus.HANDOFF_02_RETURNED),
+        order = ClientOrder(raw_order_file_id=raw.id, customer_id=customer.id,
+            order_ref_id=f"ORDER-{index:04}", status=(OrderStatus.FLOOR_PACKING if route == '/packing/approval-queue'
+                else OrderStatus.HANDOFF_02_RETURNED),
             packing_approval_status="PENDING", packing_requested_at=datetime(2026, 1, 1, tzinfo=UTC))
         db.add(order)
         db.flush()
-        if route == ROUTES[5]:
+        if route == '/invoicing':
             invoice = Invoice(client_order_id=order.id, customer_id=customer.id, invoice_number=f"INV-{index:04}",
                 final_packing_manifest_id="fixture", subtotal_eur=1, total_amount_eur=1)
             db.add(invoice)
@@ -89,14 +88,14 @@ def test_legacy_large_collection_requires_paging_and_never_silently_drops_histor
     assert last.headers["x-has-more"] == "false"
     def items(response):
         body = response.json()
-        return [order for group in body["groups"].values() for order in group] if route == ROUTES[1] else body
+        return [order for group in body["groups"].values() for order in group] if route == '/orders/{raw}/client-orders' else body
     assert len(items(first)) == 100 and len(items(last)) == 1
     assert not ({str(item) for item in items(first)} & {str(item) for item in items(last)})
     assert client.get(url, params={"limit": 101}).status_code == 422
     assert client.get(url, params={"offset": -1}).status_code == 422
 
 
-@pytest.mark.parametrize("route", [ROUTES[0], ROUTES[2], ROUTES[3], ROUTES[4], ROUTES[5]])
+@pytest.mark.parametrize("route", ['/orders/intake-queue', '/packing/approval-queue', '/invoicing/work-queue', '/invoicing'])
 def test_ten_and_hundred_rows_have_constant_query_count(db_session, register_client, route):
     client, actor = register_client
     seed(db_session, actor, route)
@@ -136,7 +135,7 @@ def test_large_legacy_review_fails_before_blob_deserialization(db_session, regis
 def test_invoice_line_paging_preserves_all_sources_and_large_detail_guidance(db_session, register_client, monkeypatch):
     from app.core import read_models
     client, actor = register_client
-    _, _, product = seed(db_session, actor, ROUTES[5], count=1)
+    _, _, product = seed(db_session, actor, '/invoicing', count=1)
     invoice = db_session.query(Invoice).one()
     order = db_session.get(ClientOrder, invoice.client_order_id)
     db_session.add_all([line(invoice.id, order.id, product.id, f"extra-{i}") for i in range(2)])
@@ -156,7 +155,7 @@ def test_invoice_line_paging_preserves_all_sources_and_large_detail_guidance(db_
 
 def test_master_memberships_include_direct_anchor_and_secondary_sources(db_session, register_client):
     client, actor = register_client
-    raw, customer, product = seed(db_session, actor, ROUTES[4], count=3)
+    raw, customer, product = seed(db_session, actor, '/invoicing/work-queue', count=3)
     orders = db_session.query(ClientOrder).order_by(ClientOrder.order_ref_id).all()
     invoice = Invoice(client_order_id=orders[0].id, customer_id=customer.id, invoice_type="MASTER_SUMMARY",
         invoice_number="MASTER-1", final_packing_manifest_id="fixture", subtotal_eur=1, total_amount_eur=1)
@@ -173,7 +172,7 @@ def test_master_memberships_include_direct_anchor_and_secondary_sources(db_sessi
 def test_invoice_summaries_defer_notes_and_detail_budget_counts_utf8_bytes(db_session, register_client, monkeypatch):
     from app.core import read_models
     client, actor = register_client
-    seed(db_session, actor, ROUTES[5], count=1)
+    seed(db_session, actor, '/invoicing', count=1)
     invoice = db_session.query(Invoice).one()
     invoice.internal_notes = "ก" * 10
     identity = invoice.id
@@ -189,7 +188,7 @@ def test_invoice_summaries_defer_notes_and_detail_budget_counts_utf8_bytes(db_se
 
 def test_procurement_explicit_order_source_is_searchable_and_visible(db_session, register_client):
     client, actor = register_client
-    _, customer, _ = seed(db_session, actor, ROUTES[4], count=1)
+    _, customer, _ = seed(db_session, actor, '/invoicing/work-queue', count=1)
     order = db_session.query(ClientOrder).one()
     raw = order.raw_file
     raw.main_customer_id = customer.id
@@ -226,7 +225,7 @@ def test_oversized_source_page_fails_instead_of_omitting_members(db_session, reg
 
 def test_group_budget_is_checked_before_returning_any_orders(db_session, register_client):
     _, actor = register_client
-    _, customer, _ = seed(db_session, actor, ROUTES[3], count=501)
+    _, customer, _ = seed(db_session, actor, '/packing/approval-queue', count=501)
     with pytest.raises(WorkLimit, match="500 orders"):
         orders_in_group(db_session, "ALL", None)
     assert db_session.query(ClientOrder).filter(ClientOrder.status == OrderStatus.FLOOR_PACKING).count() == 501

@@ -1,5 +1,8 @@
 .env
 .env.local
+fb_cookies.json
+cookies.json
+*_cookies.json
 .venv/
 __pycache__/
 *.py[cod]
@@ -16,7 +19,6 @@ backend/uploads/
 .codex-artifact/
 web/test-results/
 web/test-results-*/
-graphify-out
 docs
 .impeccable
 

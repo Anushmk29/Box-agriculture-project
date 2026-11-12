@@ -16,19 +16,18 @@ os.environ.update(DATABASE_URL="sqlite:///" + (scratch / "disposable.sqlite").as
                   SUPABASE_DATABASE_URL="sqlite:///" + (scratch / "disposable.sqlite").as_posix(),
                   ENVIRONMENT="test", SECRET_KEY="browser-qa-only-secret-not-a-production-credential",
                   PACKING_PROFILES_ENABLED="false", EXCEL_TEMPLATE_PROFILES_ENABLED="true", CORS_ORIGINS='["http://127.0.0.1:3106", "http://127.0.0.1:3000"]',
-                  FILE_STORAGE_PROVIDER="local", LOCAL_STORAGE_ROOT=str(scratch / "uploads"),
+                  FILE_STORAGE_PROVIDER="local", LOCAL_STORAGE_ROOT=str(scratch / "uploads"), LEGACY_UPLOAD_ROOT=str(scratch),
                   INVOICE_BANK_NAME="", INVOICE_BANK_ACCOUNT_NAME="", INVOICE_BANK_SWIFT="")
 
+from openpyxl import Workbook
+from sqlalchemy import create_engine
 from test_invoicing_invariant import build_order_with_box
 from test_packing_lifecycle import setup_order
-
-from sqlalchemy import create_engine
-from openpyxl import Workbook
 
 from app.core.database import Base, SessionLocal
 from app.core.security import hash_password
 from app.main import app
-from app.models import Customer, OrderStatus, PriceList, RawOrderFile, UserRole
+from app.models import Customer, OrderStatus, PriceList, RawOrderFile, User, UserRole
 from app.models.excel_template import ExcelTemplate
 from app.modules.orders.acknowledgment import prepare_acknowledgment
 from app.services.canonical_schema import CanonicalDraftItem, CanonicalOrderDraft, IngestionChannel
@@ -74,6 +73,7 @@ with SessionLocal() as db:
     prepare_acknowledgment(raw, drafts)
     db.commit()
     raw_id = raw.id
+    owner_id = owner.id
 
 workbook = Workbook()
 sheet = workbook.active
@@ -83,9 +83,30 @@ sheet.append(["QA product code", "QA product name", "Packing", "Amount", "Unit"]
 sheet.append(["T001", "Herb", "1kg", 2, "pack"])
 upload_path = scratch / "QA-JOURNEY.xlsx"
 workbook.save(upload_path)
+pending = Workbook()
+pending.active.append(["Code", "VIET DESCRIPTION", "ENGLISH DESCRIPTION", "Packing", "CT-QA-A", "CT-QA-B"])
+pending.active.append(["T001", "Herb", "Herb", "1kg", 2, 2])
+pending_path = scratch / "QA-pending.xlsx"
+pending.save(pending_path)
+with SessionLocal() as db:
+    db.get(RawOrderFile, raw_id).storage_url = str(pending_path)
+    db.commit()
 
 
 @app.get("/qa-fixtures")
 def fixtures():
     return {"raw_file_id": raw_id, "disposable_database": True,
             "main_customer_id": main_customer_id, "upload_path": str(upload_path)}
+
+
+@app.post("/qa-fixtures/missing-customer-details")
+def missing_customer_details():
+    from app.services.on_behalf_invoicing_service import OnBehalfInvoicingService
+
+    with SessionLocal() as db:
+        order = build_order_with_box(db, locked=True, suffix="CONTACT-" + uuid4().hex[:8],
+                                     seller=db.get(Customer, main_customer_id))
+        invoice = OnBehalfInvoicingService(db).generate_sub_customer_invoice(order.id, actor=db.get(User, owner_id))
+        order.customer.billing_email = order.customer.destination_country = ""
+        db.commit()
+        return {"invoice_id": invoice.id, "customer_code": order.customer.client_code, "disposable_database": True}

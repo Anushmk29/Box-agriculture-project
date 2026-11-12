@@ -1,0 +1,6 @@
+# These files run on a Linux VPS or GitHub runner, including Windows checkouts.
+deploy/hostinger/* text eol=lf
+backend/Dockerfile text eol=lf
+scripts/ci-*.sh text eol=lf
+scripts/test-vps-deploy.sh text eol=lf
+.github/workflows/*.yml text eol=lf

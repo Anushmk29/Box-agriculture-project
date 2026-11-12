@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { useSyncExternalStore, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { getLoadingSnapshot, getServerLoadingSnapshot, subscribeLoading } from "@/lib/loading";
@@ -17,6 +19,7 @@ const titles: Record<string, string> = {
 };
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
+  useLanguage();
   const pathname = usePathname();
   const loading = useSyncExternalStore(subscribeLoading, getLoadingSnapshot, getServerLoadingSnapshot);
   const title = pathname.startsWith("/scan/") ? "Loading box record" : titles[pathname] || "Loading";
@@ -25,7 +28,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
     <div style={{ display: "contents", visibility: loading ? "hidden" : undefined }} aria-busy={loading} inert={loading}>
       {children}
     </div>
-    {loading && <LoadingDialog title={title} />}
+    {loading && <LoadingDialog title={t(title)} />}
   </>;
 }
 

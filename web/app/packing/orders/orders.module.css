@@ -1,0 +1,8 @@
+.workspace { min-width: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.fileName, .subcustomers, .progress { display: grid; gap: 5px; min-width: 0; }
+.fileName strong { overflow-wrap: anywhere; font-weight: 600; }
+.fileName small, .subcustomers small, .progress small { color: var(--ink-2); font-size: .8rem; line-height: 1.5; overflow-wrap: anywhere; }
+.subcustomers strong, .progress strong { font-weight: 550; }
+.progress strong { color: var(--leaf-ink); }
+@media (max-width: 600px) { .actions { width: 100%; } .actions > a { flex: 1; text-align: center; } }

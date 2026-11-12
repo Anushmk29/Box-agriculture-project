@@ -13,6 +13,8 @@ import sys
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
+from app.services.order_splitter import OrderSplitter
+
 from app.core.database import SessionLocal
 from app.models import (
     ClientOrder,
@@ -24,9 +26,8 @@ from app.models import (
     User,
     UserRole,
 )
+from app.modules.procurement.batch import PurchasingBatchService
 from app.services.matrix_parser import MatrixOrderParser
-from app.services.order_splitter import OrderSplitter
-from app.services.purchasing_aggregator import PurchasingAggregator
 
 
 def test_new_docs_lifecycle():
@@ -153,22 +154,17 @@ def test_new_docs_lifecycle():
     # STAGE 2: WHOLESALE CONSOLIDATION & STICKY BUFFER
     # --------------------------------------------------------------------------
     print("\n[STAGE 2] 3. Consolidating Bulk Wholesale Purchasing for Market Buyers...")
-    aggregator = PurchasingAggregator(db)
-    master_po = aggregator.combine_and_consolidate(
-        raw_file_ids=[raw_file.id], shipment_date="2026-09-01", batch_ref="PUR-20260901-TONIO-DEMO"
-    )
+    if admin is None:
+        raise ValueError("An owner/admin is required for this demo")
+    aggregator = PurchasingBatchService(db)
+    master_po = aggregator.consolidate_raw_file(raw_file.id, actor=admin)
     print(f"  ✓ Master PO Created: {master_po.batch_reference}")
     print(f"  ✓ Total Unique Produce SKUs to Procure: {master_po.total_skus_count}")
 
     # Show Sweet Basil with +12% buffer
     basil_item = next((it for it in master_po.items if it.product.t_code == "T024"), None)
     if basil_item:
-        aggregator.update_product_buffer(
-            product_id=basil_item.product_id,
-            new_buffer_pct=12.0,
-            purchasing_item_id=basil_item.id,
-            save_as_default=True,
-        )
+        aggregator.set_item_buffer(basil_item.id, 12.0, actor=admin, save_as_default=True)
         db.refresh(basil_item)
         print("  ✓ Applied 12% Trimming Waste Buffer to Sweet Basil (T024):")
         print(f"    - Net Ordered: {basil_item.ordered_net_weight_kg} kg")

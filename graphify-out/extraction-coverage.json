@@ -1,0 +1,7 @@
+{
+  "chunks": 20,
+  "failed_chunks": [],
+  "semantic_files_dispatched": 113,
+  "semantic_files_cached": 113,
+  "token_usage_status": "unavailable: agent tool does not expose usage"
+}

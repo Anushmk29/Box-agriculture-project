@@ -9,7 +9,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from sqlalchemy import text, make_url
+from sqlalchemy import make_url, text
+
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.user import User, UserRole

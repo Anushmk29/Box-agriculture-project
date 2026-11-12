@@ -1,13 +1,13 @@
 """Temperature choices must produce the workbook's material without hidden defaults."""
 
 import pytest
+from test_product_table import edit, setup
+from test_simplified_workflow import headers
 
 from app.models.master_data import BoxMaterial, TemperatureZone
 from app.modules.packing.materials import material_for_temperature
 from app.modules.packing.product_table import apply_reconciliation, reconciliation
 from app.modules.packing.reference import reference
-from test_product_table import edit, setup
-from test_simplified_workflow import headers
 
 pytest_plugins = ["test_simplified_workflow"]
 

@@ -44,10 +44,10 @@ def matching_rows(product, code_rows):
 def parse_limits(notes, boxes):
     """Only explicit kg notes and uniquely named approved boxes are executable."""
     limits, issues = {}, []
-    pattern = r"(โฟม|ฟ\.|ก\.)\s*([^\d,]+?)\s*(\d+(?:\.\d+)?)\s*(?:-\s*\d+(?:\.\d+)?)?\s*(กก|ลูก|หวี)"
+    pattern = r"(โฟม|ฟ\.|ก\.)\s*([^\d,]+?)\s*(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?\s*(กก|ลูก|หวี)"
     matches = list(re.finditer(pattern, notes or ""))
     for match in matches:
-        prefix, name, kg, unit = match.groups()
+        prefix, name, kg, high, unit = match.groups()
         material = "CARDBOARD" if prefix == "ก." else "FOAM"
         candidates = [
             b
@@ -56,6 +56,11 @@ def parse_limits(notes, boxes):
             and r["box_type"] == material
             and r["name_th"].strip() == name.strip()
         ]
+        if high is not None:
+            issues.append({"note": match.group(), "max_net_weight_kg": None,
+                           "range_kg": [float(kg), float(high)] if unit == "กก" else None,
+                           "unit": unit, "reason": "Confirm the meaning of this range before entering a limit"})
+            continue
         if unit != "กก" or len(candidates) != 1:
             issues.append(
                 {"note": match.group(), "max_net_weight_kg": float(kg) if unit == "กก" else None}
@@ -113,6 +118,7 @@ def reconciliation(product, boxes):
         unresolved.append("limits")
     return {
         "fields": fields,
+        "planning_basis": old.get("planning_basis", "VOLUME"),
         "unresolved": sorted(unresolved),
         "manual_fields": sorted(manual),
         "grouping_row": selected,
@@ -203,9 +209,9 @@ def table_problems(product):
         problems.append("box_material")
     if not product.firmness:
         problems.append("firmness")
-    if not product.packing_volume_l_per_kg:
+    if not product.packing_volume_l_per_kg and table.get("planning_basis", "VOLUME") != "HISTORY":
         problems.append("volume")
-    if not product.packing_reviewed or not product.packing_volume_reviewed:
+    if not product.packing_reviewed or (table.get("planning_basis", "VOLUME") != "HISTORY" and not product.packing_volume_reviewed):
         problems.append("confirmation")
     return list(dict.fromkeys(problems))
 
@@ -218,6 +224,8 @@ def row_out(product):
         "t_code": product.t_code,
         "name_en": product.name_en,
         "name_th": product.name_th,
+        "name_vi": product.name_vi,
+        "planning_basis": table.get("planning_basis", "VOLUME"),
         "packing_revision": product.packing_revision,
         "foam_below_kg": float(product.foam_below_kg) if product.foam_below_kg is not None else None,
         **{

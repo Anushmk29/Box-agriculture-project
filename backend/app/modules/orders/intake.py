@@ -42,6 +42,10 @@ def pack_weight_kg(pack_size: str | None) -> float:
 
 def matrix_to_drafts(parsed: dict[str, Any], source_file: str) -> list[CanonicalOrderDraft]:
     """Adapter: MatrixOrderParser.parse_all_clients() output -> drafts (quantities are packs)."""
+    def available_names(item):
+        return list(dict.fromkeys(name for key in ("name_vi", "name_en", "name_th")
+                                  if (name := str(item.get(key) or "").strip())))
+
     groups = parsed.get("clients_groups", {})
     return [
         CanonicalOrderDraft(
@@ -56,13 +60,13 @@ def matrix_to_drafts(parsed: dict[str, Any], source_file: str) -> list[Canonical
                             None,
                             [
                                 it["t_code"],
-                                " / ".join(filter(None, [it["name_vi"], it["name_en"]])),
+                                " / ".join(available_names(it)),
                             ],
                         )
                     ),
                     product_code=it["t_code"],
-                    product_name=it["name_vi"],
-                    alt_names=[n for n in [it["name_en"]] if n],
+                    product_name=next(iter(available_names(it)), ""),
+                    alt_names=available_names(it)[1:],
                     pack_size=it["pack_size"],
                     quantity=float(it["quantity"] or 0),
                     unit=it.get("unit", "pack"),
@@ -91,6 +95,8 @@ class OrderIntake:
     def __init__(self, db: Session, *, resolver: NameFirstMatcher | None = None):
         self.db = db
         self._resolver = resolver
+        self._customers: dict[str, Customer | None] = {}
+        self._main_customers: dict[str, Customer] = {}
 
     @property
     def resolver(self) -> NameFirstMatcher:
@@ -99,8 +105,9 @@ class OrderIntake:
         return self._resolver
 
     def resolve(self, item: CanonicalDraftItem, main_customer_id: str | None) -> Product | None:
+        available_names = [name for name in [item.product_name, *item.alt_names] if name and name.strip()]
         product = self.resolver.reviewed_product(
-            [item.product_name, *item.alt_names] if item.product_name else [item.raw_text],
+            available_names or [item.raw_text],
             raw_code=item.product_code,
             main_customer_id=main_customer_id,
         )
@@ -121,12 +128,16 @@ class OrderIntake:
         self.preflight_context(raw_file, drafts)
         raw_file.shipment_target_date = target_day
         result = IntakeResult()
+        refs = {self._order_ref(raw_file, draft.client_code) for draft in drafts}
+        existing_orders = {order.order_ref_id: order for order in self.db.query(ClientOrder).filter(
+            ClientOrder.order_ref_id.in_(refs),
+        ).all()}
         for draft in drafts:
             lines = self._lines(draft, raw_file.main_customer_id, result)
             if not lines:
                 continue
             ref = self._order_ref(raw_file, draft.client_code)
-            order = self.db.query(ClientOrder).filter_by(order_ref_id=ref).first()
+            order = existing_orders.get(ref)
             if order:
                 if order.status != OrderStatus.SPLIT_AND_VALIDATED:
                     raise ValueError(
@@ -138,7 +149,8 @@ class OrderIntake:
                 order.total_ordered_items_count = 0
                 order.total_estimated_net_weight_kg = 0
             else:
-                order = self._new_order(raw_file, draft, ref)
+                order = self._new_order(raw_file, draft, ref, flush=False)
+                existing_orders[ref] = order
             self._add_lines(order, lines)
             result.orders.append(order)
         raw_file.detected_sub_customer_count = len(result.orders)
@@ -176,6 +188,7 @@ class OrderIntake:
         company_name: str | None = None,
         country: str | None = None,
         is_main: bool = False,
+        flush: bool = True,
     ) -> Customer:
         if parent_id is not None:
             self.require_main_customer(parent_id)
@@ -183,29 +196,35 @@ class OrderIntake:
         if customer is None:
             group = route_group or "GENERAL"
             customer = Customer(
+                id=str(uuid.uuid4()),
                 client_code=client_code,
-                company_name=company_name or f"Sub-Customer {client_code}",
-                billing_email=f"{client_code.lower().replace(' ', '_')}@clienttrade.eu",
+                company_name=company_name or client_code,
+                billing_email="",
                 route_group=group,
-                destination_country=country or ("Norway" if "NGA" in group.upper() else "France"),
+                destination_country=country or "",
                 is_main_customer=is_main,
                 parent_customer_id=parent_id,
             )
             self.db.add(customer)
-            self.db.flush()
+            self._customers[client_code] = customer
+            if flush:
+                self.db.flush()
             return customer
         if route_group and not is_main:
             customer.route_group = route_group
         return customer
 
     def require_main_customer(self, customer_id: str) -> Customer:
-        customer = self.db.get(Customer, customer_id)
+        customer = self._main_customers.get(customer_id) or self.db.get(Customer, customer_id)
         if not customer or not customer.is_main_customer:
             raise ValueError("The selected main customer is invalid")
+        self._main_customers[customer_id] = customer
         return customer
 
     def _customer_in_context(self, code: str, parent_id: str | None, *, is_main=False):
-        customer = self.db.query(Customer).filter_by(client_code=code).first()
+        if code not in self._customers:
+            self._customers[code] = self.db.query(Customer).filter_by(client_code=code).first()
+        customer = self._customers[code]
         if customer:
             if is_main and not customer.is_main_customer:
                 raise ValueError(f"Customer {code} is not a main customer; review its identity")
@@ -220,6 +239,10 @@ class OrderIntake:
         require_template_review(drafts)
         target_day = canonical_day(raw_file.shipment_target_date)
         main = self.require_main_customer(raw_file.main_customer_id) if raw_file.main_customer_id else None
+        codes = {draft.client_code for draft in drafts}
+        customers = self.db.query(Customer).filter(Customer.client_code.in_(codes)).all()
+        self._customers = {code: None for code in codes}
+        self._customers.update({customer.client_code: customer for customer in customers})
         template_ids = {d.metadata.get("template", {}).get("id") for d in drafts}
         template_ids.discard(None)
         scoped_templates = {
@@ -246,7 +269,7 @@ class OrderIntake:
         return f"ORD-{raw_file.shipment_target_date.replace('-', '')}-{code}-{identity}"
 
     def _new_order(
-        self, raw_file: RawOrderFile, draft: CanonicalOrderDraft, ref: str
+        self, raw_file: RawOrderFile, draft: CanonicalOrderDraft, ref: str, *, flush: bool = True
     ) -> ClientOrder:
         customer = self.get_or_create_customer(
             draft.client_code,
@@ -254,11 +277,12 @@ class OrderIntake:
             parent_id=raw_file.main_customer_id,
             company_name=draft.client_name,
             country=draft.destination_country,
+            flush=flush,
         )
         order = ClientOrder(
             id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{raw_file.id}/{ref}")),
             raw_order_file_id=raw_file.id,
-            customer_id=customer.id,
+            customer=customer,
             main_customer_id=raw_file.main_customer_id,
             order_ref_id=ref,
             status=OrderStatus.SPLIT_AND_VALIDATED,
@@ -266,7 +290,8 @@ class OrderIntake:
             total_estimated_net_weight_kg=0,
         )
         self.db.add(order)
-        self.db.flush()
+        if flush:
+            self.db.flush()
         return order
 
     def _lines(

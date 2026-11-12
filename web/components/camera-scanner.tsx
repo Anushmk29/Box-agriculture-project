@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { useEffect, useRef, useState } from "react";
 import { TaskDialog } from "@/components/task-dialog";
 
@@ -14,6 +16,7 @@ function cameraError(error: unknown) {
 }
 
 export function CameraScanner({ onCode, onClose }: { onCode: (value: string) => void; onClose: () => void }) {
+  useLanguage();
   const video = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
@@ -85,10 +88,10 @@ export function CameraScanner({ onCode, onClose }: { onCode: (value: string) => 
     return stop;
   }, [onCode, attempt]);
 
-  return <TaskDialog title="Scan with camera" description="Allow camera access, then hold the QR sticker inside the frame. The box opens automatically." size="sm" onClose={onClose}>
-    {!error && <p className="camera-status" role="status">{ready ? "Point the camera at the QR sticker." : "Starting camera. Allow access when your browser asks."}</p>}
+  return <TaskDialog title={t("Scan with camera")} description={t("Allow camera access, then hold the QR sticker inside the frame. The box opens automatically.")} size="sm" onClose={onClose}>
+    {!error && <p className="camera-status" role="status">{ready ? t("Point the camera at the QR sticker.") : t("Starting camera. Allow access when your browser asks.")}</p>}
     <div className="camera-scan">
-      {error ? <><p role="alert" className="message error">{error}</p><button type="button" className="invoice-secondary-button" onClick={() => { setError(""); setReady(false); setAttempt(value => value + 1); }}>Try camera again</button></> : <><video ref={video} aria-label="Live camera preview" autoPlay muted playsInline /><span className="camera-frame" aria-hidden /></>}
+      {error ? <><p role="alert" className="message error">{t(error)}</p><button type="button" className="invoice-secondary-button" onClick={() => { setError(""); setReady(false); setAttempt(value => value + 1); }}>{t("Try camera again")}</button></> : <><video ref={video} aria-label={t("Live camera preview")} autoPlay muted playsInline /><span className="camera-frame" aria-hidden /></>}
     </div>
   </TaskDialog>;
 }

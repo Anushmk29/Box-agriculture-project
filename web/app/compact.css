@@ -48,7 +48,7 @@
   .main-content .page .eyebrow { font-size: 12px !important; }
   .main-content .page input:not([type=checkbox]):not([type=radio]):not([type=file]),
   .main-content .page select, .task-dialog input:not([type=checkbox]):not([type=radio]), .task-dialog select {
-    min-height: var(--control-height); padding: 6px 10px; font-size: 13px;
+    min-height: var(--control-height); padding: 6px 10px; font-size: var(--control-font-size, 13px);
   }
   .main-content .page textarea, .task-dialog textarea { padding: 8px 10px; font-size: 13px; }
   .main-content .page .product-match-dialog .mapping-search-control input[type="search"] { min-height: 40px; padding-left: 38px; }
@@ -218,6 +218,24 @@
   .task-dialog .task-dialog-actions, .task-dialog-pad { padding: 12px 16px; }
   .scan-entry-card { padding: 20px; gap: 12px; }
   .scan-entry-mark { width: 48px; height: 48px; }
+}
+
+#order-upload-guidance { display: contents; }
+.order-mobile-help-toggle { display: none; }
+.customer-details-form { display: grid; gap: 20px; }
+.customer-details-form fieldset { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 14px; }
+.customer-details-form legend { padding-inline: 6px; font-weight: 650; overflow-wrap: anywhere; }
+.customer-details-form label { display: grid; gap: 6px; }
+
+@media screen and (max-width: 860px) {
+  .orders-workspace[data-order-state="upload"] .order-overview[data-upload-help="closed"] #order-upload-guidance { display: none; }
+  .orders-workspace[data-order-state="upload"] .order-overview-heading { padding: 12px; gap: 12px; flex-wrap: nowrap; }
+  .orders-workspace[data-order-state="upload"] .order-file-icon { display: none; }
+  .orders-workspace[data-order-state="upload"] .order-overview-heading h2 { font-size: 16px; }
+  .orders-workspace[data-order-state="upload"] .order-file-name { font-size: 12px; }
+  .order-mobile-help-toggle { display: inline-flex; min-height: 44px; max-width: 135px; white-space: normal; flex-shrink: 0; }
+  .orders-workspace[data-order-state="upload"] > .workflow-progress { margin-block: 4px; }
+  .orders-workspace[data-order-state="upload"] > .workflow-progress li small { display: none; }
 }
 
 @media screen and (min-width: 1100px) {

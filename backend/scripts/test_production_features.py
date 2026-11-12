@@ -5,6 +5,10 @@ backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
 
+from app.services.order_splitter import OrderSplitter
+from app.services.packing_override_service import PackingOverrideService
+from app.services.purchasing_aggregator import PurchasingAggregator
+
 from app.core.database import SessionLocal
 from app.models import (
     BoxCatalogue,
@@ -20,9 +24,6 @@ from app.models import (
 )
 from app.services.matrix_parser import MatrixOrderParser
 from app.services.name_matcher import NameFirstMatcher
-from app.services.order_splitter import OrderSplitter
-from app.services.packing_override_service import PackingOverrideService
-from app.services.purchasing_aggregator import PurchasingAggregator
 
 
 def test_all_6_production_features():

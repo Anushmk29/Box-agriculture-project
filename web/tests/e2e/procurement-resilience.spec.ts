@@ -52,7 +52,7 @@ test("buyer approves a substitute, keeps original visible and submits actual ide
   await page.getByTitle("Confirmed Pack Count", { exact: true }).fill("8");
   await page.getByTitle("Confirmed Total Weight (kg)", { exact: true }).fill("8");
   await page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true }).click();
-  await expect(page.getByRole("link", { name: "View related packing orders", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Continue to packing", exact: true }).first()).toBeVisible();
   expect(submissions).toEqual([{ items: [{ item_id: "line", purchased_pack_count: 8,
     purchased_weight_kg: 8, replacement_product_id: "replacement" }] }]);
   await expect(page.getByRole("button", { name: "Choose substitute for ORIGINAL" })).toHaveCount(0);
@@ -66,13 +66,28 @@ test("contradictory zero quantities are blocked before submission", async ({ pag
   expect(submissions).toHaveLength(0);
   await page.getByTitle("Confirmed Pack Count", { exact: true }).fill("0");
   await page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true }).click();
-  await expect(page.getByRole("link", { name: "View related packing orders", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Continue to packing", exact: true }).first()).toBeVisible();
   expect(submissions).toEqual([{ items: [{ item_id: "line", purchased_pack_count: 0, purchased_weight_kg: 0 }] }]);
 });
 
-test("confirmed substitution is restored on reload and cannot be edited", async ({ page, context }) => {
-  await buyerDesk(page, context, true);
+for (const width of [1440, 390]) {
+test(`confirmed batch shows the packing next step on reload at ${width}px`, async ({ page, context }) => {
+  await page.setViewportSize({ width, height: 1000 });
+  const submissions = await buyerDesk(page, context, true);
   await expect(page.getByText("Buyer-approved substitute:")).toContainText("REPLACEMENT Substitute herb");
   await expect(page.getByRole("button", { name: "Choose substitute for ORIGINAL" })).toHaveCount(0);
   await expect(page.getByTitle("Confirmed Pack Count", { exact: true })).toBeDisabled();
+  const nextStep = page.getByRole("region", { name: "Next: Packing", exact: true });
+  await expect(nextStep).toContainText("Purchasing complete");
+  const continueLink = nextStep.getByRole("link", { name: "Continue to packing", exact: true });
+  await expect(continueLink).toBeVisible();
+  await expect(continueLink).toHaveAttribute("href", "/packing/orders?batch_id=resilient&view=all&sort=shipment_date&direction=asc");
+  await expect(page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Adjust buffers", exact: true })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `../outputs/purchasing-next-step-${width}.png`, animations: "disabled" });
+  await continueLink.click();
+  await expect(page).toHaveURL(/\/packing\/orders\?batch_id=resilient&view=all/);
+  expect(submissions).toHaveLength(0);
 });
+}

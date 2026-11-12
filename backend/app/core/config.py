@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "local-development-key-change-before-deploying")
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 hours
+    SEED_INITIAL_PASSWORD: SecretStr = SecretStr("")
 
     DATABASE_URL: str = Field(
         validation_alias=AliasChoices("DATABASE_URL", "SUPABASE_DATABASE_URL"),

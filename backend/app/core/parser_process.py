@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import BoundedSemaphore
+from time import monotonic, sleep
 
 from app.core.work_limits import MAX_RESULT_BYTES, WorkLimit
 
@@ -35,6 +36,8 @@ def _windows_job(process, memory_mb):
     api.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
     api.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
     api.CloseHandle.argtypes = [wintypes.HANDLE]
+    api.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+    api.QueryInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD, ctypes.c_void_p]
     handle = api.CreateJobObjectW(None, None)
     info = Extended()
     # A Windows venv launcher starts the real interpreter as its child.
@@ -46,7 +49,26 @@ def _windows_job(process, memory_mb):
         if handle:
             api.CloseHandle(handle)
         raise WorkLimit("Parser resource isolation is unavailable", busy=True)
-    return lambda: api.CloseHandle(handle)
+    def close():
+        class Accounting(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_int64) for name in ("user", "kernel", "period_user", "period_kernel")] + [
+                (name, wintypes.DWORD) for name in ("faults", "total", "active", "terminated")]
+        try:
+            api.TerminateJobObject(handle, 1)
+            deadline = monotonic() + 2
+            # The venv launcher's child can still hold its working directory after the launcher exits.
+            while True:
+                accounting = Accounting()
+                if not api.QueryInformationJobObject(handle, 1, ctypes.byref(accounting), ctypes.sizeof(accounting), None):
+                    raise WorkLimit("Parser resource isolation is unavailable", busy=True)
+                if not accounting.active:
+                    break
+                if monotonic() >= deadline:
+                    raise WorkLimit("Parser worker cleanup exceeded its resource budget", busy=True)
+                sleep(0.01)
+        finally:
+            api.CloseHandle(handle)
+    return close
 
 
 def parse_document(path: str, *, mode: str, shipment_date=None, profiles=None, original_name=None, selected_key=None):
@@ -92,10 +114,12 @@ def parse_document(path: str, *, mode: str, shipment_date=None, profiles=None, o
                     raise ValueError("Document format is invalid or cannot be parsed")
                 return result
             finally:
-                if process.poll() is None:
-                    process.kill()
-                process.wait()
-                if close_job:
-                    close_job()
+                try:
+                    if close_job:
+                        close_job()
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                    process.wait()
     finally:
         PARSER_SLOTS.release()

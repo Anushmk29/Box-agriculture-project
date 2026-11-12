@@ -1,0 +1,217 @@
+{
+  "node_count": 3161,
+  "unverified_node_count": 0,
+  "raw_edge_count": 12237,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 785,
+  "external_reference_edges": 16,
+  "self_loop_edges": 4,
+  "valid_candidate_edges": 11436,
+  "exact_duplicate_edges": 0,
+  "directed_unique_endpoint_pairs": 10594,
+  "directed_same_endpoint_collapsed_edges": 842,
+  "undirected_unique_endpoint_pairs": 10567,
+  "undirected_same_endpoint_collapsed_edges": 869,
+  "same_endpoint_group_count": 829,
+  "relation_variant_groups": 782,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 44,
+  "context_variant_groups": 17,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 3255,
+  "post_build_edge_count": 11350,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "C:\\Users\\ABC\\AppData\\Local\\Programs\\Python\\Python314\\Lib\\site-packages\\graphify\\extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1337,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1870,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1872,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 2242,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2389,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 3109,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 3278,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 5334,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5442,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5521,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 6036,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 6037,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "docs_audits_2026_10_26_implementation_evidence_r0_r1_backend_expected_failures",
+      "target": "backend_tests_test_system_resilience_audit_test_payment_rejects_invalid_input_before_work",
+      "edge_count": 6,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "D:\\Autonoetic_edge\\Sunny thailand\\Box-agriculture project\\docs\\audits\\2026-10-26\\implementation-evidence\\r0-r1-backend.txt"
+      ],
+      "source_locations": [
+        "L31",
+        "L32",
+        "L33",
+        "L34",
+        "L35",
+        "L36"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "docs_audits_2026_10_26_implementation_evidence_r0_r2_backend_expected_failures",
+      "target": "backend_tests_test_system_resilience_audit_test_payment_rejects_invalid_input_before_work",
+      "edge_count": 6,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "D:\\Autonoetic_edge\\Sunny thailand\\Box-agriculture project\\docs\\audits\\2026-10-26\\implementation-evidence\\r0-r2-backend.txt"
+      ],
+      "source_locations": [
+        "L32",
+        "L33",
+        "L34",
+        "L35",
+        "L36",
+        "L37"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "backend_app_modules_orders_intake_matrix_to_drafts",
+      "target": "backend_app_services_canonical_schema_canonicalorderdraft",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "backend/app/modules/orders/intake.py"
+      ],
+      "source_locations": [
+        "L43",
+        "L47"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "generic_arg"
+      ]
+    },
+    {
+      "source": "backend_app_modules_packing_boxes_new_box",
+      "target": "backend_app_models_packing_box",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "backend/app/modules/packing/boxes.py"
+      ],
+      "source_locations": [
+        "L27",
+        "L29",
+        "L35"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "return_type"
+      ]
+    },
+    {
+      "source": "backend_tests_test_admin_users_make_user",
+      "target": "backend_app_models_user_user",
+      "edge_count": 3,
+      "relations": [
+        "calls",
+        "references",
+        "uses"
+      ],
+      "source_files": [
+        "backend/tests/test_admin_users.py"
+      ],
+      "source_locations": [
+        "L28",
+        "L29"
+      ],
+      "contexts": [
+        "",
+        "call",
+        "return_type"
+      ]
+    }
+  ]
+}

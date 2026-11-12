@@ -6,12 +6,13 @@ import json
 import sys
 import uuid
 import zipfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from sqlalchemy import create_engine, make_url, text
+
 from app import models  # noqa: F401
 from app.core.config import settings
 from app.core.database import Base, normalize_database_url
@@ -55,7 +56,7 @@ def main():
     engine = create_engine(normalize_database_url(settings.DATABASE_URL), connect_args={'connect_timeout':10})
     quote = engine.dialect.identifier_preparer.quote
     backup_dir = Path(__file__).resolve().parents[2] / '.codex-artifact' / 'database-backups'
-    before_path = backup_dir / (args.project_ref + '-before-preload-restore-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ') + '.zip')
+    before_path = backup_dir / (args.project_ref + '-before-preload-restore-' + datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ') + '.zip')
     inserted, remaps, expected = {}, {}, {}
     with engine.begin() as connection:
         connection.execute(text("SET LOCAL lock_timeout='10s'"))
@@ -72,17 +73,19 @@ def main():
             before = {table: export(table) for table in sorted(Base.metadata.tables)}
             with zipfile.ZipFile(before_path, 'x', compression=zipfile.ZIP_DEFLATED) as archive:
                 archive.writestr('manifest.json', json.dumps({'project_ref':args.project_ref,'purpose':'Current client data before preload restoration'}))
-                for table, content in before.items(): archive.writestr('public/' + table + '.csv', content)
+                for table, content in before.items():
+                    archive.writestr('public/' + table + '.csv', content)
             with zipfile.ZipFile(before_path) as archive:
-                if archive.testzip() is not None: raise RuntimeError('Current data backup failed verification')
+                if archive.testzip() is not None:
+                    raise RuntimeError('Current data backup failed verification')
 
             for table in MASTER_TABLES:
                 current = rows(before[table])
-                columns = next(csv.reader(io.StringIO(contents[table])))
                 temp = 'preload_' + table
                 connection.execute(text('CREATE TEMP TABLE ' + quote(temp) + ' (LIKE public.' + quote(table) + ') ON COMMIT DROP'))
                 cursor.copy_expert('COPY ' + quote(temp) + ' FROM STDIN WITH (FORMAT CSV, HEADER TRUE)', io.StringIO(contents[table]))
-                natural = lambda r: tuple(r[column] for column in keys[table])
+                def natural(row, key_columns=keys[table]):
+                    return tuple(row[column] for column in key_columns)
                 existing = {natural(r):r for r in current}
                 mapping = {}
                 additions = []
@@ -92,15 +95,18 @@ def main():
                         if column in item and item[column]:
                             if item[column] not in remaps.get(target, {}):
                                 # Self references resolve after all customers are mapped below.
-                                if table == 'customers' and column == 'parent_customer_id': continue
+                                if table == 'customers' and column == 'parent_customer_id':
+                                    continue
                                 raise RuntimeError('Unresolved preload dependency in ' + table)
                             item[column] = remaps[target][item[column]]
                     match = existing.get(natural(item))
                     if match:
                         mapping[source['id']] = match['id']
                         continue
-                    if table == 'users': item['id'] = str(uuid.uuid4())
-                    if any(r['id'] == item['id'] for r in current): raise RuntimeError('Conflicting record ID in ' + table)
+                    if table == 'users':
+                        item['id'] = str(uuid.uuid4())
+                    if any(r['id'] == item['id'] for r in current):
+                        raise RuntimeError('Conflicting record ID in ' + table)
                     mapping[source['id']] = item['id']
                     existing[natural(item)] = item
                     additions.append((source['id'], item))
@@ -130,7 +136,8 @@ def main():
                 expected[table] = {r['id']:r for r in current}
                 expected[table].update({item['id']:item for _,item in additions})
                 actual = {r['id']:r for r in rows(export(table))}
-                if actual != expected[table]: raise RuntimeError('Restored data mismatch in ' + table)
+                if actual != expected[table]:
+                    raise RuntimeError('Restored data mismatch in ' + table)
                 print(json.dumps({'table':table,'restored':len(new_ids),'existing_preserved':len(current)}),flush=True)
             for table in set(Base.metadata.tables) - set(MASTER_TABLES):
                 if {r['id']:r for r in rows(export(table))} != {r['id']:r for r in rows(before[table])}:
@@ -140,11 +147,13 @@ def main():
     with engine.connect() as connection:
         for table in MASTER_TABLES:
             actual = connection.execute(text('SELECT count(*) FROM public.' + quote(table))).scalar_one()
-            if actual != len(expected[table]): raise RuntimeError('Post-commit count mismatch in ' + table)
+            if actual != len(expected[table]):
+                raise RuntimeError('Post-commit count mismatch in ' + table)
     report = {'restored':inserted,'current_client_data_preserved':True,'historical_transactions_restored':False,
               'excluded_backup_rows':{table:len(saved[table])-len(selected[table]) for table in MASTER_TABLES}, 'backup_before_restore':str(before_path)}
     before_path.with_suffix('.report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
     print(json.dumps(report,indent=2))
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()

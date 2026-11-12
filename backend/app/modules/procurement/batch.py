@@ -6,12 +6,11 @@ buffer twice never compounds, and they are frozen once the batch is confirmed.
 
 from __future__ import annotations
 
-import hashlib
 from collections import defaultdict
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal
 
-from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy import case, func, or_, select
+from sqlalchemy.orm import Session, selectinload
 
 from app.core.policy import Action, require
 from app.core.values import INT32_MAX, WEIGHT_STEP, buffer_percentage, purchase_weight
@@ -26,6 +25,21 @@ from app.modules.workflow.service import WorkflowService
 DemandKey = tuple[str, str]  # (product_id, pack_size)
 
 
+def load_batch_orders(db: Session, batch: MasterPurchasingList) -> set[ClientOrder]:
+    """Load one shipment's orders and packing identities without per-shop reads."""
+    raw_ids = {source.raw_order_file_id for source in batch.sources if source.raw_order_file_id}
+    order_ids = {source.client_order_id for source in batch.sources if source.client_order_id}
+    if not raw_ids and not order_ids:
+        return set()
+    return set(db.query(ClientOrder).filter(
+        or_(ClientOrder.raw_order_file_id.in_(raw_ids), ClientOrder.id.in_(order_ids)),
+        ~ClientOrder.status.in_({OrderStatus.CANCELLED, OrderStatus.UNAVAILABLE}),
+    ).options(
+        selectinload(ClientOrder.items).selectinload(ClientOrderItem.product),
+        selectinload(ClientOrder.customer),
+    ).all())
+
+
 class PurchasingBatchService:
     def __init__(self, db: Session):
         self.db = db
@@ -36,27 +50,39 @@ class PurchasingBatchService:
         raw_file = self.db.query(RawOrderFile).filter(RawOrderFile.id == raw_file_id).first()
         if not raw_file:
             raise ValueError(f"RawOrderFile {raw_file_id} not found")
-        return self.consolidate(
+        return self._build_batch(
             raw_file_ids=[raw_file.id],
             actor=actor,
             shipment_date=raw_file.shipment_target_date,
             batch_ref=f"PUR-{raw_file.shipment_target_date.replace('-', '')}-{raw_file.id}",
         )
 
-    def consolidate(
+    def rebuild_batch(self, batch_id: str, actor: User) -> MasterPurchasingList:
+        """Recalculate an existing batch after catalogue corrections; keep its sources."""
+        batch = self._get(batch_id)
+        self._require_editable(batch)
+        return self._build_batch(
+            raw_file_ids=([source.raw_order_file_id for source in batch.sources if source.raw_order_file_id]
+                          or ([batch.raw_order_file_id] if not batch.sources and batch.raw_order_file_id else [])),
+            client_order_ids=[source.client_order_id for source in batch.sources if source.client_order_id],
+            actor=actor, batch_ref=batch.batch_reference,
+            shipment_date=batch.shipment_date, route_code=batch.route_code,
+        )
+
+    def _build_batch(
         self,
         raw_file_ids: list[str],
         actor: User,
+        batch_ref: str,
         client_order_ids: list[str] | None = None,
-        batch_ref: str | None = None,
         shipment_date: str | None = None,
         route_code: str | None = None,
     ) -> MasterPurchasingList:
-        """Combine raw files and/or client orders into one master purchase list."""
+        """Create one file's purchase batch or rebuild the same saved sources."""
         raw_file_ids = list(dict.fromkeys(raw_file_ids))
         client_order_ids = list(dict.fromkeys(client_order_ids or []))
         if len(raw_file_ids) > 500 or len(client_order_ids) > 500:
-            raise WorkLimit("Combine at most 500 files or explicitly selected orders at a time")
+            raise WorkLimit("This batch exceeds the supported source limit")
         if not raw_file_ids and not client_order_ids:
             raise ValueError("At least one raw order file or client order is required")
         self._require_exist(RawOrderFile, raw_file_ids, "Raw order files")
@@ -67,27 +93,21 @@ class PurchasingBatchService:
         if set(client_order_ids) - {order.id for order in selected_orders}:
             raise ValueError("A selected order is already resolved")
         if len(selected_orders) > MAX_DEMANDS:
-            raise WorkLimit("Selected sources exceed 1000 orders; combine a smaller selection")
+            raise WorkLimit("This batch exceeds the supported 1000-order limit")
         selected_ids = {order.id for order in selected_orders}
         if not selected_orders:
             raise ValueError("Selected sources have no validated customer orders")
         if any(order.status not in {OrderStatus.SPLIT_AND_VALIDATED, OrderStatus.PURCHASING_CONSOLIDATED} for order in selected_orders):
-            raise ValueError("Confirmed orders cannot be rebuilt; only orders awaiting procurement may be combined")
+            raise ValueError("Confirmed orders cannot be rebuilt")
         dates = {order.raw_file.shipment_target_date for order in selected_orders}
         if len(dates) != 1 or (shipment_date and shipment_date not in dates):
-            raise ValueError("Combined orders must share one shipment date")
+            raise ValueError("Purchase batch orders must share one shipment date")
         shipment_date = shipment_date or next(iter(dates))
-
-        if not batch_ref:
-            date_str = shipment_date.replace("-", "") if shipment_date else "BATCH"
-            source_key = "|".join(
-                sorted([f"raw:{i}" for i in raw_file_ids] + [f"order:{i}" for i in client_order_ids])
-            )
-            fingerprint = hashlib.sha256(source_key.encode("utf-8")).hexdigest()[:10].upper()
-            batch_ref = f"PUR-{date_str}-COMBINED-{fingerprint}"
 
         mpl = self.db.query(MasterPurchasingList).filter_by(batch_reference=batch_ref).with_for_update().first()
         def source_order_ids(batch):
+            if not batch.sources and batch.raw_order_file_id:
+                return {order.id for order in selected_orders if order.raw_order_file_id == batch.raw_order_file_id}
             ids = set()
             for source in batch.sources:
                 if source.raw_order_file:
@@ -97,25 +117,22 @@ class PurchasingBatchService:
             return ids
         if mpl and source_order_ids(mpl) != selected_ids:
             raise ValueError("Batch reference already belongs to different orders; use a new reference")
+        if not mpl and (len(raw_file_ids) != 1 or client_order_ids):
+            raise ValueError("New purchase batches must belong to one uploaded order file")
         inherited_buffers = defaultdict(lambda: [0.0, 0.0])
-        # Reassign complete source batches, so combined demand cannot be bought twice.
-        prior_batches = self.db.query(MasterPurchasingList).join(PurchasingOrderSource).filter(
-            (PurchasingOrderSource.raw_order_file_id.in_({order.raw_order_file_id for order in selected_orders}))
-            | (PurchasingOrderSource.client_order_id.in_(selected_ids))
+        selected_files = {order.raw_order_file_id for order in selected_orders}
+        prior_batches = self.db.query(MasterPurchasingList).filter(
+            or_(MasterPurchasingList.raw_order_file_id.in_(selected_files),
+                MasterPurchasingList.sources.any(PurchasingOrderSource.raw_order_file_id.in_(selected_files)),
+                MasterPurchasingList.sources.any(PurchasingOrderSource.client_order_id.in_(selected_ids)))
         ).with_for_update().all()
         for prior in prior_batches:
+            if not mpl or prior.id != mpl.id:
+                raise ValueError("Selected orders already belong to another purchase batch")
             for item in prior.items:
                 values = inherited_buffers[(item.product_id, item.pack_size)]
                 values[0] += float(item.ordered_net_weight_kg)
                 values[1] += float(item.ordered_net_weight_kg) * float(item.buffer_percentage or 0) / 100
-            if mpl and prior.id == mpl.id:
-                continue
-            if prior.status != OrderStatus.PURCHASING_CONSOLIDATED:
-                raise ValueError("A source batch is already confirmed and cannot be combined")
-            prior_ids = source_order_ids(prior)
-            if not prior_ids.issubset(selected_ids):
-                raise ValueError("Select all orders from each source batch to avoid splitting its purchase demand")
-            self.db.delete(prior)
         self.db.flush()
         if mpl:
             if mpl.status != OrderStatus.PURCHASING_CONSOLIDATED:
@@ -216,7 +233,7 @@ class PurchasingBatchService:
 
     # -- reads -------------------------------------------------------------
 
-    def ordered_packs(self, mpl: MasterPurchasingList) -> dict[DemandKey, int]:
+    def ordered_packs(self, mpl: MasterPurchasingList, *, pending_keys: set[DemandKey] | None = None) -> dict[DemandKey, int]:
         """Unbuffered pack demand per line, from the batch's source orders."""
         sources = self.db.query(PurchasingOrderSource.raw_order_file_id, PurchasingOrderSource.client_order_id).filter(
             PurchasingOrderSource.purchasing_list_id == mpl.id).limit(10001).all()
@@ -229,7 +246,8 @@ class PurchasingBatchService:
         if not raw_ids and not order_ids:
             return {}
         historical = mpl.status not in {OrderStatus.PURCHASING_CONSOLIDATED, OrderStatus.CANCELLED}
-        return {key: packs for key, (packs, _) in self._demand(raw_ids, order_ids, historical=historical).items()}
+        return {key: packs for key, (packs, _) in self._demand(
+            raw_ids, order_ids, historical=historical, pending_keys=pending_keys).items()}
 
     def get(self, batch_id_or_ref: str) -> MasterPurchasingList:
         return self._get(batch_id_or_ref)
@@ -263,7 +281,8 @@ class PurchasingBatchService:
             raise ValueError(f"{label} not found: {', '.join(missing)}")
 
     def _demand(
-        self, raw_file_ids: list[str], client_order_ids: list[str], *, historical: bool = False
+        self, raw_file_ids: list[str], client_order_ids: list[str], *, historical: bool = False,
+        pending_keys: set[DemandKey] | None = None,
     ) -> dict[DemandKey, tuple[int, float]]:
         source = None
         if raw_file_ids:
@@ -285,6 +304,8 @@ class PurchasingBatchService:
                 ClientOrderItem.pack_size,
                 func.sum(ClientOrderItem.ordered_pack_count),
                 func.sum(ClientOrderItem.estimated_net_weight_kg),
+                func.max(case(((ClientOrderItem.ordered_pack_count == 0)
+                               & (ClientOrderItem.estimated_net_weight_kg > 0), 1), else_=0)),
             )
             .join(ClientOrder, ClientOrderItem.client_order_id == ClientOrder.id)
             .filter(source)
@@ -295,7 +316,9 @@ class PurchasingBatchService:
         )
         if len(rows) > MAX_ITEMS:
             raise WorkLimit("Selected sources exceed 20000 distinct purchase lines; combine a smaller selection")
-        return {(p, s): (int(packs or 0), round(float(kg or 0), 4)) for p, s, packs, kg in rows}
+        if pending_keys is not None:
+            pending_keys.update((p, s) for p, s, _, _, pending in rows if pending)
+        return {(p, s): (int(packs or 0), round(float(kg or 0), 4)) for p, s, packs, kg, _ in rows}
 
     def _set_buffer(
         self, item: PurchasingItem, buffer_pct: float, base: dict[DemandKey, int], actor: User

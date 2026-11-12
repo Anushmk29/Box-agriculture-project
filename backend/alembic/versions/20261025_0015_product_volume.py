@@ -1,6 +1,7 @@
 """Product occupied volume per kilogram; retain historical pack measurements."""
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision = "20261025_0015"

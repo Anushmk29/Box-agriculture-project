@@ -10,8 +10,8 @@ async function mockFloor(page: Page, count = 2) {
     const url = new URL(route.request().url());
     const path = url.pathname;
     if (path.endsWith("/auth/me")) await route.fulfill({ json: { full_name: "Floor Staff", role: "GENERAL", must_change_password: false, permissions: ["floor_packing", "design_packing"] } });
-    else if (path.endsWith("/packing/orders")) await route.fulfill({ json: { total: 1, offset: 0, limit: 25, has_more: false, items: [{ order_id: "order", order_ref_id: "ORD-SUNNY", customer_code: "SUNNY", customer_name: "Sunny shop", created_at: state.createdAt, status: packing.status, boxes: boxes.length, outstanding: boxes.filter(box => box.actual_net_weight_kg === null).length, shipment_date: packing.shipment_date, route: "CT" }] } });
-    else if (path.endsWith("/sub-packing-lists")) await route.fulfill({ json: { group_name: "ALL", sub_customers: [{ client_order_id: "order", order_ref_id: "ORD-SUNNY", sub_customer_code: "SUNNY", company_name: "Sunny shop", created_at: state.createdAt, status: packing.status, boxes_count: boxes.length, outstanding_boxes: boxes.filter(b => b.actual_net_weight_kg === null).length, total_estimated_net_weight_kg: 2 }] } });
+    else if (path.endsWith("/packing/orders")) await route.fulfill({ json: { total: 1, offset: 0, limit: 25, has_more: false, items: [{ order_id: "order", order_ref_id: "ORD-SUNNY", customer_code: "SUNNY", customer_name: "Sunny subcustomer", created_at: state.createdAt, status: packing.status, boxes: boxes.length, outstanding: boxes.filter(box => box.actual_net_weight_kg === null).length, shipment_date: packing.shipment_date, route: "CT" }] } });
+    else if (path.endsWith("/sub-packing-lists")) await route.fulfill({ json: { group_name: "ALL", sub_customers: [{ client_order_id: "order", order_ref_id: "ORD-SUNNY", sub_customer_code: "SUNNY", company_name: "Sunny subcustomer", created_at: state.createdAt, status: packing.status, boxes_count: boxes.length, outstanding_boxes: boxes.filter(b => b.actual_net_weight_kg === null).length, total_estimated_net_weight_kg: 2 }] } });
     else if (path.endsWith("/prepare")) {
       state.prepares++;
       if (packing.status === "HANDOFF_01_SENT") packing.status = "FLOOR_PACKING";
@@ -43,7 +43,7 @@ async function mockFloor(page: Page, count = 2) {
 
 test("staff review and finalize without scale entry, including handoff retry", async ({ page }) => {
   const state = await mockFloor(page);
-  await page.goto("/packing/orders");
+  await page.goto("/packing/orders?display=orders");
   await page.getByRole("link", { name: "Resume packing SUNNY", exact: true }).click();
   await expect(page.locator("#box-box-1")).toBeVisible();
   await expect(page.getByLabel(/scale (net|gross)/)).toHaveCount(0);
@@ -140,7 +140,8 @@ test.describe("order creation dates", () => {
       state.createdAt = created;
       await page.goto("/packing");
       await page.getByRole("link", { name: "Choose an order", exact: true }).click();
-      await expect(page.getByRole("row").filter({ hasText: "Sunny shop" })).toContainText(label);
+      await page.getByRole("link", { name: "View all suborders", exact: true }).click();
+      await expect(page.getByRole("row").filter({ hasText: "Sunny subcustomer" })).toContainText(label);
     }
   });
 });

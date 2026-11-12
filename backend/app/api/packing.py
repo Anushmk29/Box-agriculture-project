@@ -296,7 +296,8 @@ class BoxDetailOut(BaseModel):
     packing_mode: str | None = None
     needs_replan: bool = False
     replan_reasons: list[str] = Field(default_factory=list)
-    volume_cm3: float = 0
+    volume_cm3: float | None = 0
+    history_evidence: dict | None = None
     usable_volume_cm3: float = 0
     volume_utilization_pct: float | None = None
     layers: list[dict] = Field(default_factory=list)
@@ -304,6 +305,8 @@ class BoxDetailOut(BaseModel):
 
 class SubCustomerPackingListOut(BaseModel):
     client_order_id: str
+    raw_file_id: str
+    file_name: str
     packing_revision: int
     order_ref_id: str
     status: str
@@ -345,6 +348,7 @@ def scan_box(qr_code_uid: str, db: Session = Depends(get_db, scope="function"), 
         "order_id": order.id,
         "packing_revision": order.packing_revision,
         "order_ref_id": order.order_ref_id,
+        "file_name": order.raw_file.file_name,
         "order_status": order.status.value,
         "can_edit": order.status in EDITABLE_STATUSES and not box.is_locked,
         "customer_code": order.customer.client_code if order.customer else "",
@@ -359,6 +363,8 @@ def scan_box(qr_code_uid: str, db: Session = Depends(get_db, scope="function"), 
         ),
         "items": [
             {
+                "item_id": item.id,
+                "product_id": item.product_id,
                 "product_code": item.product.t_code if item.product else "",
                 "produce_name": item.product.name_en if item.product else "",
                 "pack_size": item.pack_size,
@@ -407,7 +413,7 @@ def get_sub_customer_packing_list(client_order_id: str, db: Session = Depends(ge
                 item_id=it.id,
                 product_id=it.product_id,
                 product_code=it.product.t_code if it.product else "",
-                produce_name=f"{it.product.name_vi} / {it.product.name_en}" if it.product else "",
+                produce_name=" / ".join(name for name in [it.product.name_th, it.product.name_vi, it.product.name_en] if name and name.strip()) if it.product else "",
                 pack_size=it.pack_size,
                 packed_count=it.final_packed_count,
                 net_weight_kg=float(it.final_net_weight_kg),
@@ -425,6 +431,8 @@ def get_sub_customer_packing_list(client_order_id: str, db: Session = Depends(ge
                 box_material=(b.packing_snapshot or {}).get("catalogue_material", box_type.box_type.value if box_type else "CUSTOM"),
                 safe_net_capacity_kg=(b.packing_snapshot or {}).get("safe_net_capacity_kg", float(box_type.max_safe_net_weight_kg) if box_type else 0),
                 allocation_explanation=(
+                    "This exact combination uses staff-verified historical fit guidance, with current weight and grouping checks."
+                    if (b.packing_snapshot or {}).get("history_evidence") else
                     "Plan checks weight and occupied volume, preferring fewer compatible boxes. "
                     "products are separated by material, temperature, control/family, produce type and weight class. "
                     f"This box allows {float(box_type.max_safe_net_weight_kg):g} kg net and 92% of its volume. "
@@ -453,6 +461,8 @@ def get_sub_customer_packing_list(client_order_id: str, db: Session = Depends(ge
 
     return SubCustomerPackingListOut(
         client_order_id=order.id,
+        raw_file_id=order.raw_order_file_id,
+        file_name=order.raw_file.file_name,
         packing_revision=order.packing_revision,
         order_ref_id=order.order_ref_id,
         status=order.status.value,

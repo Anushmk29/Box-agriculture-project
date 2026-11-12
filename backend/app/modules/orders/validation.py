@@ -13,6 +13,7 @@ from app.modules.orders.templates import recognize_saved_formats, template_issue
 from app.modules.workflow.service import WorkflowService
 from app.services.canonical_schema import ActionType
 from app.services.name_matcher import NameFirstMatcher
+from app.services.product_identity import name_key
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class ProductResolutionIssue:
     name_vi: str
     name_en: str
     pack_size: str
+    catalog_name_match: bool
     suggestions: list[dict] = field(default_factory=list)
 
 
@@ -92,6 +94,7 @@ class OrderValidationService:
                         name_vi=item.product_name or item.raw_text,
                         name_en=next(iter(item.alt_names), item.product_name or item.raw_text),
                         pack_size=item.pack_size or "std",
+                        catalog_name_match=any(matcher.name_candidates.get(name_key(name)) for name in names),
                         suggestions=matcher.suggestions(names, item.product_code),
                     )
                 )

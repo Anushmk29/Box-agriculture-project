@@ -29,7 +29,7 @@ async function setup(page: Page) {
 test("six columns support keyboard edits and save multiple rows without pack-size fields", async ({ page }) => {
   const state = await setup(page);
   await page.goto("/packing/setup");
-  await expect(page.getByRole("columnheader")).toHaveText(["Product", "Box / temperature", "EL", "Handling", "VolumeOccupied space per kg", "Box limits"]);
+  await expect(page.getByRole("columnheader")).toHaveText(["Product", "Box / temperature", "EL", "Handling", "Packing basis", "Box limits"]);
   await page.getByLabel("11-001 litres per kg").fill("7");
   await page.getByLabel("11-001 litres per kg").press("Tab");
   await expect(page.getByLabel("11-002 confirm settings")).toBeFocused();

@@ -233,7 +233,7 @@ def test_grouping_el_wins_and_manual_corrections_survive_reimport(db_session):
     assert product.packing_revision == revision
 
 
-def test_capacity_ranges_lower_bound_ambiguous_names_and_non_weight_notes(db_session):
+def test_capacity_ranges_preserve_bounds_for_review_and_non_weight_notes(db_session):
     from app.models.master_data import BoxCatalogue, BoxMaterial
 
     boxes = [
@@ -247,8 +247,10 @@ def test_capacity_ranges_lower_bound_ambiguous_names_and_non_weight_notes(db_ses
         ),
     ]
     limits, issues = parse_limits("โฟมแบน 2.5 - 3.5 กก ฟ.เล็กพิเศษ 3 กก ก.สูง 1 ลูก", boxes)
-    assert limits == {"flat": 2.5}
-    assert len(issues) == 2
+    assert limits == {}
+    assert len(issues) == 3
+    assert issues[0]["range_kg"] == [2.5, 3.5]
+    assert issues[0]["max_net_weight_kg"] is None
     assert issues[-1]["max_net_weight_kg"] is None
 
 

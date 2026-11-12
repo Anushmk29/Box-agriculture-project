@@ -71,14 +71,11 @@ def merge_products(db, *, source_id, target_id, actor):
     ).with_for_update().all()
     service = PurchasingBatchService(db)
     for batch in batches:
-        sources = list(batch.sources)
         for item in batch.items:
             if item.product_id == source_id:
                 item.product_id = target_id
         db.flush()
-        service.consolidate(raw_file_ids=[s.raw_order_file_id for s in sources if s.raw_order_file_id],
-            client_order_ids=[s.client_order_id for s in sources if s.client_order_id],
-            actor=actor, batch_ref=batch.batch_reference, shipment_date=batch.shipment_date, route_code=batch.route_code)
+        service.rebuild_batch(batch.id, actor=actor)
         db.expire(batch, ["items", "sources"])
     db.add(AuditLog(event_type="MASTER_SKUS_MERGED", actor_id=actor.id, actor_role=actor.role.value,
         target_table="products", target_id=target_id,

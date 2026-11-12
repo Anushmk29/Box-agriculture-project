@@ -3,6 +3,8 @@
 import math
 from decimal import Decimal
 
+from sqlalchemy.orm import object_session
+
 from app.modules.packing.materials import require_material
 from app.modules.packing.optimizer import PackingDemand
 from app.modules.packing.profiles import box_volume, product_limit, require_known_el, unit_volume
@@ -26,6 +28,13 @@ def validate_contents(box, contents=None, *, catalogue=None, dimensions=None):
     capacity = float(catalogue.max_safe_net_weight_kg)
     if not math.isfinite(capacity) or capacity <= 0 or not math.isfinite(volume_capacity) or volume_capacity <= 0:
         raise ValueError("Box capacity and volume must be finite and positive")
+    from app.modules.packing.history import fit_evidence, history_basis
+    requires_history = any(history_basis(product) for product, *_ in rows)
+    if requires_history or (box.packing_snapshot or {}).get("history_evidence"):
+        if fit_evidence(object_session(box), box, rows, catalogue) is not None:
+            return
+        if requires_history:
+            raise ValueError("No exact reviewed historical template covers these contents and box; review guidance before changing packing")
     keys, weight, volume = set(), 0.0, 0.0
     for product, pack_size, count, net in rows:
         if not product or count <= 0 or not math.isfinite(net) or net <= 0:

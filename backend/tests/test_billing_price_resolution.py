@@ -83,6 +83,40 @@ def test_resolution_requires_accounting_and_completed_packing(db_session, pricin
     assert client.post('/api/v3/invoicing/price-check', json={'order_ids': [order.id]}).status_code == 403
 
 
+def test_bulk_price_check_has_bounded_reads_for_many_orders(db_session, pricing_client):
+    from sqlalchemy import event
+
+    client, first, _ = pricing_client
+    ids = [first.id]
+    for index in range(19):
+        order = build_order_with_box(db_session, locked=True, suffix=f"batch-{index}", seller=first.main_customer)
+        ids.append(order.id)
+    db_session.query(PriceList).delete()
+    db_session.commit()
+    db_session.expunge_all()
+    statements = []
+    def capture(_conn, _cursor, statement, *_args):
+        statements.append(statement)
+    event.listen(db_session.get_bind(), "before_cursor_execute", capture)
+    try:
+        response = client.post('/api/v3/invoicing/price-check', json={'order_ids': ids})
+    finally:
+        event.remove(db_session.get_bind(), "before_cursor_execute", capture)
+    assert response.status_code == 200, response.text
+    assert {issue['order_id'] for issue in response.json()['issues']} == set(ids)
+    assert len(statements) <= 8
+
+
+def test_bulk_price_check_rejects_oversized_packing_before_loading_it(pricing_client, monkeypatch):
+    from app.services import on_behalf_invoicing_service
+
+    client, order, _ = pricing_client
+    monkeypatch.setattr(on_behalf_invoicing_service, "MAX_ITEMS", 0)
+    response = client.post('/api/v3/invoicing/price-check', json={'order_ids': [order.id]})
+    assert response.status_code == 413
+    assert "Select fewer orders" in response.text
+
+
 def test_resolution_supports_orders_without_main_customer(db_session, pricing_client):
     client, order, _ = pricing_client
     order.main_customer_id = None

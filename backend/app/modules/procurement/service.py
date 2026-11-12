@@ -13,6 +13,7 @@ from app.models.master_data import Product
 from app.models.order import OrderStatus
 from app.models.procurement import MasterPurchasingList
 from app.models.user import User
+from app.modules.procurement.batch import load_batch_orders
 from app.modules.workflow.service import WorkflowService
 
 
@@ -109,7 +110,7 @@ class ProcurementConfirmationService:
             item.shortage_reason = confirmation.shortage_reason
             item.replacement_product_id = confirmation.replacement_product_id
 
-        workflow = WorkflowService(self.db)
+        workflow = WorkflowService(self.db, defer_flush=True)
         workflow.transition(
             target=batch,
             to_status=OrderStatus.PROCUREMENT_CONFIRMED,
@@ -120,8 +121,7 @@ class ProcurementConfirmationService:
         batch.confirmed_at = datetime.now(UTC)
 
         raw_files = {source.raw_order_file for source in batch.sources if source.raw_order_file}
-        direct_orders = {source.client_order for source in batch.sources if source.client_order}
-        orders = set(direct_orders)
+        orders = load_batch_orders(self.db, batch)
         for raw_file in raw_files:
             if raw_file.status == OrderStatus.PURCHASING_CONSOLIDATED:
                 workflow.transition(
@@ -130,15 +130,9 @@ class ProcurementConfirmationService:
                     actor=actor,
                     target_table="raw_order_files",
                 )
-            orders.update(raw_file.client_orders)
-        for order in orders:
-            if order.status == OrderStatus.PURCHASING_CONSOLIDATED:
-                workflow.transition(
-                    target=order,
-                    to_status=OrderStatus.PROCUREMENT_CONFIRMED,
-                    actor=actor,
-                    target_table="client_orders",
-                )
+        workflow.transition_orders(orders=[order for order in orders
+            if order.status == OrderStatus.PURCHASING_CONSOLIDATED],
+            to_status=OrderStatus.PROCUREMENT_CONFIRMED, actor=actor)
 
         self.db.add(
             AuditLog(

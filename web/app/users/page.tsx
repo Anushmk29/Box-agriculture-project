@@ -1,5 +1,7 @@
 "use client";
 
+import { t, useLanguage } from "@/lib/language";
+
 import { useEffect, useState } from "react";
 import { Copy, KeyRound, Settings2, UserPlus } from "lucide-react";
 import { RecordRegister, type RegisterRow } from "@/components/record-register";
@@ -40,7 +42,7 @@ const permissionLabels: Record<string, string> = {
 };
 
 function permissionSummary(permissions: string[]) {
-  return permissions.map(permission => permissionLabels[permission] ?? permission).join(", ");
+  return permissions.map(permission => t(permissionLabels[permission] ?? permission)).join(", ");
 }
 
 const roles: { value: Role; label: string }[] = [
@@ -50,6 +52,7 @@ const roles: { value: Role; label: string }[] = [
 ];
 
 export default function UsersPage() {
+  useLanguage();
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [accessLevels, setAccessLevels] = useState<AccessLevel[]>([]);
   const [email, setEmail] = useState("");
@@ -155,51 +158,51 @@ export default function UsersPage() {
 
   return (
     <div className="page users-workspace">
-      <PageHeader eyebrow="Owner only" title="Team & access" description="Add people, choose what they can open, and keep accounts secure."
-        actions={<button type="button" className="primary-button" data-guide="Add a team member" data-guide-detail="Enter their name and email, then choose the access needed for their work." onClick={() => setShowCreateUser(true)}><UserPlus size={17} aria-hidden="true" />Add person</button>} />
+      <PageHeader eyebrow="Owner only" title={t("Team & access")} description={t("Add people, choose what they can open, and keep accounts secure.")}
+        actions={<button type="button" className="primary-button" data-guide={t("Add a team member")} data-guide-detail={t("Enter their name and email, then choose the access needed for their work.")} onClick={() => setShowCreateUser(true)}><UserPlus size={17} aria-hidden="true" />{t("Add person")}</button>} />
 
       <StatusMessage error={error} success={message} />
       {temporaryPassword ? (
-        <TaskDialog title="Temporary password" description="Shown once. Share it privately — they must choose a new password at first sign-in." size="sm" onClose={() => setTemporaryPassword("")}>
+        <TaskDialog title={t("Temporary password")} description={t("Shown once. Share it privately — they must choose a new password at first sign-in.")} size="sm" onClose={() => setTemporaryPassword("")}>
           <div className="temp-password"><KeyRound size={20} aria-hidden /><code>{temporaryPassword}</code>
-            <button type="button" className="invoice-secondary-button btn-sm" onClick={() => { void navigator.clipboard?.writeText(temporaryPassword).then(() => toast.success("Temporary password copied")); }}><Copy size={15} />Copy</button></div>
-          <div className="task-dialog-actions"><button type="button" className="primary-button" onClick={() => setTemporaryPassword("")}>Done</button></div>
+            <button type="button" className="invoice-secondary-button btn-sm" onClick={() => { void navigator.clipboard?.writeText(temporaryPassword).then(() => toast.success("Temporary password copied")); }}><Copy size={15} />{t("Copy")}</button></div>
+          <div className="task-dialog-actions"><button type="button" className="primary-button" onClick={() => setTemporaryPassword("")}>{t("Done")}</button></div>
         </TaskDialog>
       ) : null}
 
-      {showCreateUser && <TaskDialog title="Add person" description="Create an account and choose what they can access. They must replace their temporary password at first login." busy={busy} onClose={() => setShowCreateUser(false)}>
+      {showCreateUser && <TaskDialog title={t("Add person")} description={t("Create an account and choose what they can access. They must replace their temporary password at first login.")} busy={busy} onClose={() => setShowCreateUser(false)}>
       <StatusMessage error={error} />
       <form className="users-create-form" onSubmit={createUser}>
         <div className="field-row">
-          <label>Full name<input value={fullName} onChange={event => setFullName(event.target.value)} required /></label>
-          <label>Email<input type="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>
+          <label>{t("Full name")}<input value={fullName} onChange={event => setFullName(event.target.value)} required /></label>
+          <label>{t("Email")}<input type="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>
         </div>
-        <label>Access level<select aria-label="Access level" value={role} onChange={event => setRole(event.target.value as Role)}>{roles.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-        <p aria-live="polite"><strong>Includes: </strong>{permissionSummary(accessLevels.find(level => level.role === role)?.permissions ?? []) || "Loading permissions…"}</p>
-        <div className="task-dialog-actions"><button type="button" disabled={busy} onClick={() => setShowCreateUser(false)}>Cancel</button><button className="primary-button" disabled={busy}><UserPlus size={17} /> {busy ? "Creating…" : "Create user"}</button></div>
+        <label>{t("Access level")}<select aria-label={t("Access level")} value={role} onChange={event => setRole(event.target.value as Role)}>{roles.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}</select></label>
+        <p aria-live="polite"><strong>{t("Includes: ")}</strong>{permissionSummary(accessLevels.find(level => level.role === role)?.permissions ?? []) || t("Loading permissions…")}</p>
+        <div className="task-dialog-actions"><button type="button" disabled={busy} onClick={() => setShowCreateUser(false)}>{t("Cancel")}</button><button className="primary-button" disabled={busy}><UserPlus size={17} /> {busy ? t("Creating…") : t("Create user")}</button></div>
       </form></TaskDialog>}
 
-      <RecordRegister title="User accounts" description="Choose an access level or manage an individual account." searchLabel="Find a person" searchPlaceholder="Search by name or email" endpoint="/admin/users/register" identity="id" views={false} filters={false} statuses={["active", "inactive"]} refreshKey={refreshKey}
+      <RecordRegister title={t("User accounts")} description={t("Choose an access level or manage an individual account.")} searchLabel={t("Find a person")} searchPlaceholder={t("Search by name or email")} endpoint="/admin/users/register" identity="id" views={false} filters={false} statuses={["active", "inactive"]} refreshKey={refreshKey}
         columns={[
           { key: "full_name", label: "Person", sort: "name", render: row => <div className="users-person"><strong>{row.full_name}</strong><small>{row.email}</small></div> },
-          { key: "role", label: "Access level", render: row => <div className="users-role"><select aria-label={`Access level for ${row.full_name}`} value={String(row.role)} onChange={event => { void changeRole(row, event.target.value as Role); }}>{roles.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><details className="users-permissions"><summary>View permissions</summary><ul>{((row.permissions as string[]) || []).map(permission => <li key={permission}>{permissionLabels[permission] ?? permission}</li>)}</ul></details></div> },
-          { key: "is_active", label: "Status", render: row => <div className="users-status"><span className={`chip ${row.is_active ? "chip-success" : "chip-danger"}`}>{row.is_active ? "Active" : "Inactive"}</span>{row.is_active && row.must_change_password && <small>Password change required</small>}</div> },
-          { key: "actions", label: "Actions", render: row => <div className="users-row-actions"><button type="button" className="invoice-secondary-button btn-sm" onClick={() => setManagedUser(row as unknown as User)}><Settings2 size={15} aria-hidden="true" />Manage</button></div> },
+          { key: "role", label: "Access level", render: row => <div className="users-role"><select aria-label={t(`Access level for ${row.full_name}`)} value={String(row.role)} onChange={event => { void changeRole(row, event.target.value as Role); }}>{roles.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}</select><details className="users-permissions"><summary>{t("View permissions")}</summary><ul>{((row.permissions as string[]) || []).map(permission => <li key={permission}>{t(permissionLabels[permission] ?? permission)}</li>)}</ul></details></div> },
+          { key: "is_active", label: "Status", render: row => <div className="users-status"><span className={`chip ${row.is_active ? "chip-success" : "chip-danger"}`}>{row.is_active ? t("Active") : t("Inactive")}</span>{row.is_active && row.must_change_password && <small>{t("Password change required")}</small>}</div> },
+          { key: "actions", label: "Actions", render: row => <div className="users-row-actions"><button type="button" className="invoice-secondary-button btn-sm" onClick={() => setManagedUser(row as unknown as User)}><Settings2 size={15} aria-hidden="true" />{t("Manage")}</button></div> },
         ]} />
 
       {managedUser ? (
-        <TaskDialog title={`Manage ${managedUser.full_name}`} description={managedUser.email} onClose={() => setManagedUser(null)}>
+        <TaskDialog title={t(`Manage ${managedUser.full_name}`)} description={managedUser.email} onClose={() => setManagedUser(null)}>
             <div className="manage-user">
-              <section><h3>Password</h3><p>Give them a new temporary password if they are locked out.</p>
-                <button className="invoice-secondary-button" type="button" onClick={() => resetPassword(managedUser)}><KeyRound size={16} aria-hidden="true" />Reset password</button></section>
-              <section><h3>{managedUser.is_active ? "Deactivate access" : "Reactivate access"}</h3>
-              <p>{managedUser.is_active ? "The person cannot sign in, but their account and activity history remain." : "The person can sign in again with their existing password."}</p>
+              <section><h3>{t("Password")}</h3><p>{t("Give them a new temporary password if they are locked out.")}</p>
+                <button className="invoice-secondary-button" type="button" onClick={() => resetPassword(managedUser)}><KeyRound size={16} aria-hidden="true" />{t("Reset password")}</button></section>
+              <section><h3>{managedUser.is_active ? t("Deactivate access") : t("Reactivate access")}</h3>
+              <p>{managedUser.is_active ? t("The person cannot sign in, but their account and activity history remain.") : t("The person can sign in again with their existing password.")}</p>
               <button className="invoice-secondary-button" type="button" onClick={() => changeAccountStatus(managedUser)}>
-                {managedUser.is_active ? "Deactivate account" : "Reactivate account"}
+                {managedUser.is_active ? t("Deactivate account") : t("Reactivate account")}
               </button></section>
-              <section className="manage-user-danger"><h3>Delete permanently</h3>
-              <p>Removes the account. Accounts connected to past records must be deactivated instead.</p>
-              <button className="danger-button" type="button" onClick={() => deleteUser(managedUser)}>Delete permanently</button></section>
+              <section className="manage-user-danger"><h3>{t("Delete permanently")}</h3>
+              <p>{t("Removes the account. Accounts connected to past records must be deactivated instead.")}</p>
+              <button className="danger-button" type="button" onClick={() => deleteUser(managedUser)}>{t("Delete permanently")}</button></section>
             </div>
         </TaskDialog>
       ) : null}

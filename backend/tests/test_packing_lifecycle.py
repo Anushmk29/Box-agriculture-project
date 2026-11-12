@@ -301,3 +301,87 @@ def test_floor_changes_rejected_after_final_lock(db_session):
         FloorPackingService(db_session).add_extra_box_to_order(
             order.id, box.box_catalogue_id, actor=packer
         )
+
+
+def test_scan_identifies_editable_items_and_updates_actual_contents_through_api(db_session):
+    agent, packer, _, order = setup_order(db_session)
+    (box,) = PackingPlanningService(db_session).design_order(order_id=order.id, actor=agent)
+    PackingPlanningService(db_session).start_floor_packing(order_id=order.id, actor=packer)
+    original = box.items[0].product
+    replacement = Product(t_code="T002", name_en="Replacement herb", name_vi="Rau thay the", name_th="สินค้าแทน",
+                          box_material=original.box_material, temperature=original.temperature,
+                          control_status=original.control_status, produce_type=original.produce_type,
+                          weight_class=original.weight_class, botanical_family=original.botanical_family)
+    db_session.add(replacement)
+    db_session.commit()
+    replacement_id, box_id, order_id, code = replacement.id, box.id, order.id, box.qr_code_uid
+    token = create_access_token({"sub": packer.id, "role": packer.role.value})
+    headers = {"Authorization": f"Bearer {token}"}
+
+    def override_db():
+        try:
+            yield db_session
+            db_session.commit()
+        except BaseException:
+            db_session.rollback()
+            raise
+        finally:
+            db_session.expire_all()
+
+    app.dependency_overrides[get_db] = override_db
+    try:
+        client = TestClient(app)
+
+        def scan():
+            response = client.get(f"/api/v3/packing/scan/{code}?include_history=false", headers=headers)
+            assert response.status_code == 200, response.text
+            return response.json()
+
+        initial = scan()
+        assert initial["can_edit"] is True
+        assert initial["items"][0]["item_id"]
+        assert initial["items"][0]["product_id"] == original.id
+        item = initial["items"][0]
+        change = {"expected_revision": initial["packing_revision"], "item_id": item["item_id"],
+                  "product_id": item["product_id"], "pack_size": item["pack_size"],
+                  "quantity": 2, "net_weight_kg": 2}
+        endpoint = f"/api/v3/packing/boxes/{box_id}/items"
+        assert client.put(endpoint, json=change, headers=headers).status_code == 200
+        assert client.put(endpoint, json=change, headers=headers).status_code == 409
+        current = scan()
+        assert current["items"][0]["packed_count"] == 2
+        assert current["actual_net_weight_kg"] is None
+        assert current["packing_revision"] > initial["packing_revision"]
+
+        # Scan supplies the same identities/revision used to add and substitute.
+        added = client.put(endpoint, headers=headers, json={"expected_revision": current["packing_revision"],
+            "product_id": replacement_id, "pack_size": "100g", "quantity": 1, "net_weight_kg": .1})
+        assert added.status_code == 200, added.text
+        current = scan()
+        assert len(current["items"]) == 2
+        changed = client.put(endpoint, headers=headers, json={**change,
+            "expected_revision": current["packing_revision"], "product_id": replacement_id})
+        assert changed.status_code == 200, changed.text
+        current = scan()
+        assert {line["product_code"] for line in current["items"]} == {"T002"}
+
+        removed = client.put(endpoint, headers=headers, json={"expected_revision": current["packing_revision"],
+            "item_id": added.json()["item_id"], "product_id": replacement_id,
+            "pack_size": "100g", "quantity": 0, "net_weight_kg": 0})
+        assert removed.status_code == 200, removed.text
+        current = scan()
+        assert len(current["items"]) == 1
+        assert current["items"][0]["net_weight_kg"] == 2
+        assert db_session.query(ClientOrderItem).filter_by(client_order_id=order_id).one().ordered_pack_count == 6
+        finalized = client.post(f"/api/v3/packing/orders/{order_id}/finalize", headers=headers,
+                                json={"expected_revision": current["packing_revision"]})
+        assert finalized.status_code == 200, finalized.text
+        final = scan()
+        assert final["can_edit"] is False
+        assert final["actual_net_weight_kg"] == 2
+        assert client.put(endpoint, headers=headers, json={**change,
+            "expected_revision": final["packing_revision"]}).status_code == 409
+        events = {event.event_type for event in db_session.query(AuditLog).filter_by(target_id=box_id)}
+        assert {"BOX_ITEM_UPDATED", "BOX_ITEM_REMOVED"} <= events
+    finally:
+        app.dependency_overrides.clear()

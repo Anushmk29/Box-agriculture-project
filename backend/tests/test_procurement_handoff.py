@@ -5,8 +5,8 @@ import pytest
 
 from app.models.audit import AgentHandoff, AuditLog
 from app.models.master_data import (
-    BoxMaterial,
     BoxCatalogue,
+    BoxMaterial,
     ControlStatus,
     Customer,
     ProduceType,
@@ -316,10 +316,8 @@ def test_confirmed_batch_cannot_be_rebuilt(db_session):
 
     import pytest
 
-    with pytest.raises(ValueError, match="cannot be rebuilt"):
-        PurchasingBatchService(db_session).consolidate(
-            raw_file_ids=[order.raw_order_file_id], actor=buyer, batch_ref=batch.batch_reference
-        )
+    with pytest.raises(ValueError, match="frozen"):
+        PurchasingBatchService(db_session).rebuild_batch(batch.id, actor=buyer)
     db_session.rollback()
     assert db_session.query(PurchasingItem).filter_by(purchasing_list_id=batch.id).count() == 1
     assert order.status == OrderStatus.PROCUREMENT_CONFIRMED

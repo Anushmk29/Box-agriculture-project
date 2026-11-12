@@ -1,203 +1,276 @@
+"""Regressions for the seven-point repository audit."""
+
+import importlib.util
+from copy import deepcopy
+from decimal import Decimal
+from pathlib import Path
+
+import openpyxl
 import pytest
-from fastapi.testclient import TestClient
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from fastapi import HTTPException
+from sqlalchemy import create_engine, event, inspect
+from sqlalchemy.orm import Session
+from test_api_security import client_for
 from test_invoicing_invariant import build_order_with_box
-from test_simplified_workflow import headers, prepared
+from test_pricing import _setup
 
-from app.api.invoicing import render_on_behalf_invoice_html
-from app.api.operations import operations_summary
-from app.core.database import get_db
-from app.core.security import hash_password
+from app.core import login_limits
 from app.main import app
-from app.models.audit import AgentHandoff
-from app.models.invoice import Invoice, InvoiceStatus
-from app.models.master_data import BoxCatalogue, BoxMaterial, Product, TemperatureZone
-from app.models.packing import Box, BoxItem
-from app.models.user import User, UserRole
-from app.modules.handoffs.service import canonical_sha256
-from app.modules.packing.boxes import new_box
-from app.modules.packing.floor import FloorPackingService
-from app.modules.packing.service import FinalPackingService
+from app.models import CustomerSellingPrice, InvoiceStatus, LoginLimit, PriceList, User, UserRole
+from app.modules.orders.intake import OrderIntake
+from app.modules.orders.quantities import derive_quantity
+from app.modules.orders.templates import require_template_review, template_snapshots
+from app.modules.pricing import PriceCatalogue, PriceCatalogueReviewRequired
+from app.services.excel_profiles import parse_profiles, references
 from app.services.on_behalf_invoicing_service import OnBehalfInvoicingService
+from app.services.pdf_order_parser import PdfOrderParser
 
 
-def test_self_transfer_keeps_contents_and_readings(db_session):
-    actor, _, box = prepared(db_session)
-    box.items[0].final_net_weight_kg = 2
-    box.actual_net_weight_kg = 2
-    db_session.flush()
-    with pytest.raises(ValueError, match="must be different"):
-        FloorPackingService(db_session).transfer_box_contents(box.id, box.id, actor=actor)
-    assert db_session.query(BoxItem).count() == 1
-    assert box.actual_net_weight_kg == 2
+@pytest.mark.parametrize("heading", ["Order-117", "New shop", None])
+@pytest.mark.parametrize("summary", ["Total", "Gross Weight"])
+@pytest.mark.parametrize("quantity", [5, "=2+3"])
+def test_matrix_customer_after_summary_requires_review(tmp_path, heading, summary, quantity):
+    definition = deepcopy(next(p for p in references() if p["key"] == "HUNGFAT-MATRIX"))
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.append(["HUNGFAT"])
+    sheet.append(["code no", "Name Eng", None, None, "Packing", "Order-101", "Order -103",
+                  "Order-110", "Order-116", summary, heading])
+    sheet.append(["11001", "Lemongrass", None, None, 80, 1, 0, 0, 0, 6, quantity])
+    path = tmp_path / "Hungfat.xlsx"
+    workbook.save(path)
+    drafts = parse_profiles(path, [definition])
+    assert drafts[0].items[0].quantity == 1
+    with pytest.raises(ValueError, match="Unmapped customer/order column.*K"):
+        require_template_review(drafts)
 
 
-@pytest.mark.parametrize("operation", ["transfer", "move", "finalize"])
-def test_temperature_segregation_applies_to_floor_and_finalization(db_session, operation):
-    actor, order, source = prepared(db_session)
-    p = source.items[0].product
-    warm = Product(t_code="WARM", name_vi="Warm", name_en="Warm", name_th="Warm",
-        box_material=p.box_material, temperature=TemperatureZone.NORMAL, control_status=p.control_status,
-        produce_type=p.produce_type, weight_class=p.weight_class, default_unit_volume_cm3=100)
-    db_session.add(warm)
-    db_session.flush()
-    target = new_box(order, source.box_catalogue_id, 2, route_code=source.route_code)
-    db_session.add(target)
-    db_session.flush()
-    db_session.add(BoxItem(box_id=target.id, product_id=warm.id, pack_size="1kg",
-        final_packed_count=1, final_net_weight_kg=1))
-    db_session.flush()
-    service = FloorPackingService(db_session)
-    with pytest.raises(ValueError, match="incompatible"):
-        if operation == "transfer":
-            service.transfer_box_contents(source.id, target.id, actor=actor)
-        elif operation == "move":
-            service.move_items_between_boxes(source.id, target.id, p.id, "1kg", 1, actor=actor)
-        else:
-            source.items[0].final_net_weight_kg = 3
-            db_session.add(BoxItem(box_id=source.id, product_id=warm.id, pack_size="1kg",
-                final_packed_count=1, final_net_weight_kg=1))
-            db_session.flush()
-            FinalPackingService(db_session).finalize_order(order_id=order.id, actor=actor)
-    assert not source.is_locked
+def test_generic_pdf_preserves_units_and_cannot_enter_purchasing_without_review():
+    parser = object.__new__(PdfOrderParser)
+    draft = parser._parse_generic_pdf_table("Apples 5 box\nBananas 12 pcs\nHerbs 2,5 kgs\nFruit -3 pack", "new.pdf")
+    assert [(item.quantity, item.unit) for item in draft.items] == [(5, "box"), (12, "pc"), (2.5, "kg"), (0, "pack")]
+    for item in draft.items:
+        assert item.quantity_issues
+        assert item.source["raw_unit"] in {"box", "pcs", "kgs", "pack"}
+        with pytest.raises(ValueError, match="Confirm the customer PDF format"):
+            derive_quantity(item)
+    assert draft.items[-1].source["raw_quantity"] == "-3"
 
 
-@pytest.mark.parametrize("dims", [(-40, 30, 20), (0, 30, 20), (40, None, 20),
-    (float("nan"), 30, 20), (float("inf"), 30, 20), (1, 1, 1)])
-def test_invalid_or_too_small_custom_box_is_rejected(db_session, dims):
-    actor, _, box = prepared(db_session)
-    with pytest.raises(ValueError):
-        FloorPackingService(db_session).override_box_size(box.id, actor=actor,
-            custom_length_cm=dims[0], custom_width_cm=dims[1], custom_height_cm=dims[2])
-    assert box.custom_length_cm is None
+def test_intake_only_uses_supplied_customer_details(db_session):
+    intake = OrderIntake(db_session)
+    missing = intake.get_or_create_customer("NEW-SHOP", route_group="GENERAL", parent_id=None)
+    assert (missing.company_name, missing.billing_email, missing.destination_country) == ("NEW-SHOP", "", "")
+    supplied = intake.get_or_create_customer("PINTO", route_group="GENERAL", parent_id=None,
+                                             company_name="Pinto Shop", country="Maldives")
+    assert (supplied.company_name, supplied.destination_country, supplied.billing_email) == ("Pinto Shop", "Maldives", "")
+    supplied.billing_email = "orders@example.com"
+    assert intake.get_or_create_customer("PINTO", route_group="GENERAL", parent_id=None).billing_email == "orders@example.com"
 
 
-def test_resize_cannot_change_required_material(db_session):
-    actor, _, box = prepared(db_session)
-    catalogue = BoxCatalogue(box_type=BoxMaterial.CARDBOARD, size_name="Wrong material",
-        length_cm=38, width_cm=32, height_cm=18, rated_weight_kg=5,
-        max_safe_net_weight_kg=5, volume_m3=.024)
-    db_session.add(catalogue)
-    db_session.flush()
-    with pytest.raises(ValueError, match="material"):
-        FloorPackingService(db_session).override_box_size(box.id, actor=actor, new_catalogue_id=catalogue.id)
-    assert box.override_box_catalogue_id is None
+def test_dispatch_requires_missing_customer_details_to_be_completed(db_session):
+    from app.api.invoicing import render_on_behalf_invoice_html
 
-
-@pytest.mark.parametrize("operation", ["move", "transfer"])
-def test_floor_moves_cannot_overfill_usable_volume(db_session, operation):
-    actor, order, source = prepared(db_session)
-    catalogue = BoxCatalogue(box_type=BoxMaterial.FOAM, size_name="Small volume",
-        length_cm=30, width_cm=20, height_cm=24, rated_weight_kg=5,
-        max_safe_net_weight_kg=5, volume_m3=.0144)
-    db_session.add(catalogue)
-    db_session.flush()
-    target = new_box(order, catalogue.id, 2, route_code=source.route_code)
-    db_session.add(target)
-    db_session.flush()
-    product = source.items[0].product
-    product.default_unit_volume_cm3 = 8000
-    db_session.add(BoxItem(box_id=target.id, product_id=product.id, pack_size="1kg",
-        final_packed_count=1, final_net_weight_kg=1))
-    db_session.flush()
-    with pytest.raises(ValueError, match="usable box volume"):
-        if operation == "move":
-            FloorPackingService(db_session).move_items_between_boxes(source.id, target.id,
-                product.id, "1kg", 1, actor=actor)
-        else:
-            FloorPackingService(db_session).transfer_box_contents(source.id, target.id, actor=actor)
-    assert source.items[0].final_packed_count == 4
-
-
-def test_finalization_derives_totals_from_adjusted_items(db_session):
-    actor, order, box = prepared(db_session)
-    # Stale readings from an older version cannot override the current contents.
-    box.actual_net_weight_kg = 99
-    box.actual_gross_weight_kg = 100
-    FloorPackingService(db_session).save_item(box.id, actor=actor, product_id=box.items[0].product_id,
-        pack_size="1kg", quantity=4, net_weight_kg=3.8, item_id=box.items[0].id)
-    FinalPackingService(db_session).finalize_order(order_id=order.id, actor=actor)
-    assert box.is_locked
-    assert float(box.actual_net_weight_kg) == 3.8
-    assert float(box.actual_gross_weight_kg) == 4.3
-
-
-def test_new_invoice_is_thb_but_historical_currency_is_preserved(db_session):
     order = build_order_with_box(db_session, locked=True)
-    actor = db_session.query(User).filter_by(email="agent1@example.com").one()
-    invoice = OnBehalfInvoicingService(db_session).generate_sub_customer_invoice(order.id, actor=actor)
-    assert invoice.currency == "THB"
-    assert "Amount (THB)" in render_on_behalf_invoice_html(invoice.id, db_session).body.decode()
-    invoice.currency = "EUR"
-    db_session.flush()
-    assert "Amount (EUR)" in render_on_behalf_invoice_html(invoice.id, db_session).body.decode()
-    assert OnBehalfInvoicingService(db_session).generate_sub_customer_invoice(order.id, actor=actor).currency == "EUR"
+    actor = db_session.query(User).first()
+    actor.role = UserRole.GENERAL_ACCOUNTING
+    actor.is_service_principal = False
+    service = OnBehalfInvoicingService(db_session)
+    invoice = service.generate_sub_customer_invoice(order.id, actor=actor)
+    order.customer.destination_country = ""
+    order.customer.billing_email = ""
+    rendered = render_on_behalf_invoice_html(invoice.id, db=db_session).body.decode()
+    assert "clienttrade.eu" not in rendered and "Europe" not in rendered
+    assert "Not provided" in rendered
+    with pytest.raises(ValueError, match="Complete destination country and billing email"):
+        service.approve_and_dispatch(invoice_id=invoice.id, actor=actor)
+    assert invoice.status == InvoiceStatus.INVOICE_DRAFT
+    order.customer.destination_country = "Thailand"
+    order.customer.billing_email = "orders@example.com"
+    assert service.approve_and_dispatch(invoice_id=invoice.id, actor=actor).status == InvoiceStatus.INVOICE_SENT
 
 
-def test_signed_historical_manifest_must_also_reconcile_item_weights(db_session):
-    import copy
-    order = build_order_with_box(db_session, locked=True)
-    actor = db_session.query(User).filter_by(email="agent1@example.com").one()
-    box = db_session.query(Box).one()
-    box.actual_net_weight_kg = 1.8
-    handoff = db_session.query(AgentHandoff).one()
-    payload = copy.deepcopy(handoff.payload_json)
-    payload["boxes"][0]["actual_net_weight_kg"] = 1.8
-    handoff.payload_json = payload
-    handoff.payload_sha256 = canonical_sha256(payload)
-    db_session.flush()
-    with pytest.raises(ValueError, match="Reconcile item weights"):
-        OnBehalfInvoicingService(db_session).generate_sub_customer_invoice(order.id, actor=actor)
-    assert db_session.query(Invoice).count() == 0
-
-
-def test_dashboard_does_not_report_out_of_scope_payment_balances(db_session):
-    order = build_order_with_box(db_session, locked=True)
-    actor = db_session.query(User).filter_by(email="agent1@example.com").one()
-    invoice = OnBehalfInvoicingService(db_session).generate_sub_customer_invoice(order.id, actor=actor)
-    invoice.status = InvoiceStatus.INVOICE_SENT
-    accounting = User(email="currency-accounting@example.com", password_hash="unused",
-        full_name="Accounting", role=UserRole.GENERAL_ACCOUNTING)
-    db_session.add(accounting)
-    db_session.add(Invoice(invoice_number="HISTORICAL-EUR", client_order_id=order.id,
-        customer_id=order.customer_id, final_packing_manifest_id="historical", subtotal_eur=7,
-        total_amount_eur=7, amount_paid_eur=2, currency="EUR", status=InvoiceStatus.INVOICE_SENT))
-    db_session.flush()
-    summary = operations_summary(db_session, accounting)
-    assert summary["billing_scope"] == "INVOICE_ONLY"
-    assert "open_balances_by_currency" not in summary
-    assert "open_balance_eur" not in summary
-
-
-@pytest.mark.parametrize("operation", ["change", "reset"])
-def test_password_changes_and_resets_revoke_previous_sessions(db_session, operation):
-    actor, _, _ = prepared(db_session)
-    actor.password_hash = hash_password("original-password-123")
-    owner = User(email="owner-reset@example.com", full_name="Owner", password_hash="unused", role=UserRole.OWNER_ADMIN)
-    db_session.add(owner)
+def test_seeded_template_reads_never_write_or_lock_customer(db_session):
+    snapshots = template_snapshots(db_session, "GENERAL")
     db_session.commit()
-    old = headers(actor)
-    def transaction():
-        try:
-            yield db_session
-            db_session.commit()
-        except Exception:
-            db_session.rollback()
-            raise
-    app.dependency_overrides[get_db] = transaction
+    statements = []
+    def capture(_connection, clause, *_args):
+        statements.append(clause)
+    event.listen(db_session.get_bind(), "before_execute", capture)
     try:
-        with TestClient(app) as client:
-            if operation == "change":
-                response = client.post("/api/v3/auth/change-password", headers=old,
-                    json={"current_password": "original-password-123", "new_password": "replacement-password-123"})
-                password = "replacement-password-123"
-                assert response.status_code == 204
-            else:
-                response = client.post(f"/api/v3/admin/users/{actor.id}/reset-password", headers=headers(owner))
-                assert response.status_code == 200
-                password = response.json()["temporary_password"]
-            assert client.get("/api/v3/auth/me", headers=old).status_code == 401
-            fresh = client.post("/api/v3/auth/login", json={"email": actor.email, "password": password})
-            assert fresh.status_code == 200
-            assert client.get("/api/v3/auth/me", headers={"Authorization": f"Bearer {fresh.json()['access_token']}"}).status_code == 200
+        repeated = template_snapshots(db_session, "GENERAL")
+    finally:
+        event.remove(db_session.get_bind(), "before_execute", capture)
+    assert {row["id"] for row in repeated} == {row["id"] for row in snapshots}
+    assert len(statements) == 1
+    assert statements[0]._for_update_arg is None
+
+
+@pytest.mark.parametrize("definition", [p for p in references() if p["key"].startswith("NGA-REGIONAL")], ids=lambda p: p["key"])
+def test_reviewed_nga_reference_catalogue_is_not_an_order_column(definition):
+    path = Path(__file__).resolve().parents[2] / "documents" / definition.get("sample_directory", "new input format") / definition["sample"]
+    if not path.exists():
+        pytest.skip("Local source workbook unavailable")
+    from app.api.order_templates import validate_definition
+
+    validate_definition(definition)
+    drafts = parse_profiles(path, [definition])
+    require_template_review(drafts)
+
+
+def test_login_counters_survive_rollback_and_are_shared_between_sessions(db_session, monkeypatch):
+    monkeypatch.setattr(login_limits.time, "time", lambda: 1800)
+    for _ in range(login_limits.ACCOUNT_ATTEMPTS):
+        login_limits.enforce_login_limit(db_session, " SHOP@EXAMPLE.COM ", "192.0.2.1")
+        db_session.rollback()
+    with Session(db_session.get_bind()) as other:
+        with pytest.raises(HTTPException) as error:
+            login_limits.enforce_login_limit(other, "shop@example.com", "192.0.2.2")
+        assert error.value.status_code == 429
+        assert error.value.headers["Retry-After"] == "900"
+    assert all(len(row.key) == 64 for row in db_session.query(LoginLimit))
+    monkeypatch.setattr(login_limits.time, "time", lambda: 2700)
+    login_limits.enforce_login_limit(db_session, "shop@example.com", "192.0.2.1")
+    assert all(row.window_start == 2700 for row in db_session.query(LoginLimit).populate_existing())
+
+
+def test_http_login_blocks_before_password_verification_and_ignores_spoofed_forwarding(db_session, monkeypatch):
+    from app.api import auth
+
+    monkeypatch.setattr(login_limits, "ACCOUNT_ATTEMPTS", 2)
+    monkeypatch.setattr(login_limits, "IP_ATTEMPTS", 3)
+    user = User(email="limited@example.com", password_hash="unused", full_name="Limited", role=UserRole.GENERAL)
+    db_session.add(user)
+    db_session.commit()
+    verified = []
+    monkeypatch.setattr(auth, "verify_password", lambda *args: verified.append(args) or False)
+    client = client_for(db_session)
+    try:
+        for index in range(2):
+            assert client.post("/api/v3/auth/login", json={"email": user.email, "password": "wrong"},
+                               headers={"X-Forwarded-For": f"192.0.2.{index}"}).status_code == 401
+        blocked = client.post("/api/v3/auth/login", json={"email": user.email, "password": "wrong"})
+        assert blocked.status_code == 429 and int(blocked.headers["Retry-After"]) > 0
+        assert len(verified) == 2 and "access_token" not in blocked.cookies
+        assert client.post("/api/v3/auth/login", json={"email": "other@example.com", "password": "wrong"},
+                           headers={"X-Forwarded-For": "203.0.113.99"}).status_code == 429
     finally:
         app.dependency_overrides.clear()
+
+
+def test_bulk_missing_prices_use_two_reads_instead_of_eight_per_line(db_session):
+    requests = [dict(main_customer_id="main", sub_customer_id="shop", product_id=f"p{i}",
+                     pack_size="100g", as_of="2026-11-08") for i in range(20)]
+    statements = []
+    def capture(_conn, _cursor, statement, *_args):
+        statements.append(statement)
+    event.listen(db_session.get_bind(), "before_cursor_execute", capture)
+    try:
+        catalogue = PriceCatalogue(db_session)
+        catalogue.preload(requests)
+        assert [catalogue.price_for(**request) for request in requests] == [None] * 20
+    finally:
+        event.remove(db_session.get_bind(), "before_cursor_execute", capture)
+    assert len(statements) == 2
+
+
+@pytest.mark.parametrize("pack", ["100g", "100 grams", "100g tray", "KG (100g)", "500g", "200g"])
+@pytest.mark.parametrize("day", ["2025-01-01", "2026-06-01", "2026-11-08"])
+def test_bulk_prices_preserve_scope_pack_and_historical_rules(db_session, pack, day):
+    _, main, sub, product = _setup(db_session)
+    db_session.add_all([
+        PriceList(product_id=product.id, customer_id=None, pack_size="100g", unit_price_eur=4, valid_from="2020-01-01"),
+        PriceList(product_id=product.id, customer_id=sub.id, pack_size="500g", unit_price_eur=8, valid_from="2020-01-01"),
+        CustomerSellingPrice(main_customer_id=main.id, product_id=product.id, pack_size="100g", selling_price_eur=3, valid_from="20260101"),
+        CustomerSellingPrice(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id, pack_size="100g", selling_price_eur=2, valid_from="2026-01-01", valid_to="2026-08-31"),
+        CustomerSellingPrice(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id, pack_size="100g", selling_price_eur=Decimal("2.50"), valid_from="2026-09-01"),
+    ])
+    db_session.flush()
+    lookup = dict(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id, pack_size=pack, as_of=day)
+    expected = PriceCatalogue(db_session).price_for(**lookup)
+    catalogue = PriceCatalogue(db_session)
+    catalogue.preload([lookup])
+    assert catalogue.price_for(**lookup) == expected
+
+
+def test_bulk_prices_detect_alias_conflicts_and_invalidate_after_writes(db_session):
+    actor, main, sub, product = _setup(db_session)
+    catalogue = PriceCatalogue(db_session)
+    lookup = dict(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id, pack_size="100g", as_of="2026-11-08")
+    catalogue.preload([lookup])
+    assert catalogue.price_for(**lookup) is None
+    catalogue.set_price(actor=actor, main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id,
+                        pack_size="100g", price=2, valid_from="2026-01-01")
+    assert catalogue.price_for(**lookup) == 2
+    db_session.add(CustomerSellingPrice(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id,
+                                       pack_size="100 grams", selling_price_eur=3, valid_from="2026-01-01"))
+    db_session.flush()
+    catalogue.preload([lookup])
+    with pytest.raises(PriceCatalogueReviewRequired, match="Conflicting prices"):
+        catalogue.price_for(**lookup)
+
+
+def test_bulk_ignores_bad_lower_priority_history_but_blocks_it_when_needed(db_session):
+    _, main, sub, product = _setup(db_session)
+    db_session.add_all([
+        CustomerSellingPrice(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id,
+                             pack_size="100g", selling_price_eur=2, valid_from="2026-01-01"),
+        PriceList(product_id=product.id, pack_size="100g", unit_price_eur=3, valid_from="2026-02-30"),
+    ])
+    db_session.flush()
+    requests = [dict(main_customer_id=main.id, sub_customer_id=customer, product_id=product.id,
+                     pack_size="100g", as_of="2026-11-08") for customer in (sub.id, "other")]
+    catalogue = PriceCatalogue(db_session)
+    catalogue.preload(requests)
+    assert catalogue.price_for(**requests[0]) == 2
+    with pytest.raises(PriceCatalogueReviewRequired, match="Invalid stored price date"):
+        catalogue.price_for(**requests[1])
+
+
+@pytest.mark.parametrize("many_labels", [False, True])
+def test_bulk_preserves_price_history_limits(db_session, many_labels):
+    _, main, sub, product = _setup(db_session)
+    db_session.add_all([PriceList(product_id=product.id, pack_size=f"{index}g" if many_labels else "100g",
+                                  unit_price_eur=2, valid_from="2026-01-01") for index in range(501)])
+    db_session.flush()
+    request = dict(main_customer_id=main.id, sub_customer_id=sub.id, product_id=product.id,
+                   pack_size="100g", as_of="2026-11-08")
+    catalogue = PriceCatalogue(db_session)
+    catalogue.preload([request])
+    with pytest.raises(PriceCatalogueReviewRequired, match="Too many"):
+        catalogue.price_for(**request)
+
+
+def test_bulk_chunks_equivalent_labels_without_losing_price_conflict_checks(db_session):
+    _, main, _, product = _setup(db_session)
+    db_session.add_all([PriceList(product_id=product.id, pack_size=label, unit_price_eur=2,
+                                  valid_from="2026-01-01")
+                        for label in ("100g", "100 g", "100gr", "100 gr", "100Gr.", "100 grams")])
+    db_session.flush()
+    requests = [dict(main_customer_id=main.id, sub_customer_id=f"shop-{index}", product_id=product.id,
+                     pack_size="100g", as_of="2026-11-08") for index in range(200)]
+    catalogue = PriceCatalogue(db_session)
+    catalogue.preload(requests)
+    assert [catalogue.price_for(**request) for request in requests] == [2] * 200
+
+
+@pytest.mark.parametrize("fresh", [False, True])
+def test_login_limit_migration_repeats_and_preserves_counters(fresh):
+    path = Path(__file__).resolve().parents[1] / "alembic/versions/20261108_0026_login_limits.py"
+    spec = importlib.util.spec_from_file_location("login_limit_migration", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    engine = create_engine("sqlite://")
+    with engine.begin() as connection, Operations.context(MigrationContext.configure(connection)):
+        if fresh:
+            LoginLimit.__table__.create(connection)
+        module.upgrade()
+        connection.execute(LoginLimit.__table__.insert().values(key="a" * 64, window_start=1800, attempts=3))
+        module.upgrade()
+        assert connection.exec_driver_sql("SELECT attempts FROM login_limits").scalar_one() == 3
+        assert "ix_login_limits_window_start" in {index["name"] for index in inspect(connection).get_indexes("login_limits")}
+        module.downgrade()
+        assert "login_limits" not in inspect(connection).get_table_names()
+    engine.dispose()

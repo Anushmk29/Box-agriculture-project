@@ -4,6 +4,9 @@ import sys
 backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
+from app.services.order_splitter import OrderSplitter
+from app.services.packing_override_service import PackingOverrideService
+
 from app.core.database import SessionLocal
 from app.models import (
     AdjustmentType,
@@ -21,12 +24,10 @@ from app.models import (
     User,
     UserRole,
 )
+from app.modules.procurement.batch import PurchasingBatchService
 from app.services.matrix_parser import MatrixOrderParser
 from app.services.name_matcher import NameFirstMatcher
 from app.services.on_behalf_invoicing_service import OnBehalfInvoicingService
-from app.services.order_splitter import OrderSplitter
-from app.services.packing_override_service import PackingOverrideService
-from app.services.purchasing_aggregator import PurchasingAggregator
 
 
 def run_test():
@@ -157,41 +158,16 @@ def run_test():
         )
 
         # ----------------------------------------------------------------------
-        # 4. TEST MULTI-ORDER COMBINATION MERGE TOOL & BUFFER ADDITION
+        # 4. TEST SINGLE-FILE PURCHASING & BUFFER ADDITION
         # ----------------------------------------------------------------------
-        print("\n[TEST 4] Testing Multi-Order Combination Merge Tool & Buffer Sticky Memory...")
-        # Create a second mock raw order file for combination testing
-        second_raw_file = (
-            db.query(RawOrderFile).filter(RawOrderFile.file_name == "Order Paris Bulk.xlsx").first()
-        )
-        if not second_raw_file:
-            second_raw_file = RawOrderFile(
-                file_name="Order Paris Bulk.xlsx",
-                storage_url="mock_paris_order.xlsx",
-                shipment_target_date="2026-07-07",
-                route_line="TETE",
-                uploaded_by=user.id,
-                main_customer_id=main_cust.id,
-                status=OrderStatus.SPLIT_AND_VALIDATED,
-            )
-            db.add(second_raw_file)
-            db.commit()
-            db.refresh(second_raw_file)
-
+        print("\n[TEST 4] Testing Single-File Purchasing & Buffer Sticky Memory...")
         # Set a 12% default buffer on our test product
         product.default_buffer_percentage = 12.00
         db.commit()
 
-        aggregator = PurchasingAggregator(db)
-        mpl = aggregator.combine_and_consolidate(
-            raw_file_ids=[raw_file.id, second_raw_file.id],
-            batch_ref="PUR-20260707-MERGED-DEMO",
-            shipment_date="2026-07-07",
-            route_code="TETE",
-        )
-        print(f"  ✓ Master Purchase Order Generated: {mpl.batch_reference}")
-        print(f"  ✓ Order Sources Linked: {len(mpl.sources)} files merged")
-        assert len(mpl.sources) == 2, "Both files must be recorded in purchasing_order_sources!"
+        aggregator = PurchasingBatchService(db)
+        mpl = aggregator.consolidate_raw_file(raw_file.id, actor=user)
+        assert len(mpl.sources) == 1
 
         # Check buffer calculation on purchasing items
         p_item = (
@@ -213,12 +189,8 @@ def run_test():
             )
 
         # Test updating buffer with sticky memory
-        aggregator.update_product_buffer(
-            product_id=product.id,
-            new_buffer_pct=15.00,
-            purchasing_item_id=p_item.id if p_item else None,
-            save_as_default=True,
-        )
+        assert p_item is not None
+        aggregator.set_item_buffer(p_item.id, 15.00, actor=user, save_as_default=True)
         db.refresh(product)
         assert float(product.default_buffer_percentage) == 15.00, (
             "Buffer percentage must persist in Product master!"

@@ -1,8 +1,8 @@
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 
 from app.core.database import get_db
-from app.core.security import hash_password, create_access_token
+from app.core.security import create_access_token, hash_password
 from app.main import app
 from app.models.master_data import (
     BoxMaterial,

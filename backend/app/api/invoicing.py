@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 from html import escape
 from typing import Literal
@@ -17,18 +18,21 @@ from app.core.idempotency import run_once
 from app.core.policy import Action
 from app.core.read_models import LegacyPage, load_invoice_details
 from app.core.revisions import Revision, RevisionRequest, lock_invoice
-from app.core.values import BankName, BankReference, PackLabel, PositiveMoney
+from app.core.values import BankName, BankReference, PackLabel, PositiveMoney, UnicodeText
 from app.models.audit import AuditLog
-from app.models.invoice import Invoice, InvoiceLineItem, Receipt
+from app.models.invoice import Invoice, InvoiceLineItem, InvoiceStatus, Receipt
 from app.models.master_data import Customer, PriceList
-from app.models.order import ClientOrder, OrderStatus
-from app.models.packing import Box
+from app.models.order import ClientOrder, OrderStatus, RawOrderFile
 from app.models.user import User, UserRole
 from app.modules.pricing import PriceCatalogue, _price_pack_key
 from app.services.on_behalf_invoicing_service import (
+    MissingCustomerDetailsError,
     MissingSellingPricesError,
     OnBehalfInvoicingService,
     _approved_prices,
+    _billing_boxes,
+    _price_requests,
+    invoice_contact,
 )
 
 router = APIRouter(
@@ -68,28 +72,37 @@ class ResolvePricesRequest(BaseModel):
     items: list[ResolvePriceItem] = Field(min_length=1, max_length=5000)
 
 
-def _pricing_order(db: Session, order_id: str, *, lock: bool = False):
-    query = db.query(ClientOrder).filter_by(id=order_id)
-    order = (query.with_for_update() if lock else query).first()
-    if not order:
+def _pricing_orders(db: Session, order_ids, *, lock: bool = False):
+    ids = set(order_ids)
+    query = db.query(ClientOrder).options(
+        joinedload(ClientOrder.raw_file).load_only(RawOrderFile.file_name, RawOrderFile.shipment_target_date),
+        joinedload(ClientOrder.customer).load_only(Customer.company_name, Customer.client_code),
+    ).filter(ClientOrder.id.in_(ids)).order_by(ClientOrder.id)
+    orders = (query.with_for_update(of=ClientOrder) if lock else query).all()
+    if len(orders) != len(ids):
         raise HTTPException(404, "Order not found")
-    if order.status != OrderStatus.HANDOFF_02_RETURNED:
+    if any(order.status != OrderStatus.HANDOFF_02_RETURNED for order in orders):
         raise HTTPException(409, "Only completed packing awaiting an invoice can have missing prices resolved")
-    boxes = db.query(Box).filter_by(client_order_id=order.id).all()
-    if not boxes or any(not box.is_locked for box in boxes):
+    result = {order.id: (order, []) for order in orders}
+    for box in _billing_boxes(db, ids):
+        result[box.client_order_id][1].append(box)
+    if any(not boxes or any(not box.is_locked for box in boxes) for _, boxes in result.values()):
         raise HTTPException(409, "Locked final packing is required before resolving billing prices")
-    return order, boxes
+    return result
 
 
 @router.post("/price-check")
 def check_billing_prices(payload: BulkInvoicesRequest, db: Session = Depends(get_db, scope="function")):
     issues = []
+    orders = _pricing_orders(db, payload.order_ids)
+    catalogue = PriceCatalogue(db)
+    catalogue.preload([lookup for order, boxes in orders.values() for lookup in _price_requests(order, boxes)])
     for order_id in dict.fromkeys(payload.order_ids):
-        order, boxes = _pricing_order(db, order_id)
+        order, boxes = orders[order_id]
         try:
-            _approved_prices(PriceCatalogue(db), order, boxes)
+            _approved_prices(catalogue, order, boxes)
         except MissingSellingPricesError as exc:
-            issues.append({**exc.detail(), "order_ref": order.order_ref_id,
+            issues.append({**exc.detail(), "order_ref": order.order_ref_id, "file_name": order.raw_file.file_name,
                            "customer_name": order.customer.company_name or order.customer.client_code})
     return {"issues": issues}
 
@@ -98,13 +111,13 @@ def check_billing_prices(payload: BulkInvoicesRequest, db: Session = Depends(get
 def resolve_billing_prices(payload: ResolvePricesRequest, db: Session = Depends(get_db, scope="function"),
                            actor: User = Depends(require_action(Action.MANAGE_BILLING))):
     catalogue = PriceCatalogue(db)
-    orders = {order_id: _pricing_order(db, order_id, lock=True)
-              for order_id in sorted({item.order_id for item in payload.items})}
+    orders = _pricing_orders(db, [item.order_id for item in payload.items], lock=True)
     # A permanent price can serve several selected shipment dates. Serialize
     # catalogue writers for the same account, including missing rows, before
     # checking that a price is still missing. All checks precede any assignments.
     root_ids = {order.main_customer_id or order.customer_id for order, _ in orders.values()}
     db.query(Customer).filter(Customer.id.in_(root_ids)).order_by(Customer.id).with_for_update().all()
+    catalogue.preload([lookup for order, boxes in orders.values() for lookup in _price_requests(order, boxes)])
     seen = set()
     planned = {}
     for item in payload.items:
@@ -184,6 +197,7 @@ class InvoiceLineItemOut(BaseModel):
     line_item_id: str
     source_order_id: str
     source_order_ref: str
+    source_file_name: str
     source_customer_code: str
     product_code: str
     product_name: str
@@ -228,7 +242,7 @@ def billing_work_queue(
         OrderStatus.ORDER_CLOSED,
     }
     query = (db.query(ClientOrder).filter(ClientOrder.status.in_(statuses))
-        .options(joinedload(ClientOrder.customer)).order_by(ClientOrder.created_at.desc(), ClientOrder.id))
+        .options(joinedload(ClientOrder.customer), joinedload(ClientOrder.raw_file)).order_by(ClientOrder.created_at.desc(), ClientOrder.id))
     orders, _ = page.rows(query, response, replacement="/invoicing/orders?view=all")
     ids = [order.id for order in orders]
     direct = select(Invoice.client_order_id.label("order_id"), Invoice.id.label("invoice_id")).where(Invoice.client_order_id.in_(ids))
@@ -243,6 +257,7 @@ def billing_work_queue(
         {
             "order_id": order.id,
             "order_ref_id": order.order_ref_id,
+            "file_name": order.raw_file.file_name,
             "customer_code": order.customer.client_code if order.customer else "",
             "customer_name": order.customer.company_name if order.customer else "",
             "order_status": order.status.value,
@@ -326,6 +341,8 @@ def approve_bulk_invoices(payload: BulkApprovalRequest, db: Session = Depends(ge
         invoices = OnBehalfInvoicingService(db).approve_bulk_invoices(payload.invoice_ids, actor=actor)
         details = load_invoice_details(db, [invoice.id for invoice in invoices], page=True)
         return [_invoice_detail(details[invoice.id]) for invoice in invoices]
+    except MissingCustomerDetailsError as exc:
+        raise HTTPException(409, exc.detail()) from exc
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
 
@@ -377,9 +394,92 @@ def approve_and_dispatch_invoice(
             invoice_id=invoice_id,
             actor=actor,
         )
+    except MissingCustomerDetailsError as exc:
+        raise HTTPException(409, exc.detail()) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return _invoice_detail(invoice)
+
+
+class ContactValues(BaseModel):
+    billing_email: UnicodeText = Field(max_length=255)
+    destination_country: UnicodeText = Field(max_length=64)
+
+
+class ContactCorrection(BaseModel):
+    customer_id: str = Field(min_length=1, max_length=36)
+    expected: ContactValues
+    billing_email: UnicodeText = Field(min_length=3, max_length=255)
+    destination_country: UnicodeText = Field(min_length=1, max_length=64)
+
+    @field_validator("billing_email", "destination_country")
+    @classmethod
+    def clean_contact(cls, value, info):
+        value = value.strip()
+        if not value:
+            raise ValueError("This field cannot be blank")
+        if info.field_name == "billing_email" and not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", value):
+            raise ValueError("Enter a valid billing email address")
+        return value
+
+
+class CustomerDetailsUpdate(RevisionRequest):
+    customers: list[ContactCorrection] = Field(min_length=1, max_length=2)
+
+
+def _contact_response(invoice, customers):
+    return {"invoice_id": invoice.id, "revision": invoice.revision, "customers": [
+        {"customer_id": customer.id, "client_code": customer.client_code, "company_name": customer.company_name,
+         "role": "Seller" if customer.id == invoice.seller_customer_id else "Bill to",
+         "billing_email": customer.billing_email, "destination_country": customer.destination_country}
+        for customer in customers]}
+
+
+@router.get("/{invoice_id}/customer-details")
+def get_invoice_customer_details(invoice_id: str, db: Session = Depends(get_db, scope="function"),
+                                 _actor: User = Depends(require_action(Action.MANAGE_BILLING))):
+    invoice = db.get(Invoice, invoice_id)
+    if not invoice:
+        raise HTTPException(404, "Invoice not found")
+    if invoice.status != InvoiceStatus.INVOICE_DRAFT:
+        raise HTTPException(409, "Customer details can only be changed while reviewing a draft invoice")
+    customers = db.query(Customer).filter(Customer.id.in_({invoice.customer_id, invoice.seller_customer_id} - {None}))\
+        .order_by(Customer.id).all()
+    return _contact_response(invoice, customers)
+
+
+@router.put("/{invoice_id}/customer-details")
+def update_invoice_customer_details(invoice_id: str, payload: CustomerDetailsUpdate,
+                                    db: Session = Depends(get_db, scope="function"),
+                                    actor: User = Depends(require_action(Action.MANAGE_BILLING))):
+    invoice = lock_invoice(db, invoice_id, payload.expected_revision)
+    if invoice.status != InvoiceStatus.INVOICE_DRAFT:
+        raise HTTPException(409, "Customer details can only be changed while reviewing a draft invoice")
+    ids = {invoice.customer_id, invoice.seller_customer_id} - {None}
+    if len(payload.customers) != len(ids) or {item.customer_id for item in payload.customers} != ids:
+        raise HTTPException(422, "Choose exactly the customers on this invoice")
+    customers = db.query(Customer).filter(Customer.id.in_(ids)).order_by(Customer.id)\
+        .with_for_update().populate_existing().all()
+    corrections = {item.customer_id: item for item in payload.customers}
+    for customer in customers:
+        expected = corrections[customer.id].expected.model_dump()
+        if expected != {key: getattr(customer, key) for key in expected}:
+            raise HTTPException(409, detail={"code": "CUSTOMER_DETAILS_CHANGED",
+                "message": "Customer details changed. Reload and review them before saving."})
+    for customer in customers:
+        update = corrections[customer.id]
+        before = update.expected.model_dump()
+        after = {"billing_email": update.billing_email, "destination_country": update.destination_country}
+        if before == after:
+            continue
+        for key, value in after.items():
+            setattr(customer, key, value)
+        db.add(AuditLog(event_type="CUSTOMER_BILLING_DETAILS_UPDATED", actor_id=actor.id,
+            actor_role=actor.role.value, target_table="customers", target_id=customer.id,
+            before_state=before, after_state=after))
+    invoice.revision += 1
+    db.flush()
+    return _contact_response(invoice, customers)
 
 
 # Historical compatibility helper only; deliberately not an HTTP route in the invoice-only application.
@@ -464,7 +564,8 @@ def invoice_lines(invoice_id: str, offset: int = Query(0, ge=0), limit: int = Qu
     query = db.query(InvoiceLineItem).filter(InvoiceLineItem.invoice_id == invoice_id)
     total = query.count()
     lines = query.options(joinedload(InvoiceLineItem.product),
-        joinedload(InvoiceLineItem.source_order).joinedload(ClientOrder.customer)
+        joinedload(InvoiceLineItem.source_order).joinedload(ClientOrder.customer),
+        joinedload(InvoiceLineItem.source_order).joinedload(ClientOrder.raw_file)
     ).order_by(InvoiceLineItem.box_number, InvoiceLineItem.id).offset(offset).limit(limit).all()
     return {"invoice_id": invoice.id, "revision": invoice.revision, "total": total, "offset": offset,
         "limit": limit, "has_more": offset + len(lines) < total,
@@ -564,6 +665,7 @@ def _invoice_line(item: InvoiceLineItem, order_id: str) -> InvoiceLineItemOut:
     return InvoiceLineItemOut(
         line_item_id=item.id, source_order_id=item.source_order_id or order_id,
         source_order_ref=item.source_order.order_ref_id if item.source_order else "",
+        source_file_name=item.source_order.raw_file.file_name if item.source_order else "",
         source_customer_code=item.source_order.customer.client_code if item.source_order and item.source_order.customer else "",
         product_code=item.product.t_code if item.product else "",
         product_name=f"{item.product.name_vi} / {item.product.name_en}" if item.product else "",
@@ -631,18 +733,15 @@ def render_on_behalf_invoice_html(invoice_id: str, db: Session = Depends(get_db,
     currency_symbol = {"THB": "\u0e3f", "EUR": "\u20ac"}.get(currency, "")
     seller = invoice.seller_customer
     buyer = invoice.customer
-    seller_name = escape(seller.company_name if seller else "Tonio Trade Europe BV")
-    seller_email = escape(seller.billing_email if seller else "billing@toniotrade.eu")
+    seller_name = escape(seller.company_name if seller else "Not provided")
+    seller_email = escape(invoice_contact(db, invoice, seller)["billing_email"])
     seller_tax_id = escape(seller.tax_vat_id if seller and seller.tax_vat_id else "Not provided")
     buyer_code = escape(buyer.client_code if buyer else "Client")
     buyer_name = escape(buyer.company_name if buyer else buyer_code)
     buyer_route = escape(buyer.route_group if buyer and buyer.route_group else "Standard")
-    buyer_destination = escape(
-        buyer.destination_country if buyer and buyer.destination_country else "Europe"
-    )
-    buyer_email = escape(
-        buyer.billing_email if buyer and buyer.billing_email else "billing@clienttrade.eu"
-    )
+    buyer_contact = invoice_contact(db, invoice, buyer)
+    buyer_destination = escape(buyer_contact["destination_country"] or "Not provided")
+    buyer_email = escape(buyer_contact["billing_email"])
     invoice_number = escape(invoice.invoice_number)
     invoice_status = escape(invoice.status.value)
     if (
@@ -678,10 +777,10 @@ def render_on_behalf_invoice_html(invoice_id: str, db: Session = Depends(get_db,
             current_source = it.source_order_id
             source = it.source_order
             customer_code = source.customer.client_code if source and source.customer else "Customer"
-            order_ref = source.order_ref_id if source else "Order"
+            source_file = source.raw_file.file_name if source else "Source filename unavailable"
             rows.append(
                 '<tr class="order-section"><td colspan="7">'
-                f"{escape(customer_code)} &middot; {escape(order_ref)}</td></tr>"
+                f"{escape(customer_code)} &middot; {escape(source_file)}</td></tr>"
             )
         rows.append(f"""
     <tr>

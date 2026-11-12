@@ -4,13 +4,13 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-class ActionType(str, enum.Enum):
+class ActionType(enum.StrEnum):
     ORDER = "ORDER"
     CANCEL = "CANCEL"
     UPDATE = "UPDATE"
 
 
-class IngestionChannel(str, enum.Enum):
+class IngestionChannel(enum.StrEnum):
     EXCEL_MATRIX = "EXCEL_MATRIX"
     EXCEL_TABULAR = "EXCEL_TABULAR"
     EXCEL_TEXT = "EXCEL_TEXT"

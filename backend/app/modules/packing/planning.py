@@ -17,13 +17,17 @@ from app.models.audit import AuditLog
 from app.models.master_data import BoxCatalogue, Product
 from app.models.order import ClientOrderItem, OrderStatus
 from app.models.packing import Box, BoxItem
+from app.models.packing_evidence import PackingHistoryReview
+from app.modules.orders.quantities import weight_only_line
 from app.modules.packing.boxes import new_box, order_route_code
 from app.modules.packing.catalogue import reference_for
+from app.modules.packing.history import allocate_history, history_basis
 from app.modules.packing.materials import material_policy, preferred_material
 from app.modules.packing.optimizer import (
     DeterministicPackingOptimizer,
     PackingDemand,
     PackingOption,
+    PackingPlan,
 )
 from app.modules.packing.profiles import (
     PACKING_MODES,
@@ -101,7 +105,7 @@ def generate_plan(db: Session, order, mode: str, *, from_floor=False, template=F
                 )
                 if not count:
                     continue
-                profile = profile_for(product, item.pack_size)
+                profile = None if history_basis(product) else profile_for(product, item.pack_size)
                 net = (
                     item.confirmed_net_weight_kg
                     if item.confirmed_net_weight_kg is not None
@@ -111,7 +115,7 @@ def generate_plan(db: Session, order, mode: str, *, from_floor=False, template=F
                     net = count * float(profile.net_weight_kg)
                 rows.append((product, item.pack_size, count, float(net or 0)))
                 continue
-            if item.ordered_pack_count == 0 or item.confirmed_pack_count == 0:
+            if (item.ordered_pack_count == 0 and not weight_only_line(item)) or item.confirmed_pack_count == 0:
                 continue
             if item.confirmed_pack_count is None or item.confirmed_net_weight_kg is None:
                 raise ValueError("Handoff 01 confirmed quantities are required for packing")
@@ -139,9 +143,12 @@ def generate_plan(db: Session, order, mode: str, *, from_floor=False, template=F
         PackingOption(c.id, c.box_type, float(c.max_safe_net_weight_kg), box_volume(c))
         for c in catalogues
     ]
+    historical_boxes, rows = allocate_history(db, rows, options, route_code=order_route_code(order), mode=mode, order=order)
     demands, missing = [], []
     for product, size, count, net in rows:
         try:
+            if history_basis(product):
+                raise ValueError(f"{product.t_code} {size}: no exact reviewed historical combination covers the remaining packs; review a template or choose reviewed volume estimates")
             require_known_el(product, mode)
             profile_for(product, size)
             volume = unit_volume(product, size, net / count if count else None)
@@ -171,10 +178,14 @@ def generate_plan(db: Session, order, mode: str, *, from_floor=False, template=F
         )
     if missing:
         raise ValueError("Packing profiles need review: " + "; ".join(missing))
+    if not demands:
+        return PackingPlan(order_route_code(order), historical_boxes)
     plan = DeterministicPackingOptimizer().solve(
         demands=demands, options=options, route_code=order_route_code(order), packing_mode=mode
     )
-    return plan
+    if len(historical_boxes) + len(plan.boxes) > limits.MAX_BOXES:
+        raise WorkLimit("Combined packing plan exceeds its box work budget")
+    return PackingPlan(plan.route_code, [*historical_boxes, *plan.boxes])
 
 
 def plan_summary(plan):
@@ -185,6 +196,7 @@ def plan_summary(plan):
             "net_weight_kg": box.total_net_weight_kg,
             "volume_cm3": box.total_volume_cm3,
             "usable_volume_cm3": box.option.usable_volume_cm3,
+            "history_evidence": box.history_evidence,
             "items": [
                 {
                     "product_id": i.product_id,
@@ -231,7 +243,7 @@ def persist_plan(db, order, plan, mode):
                 )
             )
         db.add(box)
-        box.packing_snapshot = snapshot_for(box)
+        box.packing_snapshot = snapshot_for(box, history_evidence=planned.history_evidence)
         boxes.append(box)
     db.flush()
     return boxes
@@ -244,6 +256,8 @@ def fingerprint(db, order):
     )
     pids = {item.product_id for box in boxes for item in box.items}
     state = {
+        "history_reviews": [(review.id, review.revision, review.status, review.source_version)
+                            for review in db.query(PackingHistoryReview).order_by(PackingHistoryReview.id).limit(2001)],
         "order_id": order.id,
         "packing_revision": order.packing_revision,
         "status": order.status.value,
@@ -336,6 +350,7 @@ def preview_replan(db, order, mode):
             "order_id": order.id,
             "mode": mode,
             "fingerprint": fingerprint(db, order),
+            "plan_digest": hashlib.sha256(json.dumps(plan_summary(plan), sort_keys=True).encode()).hexdigest(),
             "exp": datetime.now(UTC) + timedelta(minutes=15),
         },
         settings.SECRET_KEY,
@@ -350,7 +365,8 @@ def preview_replan(db, order, mode):
     }
     for box in summary:
         for item in box["items"]:
-            item["product_name"] = names[item["product_id"]].name_en
+            product = names[item["product_id"]]
+            item["product_name"] = " / ".join(name for name in [product.name_th, product.name_vi, product.name_en] if name and name.strip())
     return {
         "preview_token": token,
         "packing_mode": mode,
@@ -372,6 +388,8 @@ def apply_replan(db, order, token, actor):
     if fingerprint(db, order) != data.get("fingerprint"):
         raise ValueError("Packing or setup data changed. Preview again before replacing boxes")
     plan = generate_plan(db, order, data["mode"], from_floor=True)
+    if hashlib.sha256(json.dumps(plan_summary(plan), sort_keys=True).encode()).hexdigest() != data.get("plan_digest"):
+        raise ValueError("The suggested plan changed; preview it again before applying")
     boxes = persist_plan(db, order, plan, data["mode"])
     db.add(
         AuditLog(

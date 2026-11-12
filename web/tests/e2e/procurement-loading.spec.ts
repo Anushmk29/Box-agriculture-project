@@ -26,7 +26,7 @@ for (const outcome of ["items", "empty", "error"] as const) {
       } else {
         await route.fulfill({ json: pathname.endsWith("/auth/me")
           ? { full_name: "QA User", role: "OWNER_ADMIN", must_change_password: false, permissions: ["confirm_procurement"] }
-          : pathname.endsWith("/source-orders") ? [] : {} });
+          : {} });
       }
     });
     const request = page.waitForRequest("**/procurement/batches/qa-batch");

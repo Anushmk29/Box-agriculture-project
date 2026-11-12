@@ -92,6 +92,9 @@ def require_known_el(product, mode):
 
 
 def unit_volume(product, pack_size: str, unit_weight_kg: float | None = None) -> float:
+    from app.modules.packing.history import history_basis
+    if history_basis(product):
+        raise ValueError(f"{product.t_code}: these contents need an exact reviewed historical template; no occupied volume has been measured")
     if product.packing_volume_reviewed and product.packing_volume_l_per_kg is not None:
         value = float(product.packing_volume_l_per_kg)
         if not math.isfinite(value) or value <= 0:
@@ -131,13 +134,23 @@ def content_rows(box):
     ]
 
 
-def snapshot_for(box, rows=None, *, catalogue=None) -> dict:
+def snapshot_for(box, rows=None, *, catalogue=None, history_evidence=None) -> dict:
+    from sqlalchemy.orm import object_session
+
+    from app.modules.packing.history import fit_evidence, history_basis, validate_rules
     from app.modules.packing.materials import material_policy
     catalogue = catalogue or box.override_box_type or box.box_type
     rows = content_rows(box) if rows is None else rows
+    requires_history = any(history_basis(p) for p, *_ in rows)
+    if history_evidence is None and (requires_history or (box.packing_snapshot or {}).get("history_evidence")):
+        history_evidence = fit_evidence(object_session(box), box, rows, catalogue)
+        if history_evidence is None and requires_history:
+            raise ValueError("Historical fit guidance changed or does not cover these contents; review the packing plan")
+    if history_evidence:
+        validate_rules(rows, catalogue, box.packing_mode, order=box.order)
     inputs = {}
     for product, size, count, net in rows:
-        profile = profile_for(product, size)
+        profile = None if history_evidence else profile_for(product, size)
         key = lookup_pack_key(size) if settings.PACKING_PROFILES_ENABLED else size
         inputs[f"{product.id}:{key}"] = {
             "product_id": product.id,
@@ -149,8 +162,10 @@ def snapshot_for(box, rows=None, *, catalogue=None) -> dict:
             if profile and profile.net_weight_kg is not None
             else None,
             "evidence": (
+                {"volume_source": "HISTORICAL_VERIFIED", "occupied_volume_known": False}
+                if history_evidence else
                 {
-                    "volume_source": "PROXY" if product.packing_volume_estimated else "MEASURED",
+                    "volume_source": "PROXY" if product.packing_volume_estimated else "MANUAL",
                     "litres_per_kg": float(product.packing_volume_l_per_kg),
                 }
                 if product.packing_volume_reviewed and product.packing_volume_l_per_kg
@@ -159,7 +174,7 @@ def snapshot_for(box, rows=None, *, catalogue=None) -> dict:
                 else None
             ),
             "profile_revision": profile.revision if profile else None,
-            "unit_volume_cm3": unit_volume(product, size, net / count if count else None),
+            "unit_volume_cm3": None if history_evidence else unit_volume(product, size, net / count if count else None),
             "firmness": product.firmness,
             "control_status": None
             if "control_status"
@@ -171,7 +186,7 @@ def snapshot_for(box, rows=None, *, catalogue=None) -> dict:
             "weight_class": product.weight_class.value,
             "botanical_family": product.botanical_family,
         }
-    return {
+    result = {
         "mode": box.packing_mode,
         "catalogue_id": catalogue.id,
         "catalogue_revision": catalogue.packing_revision,
@@ -183,6 +198,15 @@ def snapshot_for(box, rows=None, *, catalogue=None) -> dict:
         "safe_net_capacity_kg": float(catalogue.max_safe_net_weight_kg),
         "items": inputs,
     }
+    if history_evidence:
+        result["history_evidence"] = history_evidence
+    initial = (box.packing_snapshot or {}).get("initial_plan")
+    result["initial_plan"] = initial or {
+        "catalogue_id": catalogue.id,
+        "items": [{"product_id": p.id, "pack_size": size, "pack_count": count, "net_weight_kg": net}
+                  for p, size, count, net in rows],
+    }
+    return result
 
 
 def stale_reasons(box) -> list[str]:
@@ -193,7 +217,8 @@ def stale_reasons(box) -> list[str]:
         for value in [box.custom_length_cm, box.custom_width_cm, box.custom_height_cm]
     ):
         return ["Select a box size from the dimension workbook"]
-    if not settings.PACKING_PROFILES_ENABLED and not any(item.product.foam_below_kg is not None for item in box.items):
+    if (not settings.PACKING_PROFILES_ENABLED and not (box.packing_snapshot or {}).get("history_evidence")
+            and not any(item.product.foam_below_kg is not None for item in box.items)):
         return []
     if box.packing_mode not in PACKING_MODES:
         return ["Select EL or Non-EL packing rules"]
@@ -220,6 +245,7 @@ def packing_details(box) -> dict:
     saved = box.packing_snapshot or {}
     inputs = list(saved.get("items", {}).values())
     layers, volume = [], 0.0
+    volume_known = True
     for item in box.items:
         source = next(
             (
@@ -230,7 +256,10 @@ def packing_details(box) -> dict:
             {},
         )
         unit = source.get("unit_volume_cm3", float(item.product.default_unit_volume_cm3 or 0))
-        volume += item.final_packed_count * unit
+        if unit is None:
+            volume_known = False
+        else:
+            volume += item.final_packed_count * unit
         firmness = source.get("firmness", item.product.firmness)
         layers.append(
             {
@@ -268,8 +297,9 @@ def packing_details(box) -> dict:
         "packing_mode": box.packing_mode,
         "needs_replan": bool(stale_reasons(box)),
         "replan_reasons": stale_reasons(box),
-        "volume_cm3": round(volume, 2),
+        "history_evidence": saved.get("history_evidence"),
+        "volume_cm3": round(volume, 2) if volume_known else None,
         "usable_volume_cm3": round(usable, 2),
-        "volume_utilization_pct": round(volume / usable * 100, 2) if usable else None,
+        "volume_utilization_pct": round(volume / usable * 100, 2) if usable and volume_known else None,
         "layers": layers,
     }

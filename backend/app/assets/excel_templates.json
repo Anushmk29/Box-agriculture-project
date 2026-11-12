@@ -1048,6 +1048,12 @@
           "8": "915L",
           "9": "928L",
           "10": "993L"
+        },
+        "ignored_columns": {
+          "13": "",
+          "15": "",
+          "16": "",
+          "17": ""
         }
       },
       {
@@ -1071,6 +1077,12 @@
           "6": "65H",
           "7": "66H",
           "8": "68H"
+        },
+        "ignored_columns": {
+          "11": "",
+          "13": "",
+          "14": "",
+          "15": ""
         }
       },
       {
@@ -1106,6 +1118,12 @@
           "12": "424T",
           "13": "434T",
           "14": "440T"
+        },
+        "ignored_columns": {
+          "17": "",
+          "19": "",
+          "20": "",
+          "21": ""
         }
       }
     ],
@@ -1150,5 +1168,2953 @@
     "numeric_pack_unit": null,
     "sample": "รายการขนม LY 06-09-2026.xlsx",
     "sha256": "4d7c6d3e781fae98474a9d4591da6920ff7ec8c1bc968af12fc57ada98bb59d3"
+  },
+  {
+    "key": "02T",
+    "main_customer_code": "NGA",
+    "client_code": "02T",
+    "identity_tokens": [
+      "02T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003306"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "02T.xlsx",
+    "sha256": "7963dd96dc3ca6400140502a830ab116438b0fbc190b2a03e9ad3e03ce7003ce",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "06T",
+    "main_customer_code": "NGA",
+    "client_code": "06T",
+    "identity_tokens": [
+      "06T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "06T (1).xls",
+    "sha256": "7a4a9a7b610ea22edf1324652a22268d55f5c80bfe1c4de0b952d0e04bda011d",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "07T",
+    "main_customer_code": "NGA",
+    "client_code": "07T",
+    "identity_tokens": [
+      "07T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "07T.xlsx",
+    "sha256": "50ebb734af7340cc5203241168829ffabad57cdf01f44b0af1a4da498c54134d",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "09T",
+    "main_customer_code": "NGA",
+    "client_code": "09T",
+    "identity_tokens": [
+      "09T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "09T.xlsx",
+    "sha256": "f17be414a6d1cae60c8326bf738534a88388e44f44573dcc8ef9872bf81778b1",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "12T",
+    "main_customer_code": "NGA",
+    "client_code": "12T",
+    "identity_tokens": [
+      "12T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "12T.xlsx",
+    "sha256": "130b3fdd07189fab6ef597ae65e84f4175ff9485eac49dcc70ff6bb4d41ef9ef",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "13T",
+    "main_customer_code": "NGA",
+    "client_code": "13T",
+    "identity_tokens": [
+      "13T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "13T.xls",
+    "sha256": "99fc2f3ba48c1d42faa66a3ef2a1a01f8ad515ec7070aec29781de0d6afca828",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "37T",
+    "main_customer_code": "NGA",
+    "client_code": "37T",
+    "identity_tokens": [
+      "37T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "37T.xlsx",
+    "sha256": "4efc63cd6a26b55708bed75807022da211b87e4ee105ccfbbae23f15d63e4f4e",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "403T",
+    "main_customer_code": "NGA",
+    "client_code": "403T",
+    "identity_tokens": [
+      "403T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "403T.xlsx",
+    "sha256": "3dd549ea7d0417e327d1643e97d9260a6a76835575f2c1f36989d18e7585c3f1",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "418T",
+    "main_customer_code": "NGA",
+    "client_code": "418T",
+    "identity_tokens": [
+      "418T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "418T.xlsx",
+    "sha256": "1881d96e1cb100c010dd4bee16781202b21526d040a4d6d85f2250de7ac1d467",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "424T",
+    "main_customer_code": "NGA",
+    "client_code": "424T",
+    "identity_tokens": [
+      "424T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "3": "Description (English)",
+          "5": "ORDER",
+          "2": "Item",
+          "1": "Item",
+          "4": "Description Thai"
+        },
+        "fields": {
+          "name": 3,
+          "quantity": 5,
+          "alt": [
+            4
+          ],
+          "code": 2,
+          "customer_product_code": 1,
+          "description_pack": 4
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "424T.xlsx",
+    "sha256": "c92db9fbd3367cc7248cc2372f4da84ed4b707bdf8239afd9ae4f805f9585368",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "427T",
+    "main_customer_code": "NGA",
+    "client_code": "427T",
+    "identity_tokens": [
+      "427T"
+    ],
+    "kind": "text",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "1": "427T"
+        },
+        "fields": {
+          "name": 1,
+          "quantity": 1
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "427T.xlsx",
+    "sha256": "6837996b8b8c5d00e263fc4fc5206575293b9706f01652c679557bee98c247c3",
+    "sample_directory": "excel files of all cutomer",
+    "text_quantity_separator": "-"
+  },
+  {
+    "key": "434T",
+    "main_customer_code": "NGA",
+    "client_code": "434T",
+    "identity_tokens": [
+      "434T"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003306"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "434T.xlsx",
+    "sha256": "60d9a3ab6466283ee7599eb21dfe82ecb2aabda746b16442bfbf0d6d35c16738",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "51H-1",
+    "main_customer_code": "NGA",
+    "client_code": "51H-1",
+    "identity_tokens": [
+      "51H-1"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003451"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "51H -1.xlsx",
+    "sha256": "b3d7f1758eb9c7666d4fe96cc1077518ea88640f8387564630bce46d202a0287",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "54H",
+    "main_customer_code": "NGA",
+    "client_code": "54H",
+    "identity_tokens": [
+      "54H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet2",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "4": "Packing",
+          "5": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3
+          ],
+          "code": 1,
+          "pack": 4,
+          "unit": 5
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "54H.xlsx",
+    "sha256": "ffa238b502f4498fdf932a9f67b70dfb6217b08db6b11d180c36bce58fc088c2",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "56H",
+    "main_customer_code": "NGA",
+    "client_code": "56H",
+    "identity_tokens": [
+      "56H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "7": "Order",
+          "1": "Code",
+          "5": "Packing",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 7,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "56H.xlsx",
+    "sha256": "6caa297ebc67e2e7d4aa4df577c2855b424afab052ac1bc446c7e5c93408ef42",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "57H",
+    "main_customer_code": "NGA",
+    "client_code": "57H",
+    "identity_tokens": [
+      "57H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "กู้คืน_Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "5": "Packing"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "57H.xls",
+    "sha256": "af7b20e8e111319d0dbecb7368c7ff502a7d2497cd99f9885bab5a26ee3525d9",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "57H-LAYOUT-2",
+    "main_customer_code": "NGA",
+    "client_code": "57H",
+    "identity_tokens": [
+      "57H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "2": "Product Name",
+          "3": "Order",
+          "1": "Product No."
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 3,
+          "code": 1
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "57H.xlsx",
+    "sha256": "95e4799d85b4111594b78ae43759f03ff38b197aed7117822c10d3ff95b4c724",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "59H",
+    "main_customer_code": "NGA",
+    "client_code": "59H",
+    "identity_tokens": [
+      "59H",
+      "Jin Cheng"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "กู้คืน_Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "5": "Packing"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3,
+            4
+          ],
+          "code": 1,
+          "pack": 5
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "59H.xls",
+    "sha256": "9d12e228895c67b09188fe1bfda808a421f1ba2097e27c173df2e0977d6fbdd0",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "60L",
+    "main_customer_code": "NGA",
+    "client_code": "60L",
+    "identity_tokens": [
+      "60L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003460"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "60L.xlsx",
+    "sha256": "b4d261eed0e7ff019fb802e33a3fd4f180c668378ba364ff98cfb65a471950b2",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "61L",
+    "main_customer_code": "NGA",
+    "client_code": "61L",
+    "identity_tokens": [
+      "61L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "61L.xls",
+    "sha256": "03b307c908d3d46987d81dbe18a7ad25f2a3933ca9910f5d6bace5b9d21418a1",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "63H",
+    "main_customer_code": "NGA",
+    "client_code": "63H",
+    "identity_tokens": [
+      "63H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "63H.xls",
+    "sha256": "6e453f34dabddbe51cd32b6d00edffb878e5ec3ab8a62147d8c338a975887202",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "64H",
+    "main_customer_code": "NGA",
+    "client_code": "64H",
+    "identity_tokens": [
+      "64H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "7": "Order",
+          "1": "Code",
+          "5": "Packing",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 7,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "64H (1).xlsx",
+    "sha256": "7439777fe92a1cd8885c1eae61087f140071ff35c3382230ef1d72f323425d2d",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "65H",
+    "main_customer_code": "NGA",
+    "client_code": "65H",
+    "identity_tokens": [
+      "65H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "3": "Description (English)",
+          "6": "ORDER",
+          "2": "Item",
+          "1": "Item",
+          "4": "Description Thai"
+        },
+        "fields": {
+          "name": 3,
+          "quantity": 6,
+          "alt": [
+            4
+          ],
+          "code": 2,
+          "customer_product_code": 1,
+          "description_pack": 4,
+          "unit": 8
+        },
+        "customers": null,
+        "ignored_columns": {
+          "7": "Quantity",
+          "9": "Unit pr kg",
+          "10": "Total THB",
+          "11": "Unit pr2 kg",
+          "12": "Total2 Nok",
+          "13": "Total. N.W."
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "65H.xlsx",
+    "sha256": "237aa22ae0c971b663cfe53a8aadcd41ab660797cdd9760d9dba1403f1b7c7c9",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "705H",
+    "main_customer_code": "NGA",
+    "client_code": "705H",
+    "identity_tokens": [
+      "705H",
+      "Thai Grønt Deli"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Thai Grønt Deli",
+        "anchors": {
+          "2": "Product Name",
+          "361": "Order 31.08",
+          "1": "Code",
+          "5": "Packing weight",
+          "363": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 361,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 363
+        },
+        "customers": null,
+        "ignored_columns": {
+          "6": "Order 26.10",
+          "7": "Order 03.11",
+          "8": "Deliver 10.11",
+          "9": "Order 10.11",
+          "10": "Delivery 17.11",
+          "11": "Order 17.11",
+          "12": "Delivery 24.11",
+          "13": "Order 24.11",
+          "14": "Order 01.12",
+          "15": "Order 08.12",
+          "16": "Delivery 14.12",
+          "17": "Order 14.12",
+          "18": "Deliver 22.12",
+          "19": "Order 21.12",
+          "20": "Deliver 29.12",
+          "21": "Order 28.12",
+          "22": "Delivery 06.01",
+          "23": "Order 04.01",
+          "24": "Deliver 12.01",
+          "25": "Order 12.01",
+          "26": "Deliver 19.01",
+          "27": "Order 19.01",
+          "28": "Delivery 26.01",
+          "29": "Order 26.01",
+          "30": "Deliver 02.02",
+          "31": "Order 02.02",
+          "32": "Deliver 09.02",
+          "33": "Order 04.02",
+          "34": "Deliver 11.02",
+          "35": "Order 09.02",
+          "36": "tồn kho 16.02",
+          "37": "Deliver 16.02",
+          "38": "Order 11.02",
+          "39": "tồn kho 18.02",
+          "40": "Deliver 18.02",
+          "41": "Order 16.02",
+          "42": "tồn kho 22.02",
+          "43": "Deliver 23.02",
+          "44": "Order 18.02",
+          "45": "tồn kho 25.02",
+          "46": "tồn kho 25.02 (2)",
+          "47": "Order 23.02",
+          "48": "Order 25.02",
+          "49": "tồn kho 03.03",
+          "50": "Order 03.03",
+          "51": "tồn kho 04.03",
+          "52": "Order 04.03",
+          "53": "tồn kho 09.03",
+          "54": "Order 09.03",
+          "55": "tồn kho 11.03",
+          "56": "Order 11.03",
+          "57": "tồn kho 16.03",
+          "58": "Order 16.03",
+          "59": "tồn kho 18.03",
+          "60": "Order 18.03",
+          "61": "Order 23.03",
+          "62": "tồn kho 29.03",
+          "63": "Order 29.03",
+          "64": "tồn kho 06.04",
+          "65": "Order 06.04",
+          "66": "tồn kho 08.04",
+          "67": "Order 08.04",
+          "68": "tồn kho 13.04",
+          "69": "Order 13.04",
+          "70": "tồn kho 15.04",
+          "71": "Order 15.04",
+          "72": "tồn kho 20.04",
+          "73": "Order 20.04",
+          "74": "tồn kho 22.04",
+          "75": "Order 22.04",
+          "76": "tồn kho 27.04",
+          "77": "Order 27.04",
+          "78": "tồn kho 29.04",
+          "79": "Order 29.04",
+          "80": "tồn kho 07.05",
+          "81": "Order 04.05",
+          "82": "Order 07.05",
+          "83": "Order 11.05",
+          "84": "tồn kho 18.05",
+          "85": "Order 18.05",
+          "86": "Order 25.05",
+          "87": "Order 01.06",
+          "88": "Order 08.06",
+          "89": "Order 15.06",
+          "90": "Order 22.06",
+          "91": "Order 29.06",
+          "92": "Order 06.07",
+          "93": "Order 13.07",
+          "94": "Order 22.07",
+          "95": "Order 28.07",
+          "96": "Order 03.08",
+          "97": "Order 10.08",
+          "98": "Order 17.08",
+          "99": "Order 24.08",
+          "100": "Order 31.08",
+          "101": "Order 07.09",
+          "102": "Order 14.09",
+          "103": "Order 21.09",
+          "104": "Order 28.09",
+          "105": "Order 05.10",
+          "106": "Order 12.10",
+          "107": "Order 19.10",
+          "108": "Order 26.10",
+          "109": "Order 02.11",
+          "110": "Order 09.11",
+          "111": "Order 16.11",
+          "112": "Order 23.11",
+          "113": "Order 30.11",
+          "114": "Order 07.12",
+          "115": "Order 14.12",
+          "116": "Order 21.12",
+          "117": "Order 26.12",
+          "118": "Order 04.01",
+          "119": "Order 11.01",
+          "120": "Order 18.01",
+          "121": "Order 25.01",
+          "122": "Order 01.02",
+          "123": "Order 08.02",
+          "124": "Order 15.02",
+          "125": "Order 22.02",
+          "126": "Order 01.03",
+          "127": "Order 08.03",
+          "128": "Order 15.03",
+          "129": "Order 22.03",
+          "130": "Order 29.03",
+          "131": "Order 04.04",
+          "132": "Order 09.04",
+          "133": "Order 19.04",
+          "134": "Order 26.04",
+          "135": "Order 03.05",
+          "136": "Order 10.05",
+          "137": "Order 17.05",
+          "138": "Order 25.05",
+          "139": "Order 31.05",
+          "140": "Order 07.06",
+          "141": "Order 14.06",
+          "142": "Order 21.06",
+          "143": "Order 28.06",
+          "144": "Order 05.07",
+          "145": "Order 12.07",
+          "146": "Order 19.07",
+          "147": "Order 26.07",
+          "148": "Order 02.08",
+          "149": "Order 09.08",
+          "150": "Order 16.08",
+          "151": "Order 23.08",
+          "152": "Order 30.08",
+          "153": "Order 06.09",
+          "154": "Order 13.09",
+          "155": "Order 20.09",
+          "156": "Order 28.09",
+          "157": "Order 04.10",
+          "158": "Order 11.10",
+          "159": "Order 18.10",
+          "160": "Order 25.10",
+          "161": "Order 01.11",
+          "162": "Order 08.11",
+          "163": "Order 15.11",
+          "164": "Order 22.11",
+          "165": "Order 29.11",
+          "166": "Order 06.12",
+          "167": "Order 13.12",
+          "168": "Order 20.12",
+          "169": "Order 22.12",
+          "170": "Order 03.01",
+          "171": "Order 10.01",
+          "172": "Order 17.01",
+          "173": "Order 24.01",
+          "174": "Order 31.01",
+          "175": "Order 07.02",
+          "176": "Order 14.02",
+          "177": "Order 21.02",
+          "178": "Order 28.02",
+          "179": "Order 07.03",
+          "180": "Order 14.03",
+          "181": "Order 21.03",
+          "182": "Order 28.03",
+          "183": "Order 03.04",
+          "184": "Order 11.04",
+          "185": "Order 18.04",
+          "186": "Order 25.04",
+          "187": "Order 02.05",
+          "188": "Order 09.05",
+          "189": "Order 16.05",
+          "190": "Order 23.05",
+          "191": "Order 29.05",
+          "192": "Order 05.06",
+          "193": "Order 12.06",
+          "194": "Order 19.06",
+          "195": "Order 26.06",
+          "196": "Order 03.07",
+          "197": "Order 10.07",
+          "198": "Order 17.07",
+          "199": "Order 25.07",
+          "200": "Order 31.07",
+          "201": "Order 07.08",
+          "202": "Order 14.08",
+          "203": "Order 21.08",
+          "204": "Order 28.08",
+          "205": "Order 04.09",
+          "206": "Order 11.09",
+          "207": "Order 11.09",
+          "208": "Order 18.09",
+          "209": "Order 25.09",
+          "210": "Order 02.10",
+          "211": "Order 09.10",
+          "212": "Order 16.10",
+          "213": "Order 23.10",
+          "214": "Order 30.10",
+          "215": "Order 06.11",
+          "216": "Order 13.11",
+          "217": "Order 20.11",
+          "218": "Order 27.11",
+          "219": "Order 04.12",
+          "220": "Order 11.12",
+          "221": "Order 18.12",
+          "222": "Order 27.12",
+          "223": "Order 01.01",
+          "224": "Order 08.01",
+          "225": "Order 15.01",
+          "226": "Order 22.01",
+          "227": "Order 29.01",
+          "228": "Order 30.01",
+          "229": "Order 12.02",
+          "230": "Order 19.02",
+          "231": "Order 26.02",
+          "232": "Order 05.03",
+          "233": "Order 11.03",
+          "234": "Order 18.03",
+          "235": "Order 25.03",
+          "236": "Order 01.04",
+          "237": "Order 08.04",
+          "238": "Order 15.04",
+          "239": "Order 22.04",
+          "240": "Order 29.04",
+          "241": "Order 06.05",
+          "242": "Order 13.05",
+          "243": "Order 20.05",
+          "244": "Order 27.05",
+          "245": "Order 03.06",
+          "246": "Order 10.06",
+          "247": "Order 17.06",
+          "248": "Order 24.06",
+          "249": "Order 01.07",
+          "250": "Order 05.07",
+          "251": "Order 16.07",
+          "252": "Order 22.07",
+          "253": "Order 29.07",
+          "254": "Order 06.08",
+          "255": "Order 12.08",
+          "256": "Order 19.08",
+          "257": "Order 26.08",
+          "258": "Order 02.09",
+          "259": "Order 09.09",
+          "260": "Order 16.09",
+          "261": "Order 23.09",
+          "262": "Order 30.09",
+          "263": "Order 08.10",
+          "264": "Order 14.10",
+          "265": "Order 21.10",
+          "266": "Order 28.10",
+          "267": "Order 04.11",
+          "268": "Order 11.11",
+          "269": "Order 19.11",
+          "270": "Order 25.11",
+          "271": "Order 02.12",
+          "272": "Order 09.12",
+          "273": "Order 12.12",
+          "274": "Order 18.12",
+          "275": "Order 21.12",
+          "276": "Order 06.01",
+          "277": "Order 13.01",
+          "278": "Order 20.01",
+          "279": "Order 27.01",
+          "280": "Order 03.02",
+          "281": "Order 10.02",
+          "282": "Order 17.02",
+          "283": "Order 24.02",
+          "284": "Order 03.03",
+          "285": "Order 10.03",
+          "286": "Order 17.03",
+          "287": "Order 24.03",
+          "288": "Order 28.03",
+          "289": "Order 06.04",
+          "290": "Order 11.04",
+          "291": "Order 22.04",
+          "292": "Order 28.04",
+          "293": "Order 05.05",
+          "294": "Order 05.05",
+          "295": "Order 19.05",
+          "296": "Order 26.05",
+          "297": "Order 02.06",
+          "298": "Order 10.06",
+          "299": "Order 16.06",
+          "300": "Order 23.06",
+          "301": "Order 30.06",
+          "302": "Order 07.07",
+          "303": "Order 13.07",
+          "304": "Order 18.07",
+          "305": "Order 27.07",
+          "306": "Order 04.08",
+          "307": "Order 11.08",
+          "308": "Order 18.08",
+          "309": "Order 25.08",
+          "310": "Order 01.09",
+          "311": "Order 08.09",
+          "312": "Order 15.09",
+          "313": "Order 22.09",
+          "314": "Order 29.09",
+          "315": "Order 06.10",
+          "316": "Order 13.10",
+          "317": "Order 20.10",
+          "318": "Order 27.10",
+          "319": "Order 03.10",
+          "320": "Order 10.10",
+          "321": "Order 17.10",
+          "322": "Order 24.10",
+          "323": "Order 01.12",
+          "324": "Order 08.12",
+          "325": "Order 15.12",
+          "326": "Order 19.12",
+          "327": "Order 25.12",
+          "328": "Order 05.01",
+          "329": "Order 12.01",
+          "330": "Order 19.01",
+          "331": "Order 26.01",
+          "332": "Order 02.02",
+          "333": "Order 09.02",
+          "334": "Order 10.02",
+          "335": "Order 24.02",
+          "336": "Order 02.03",
+          "337": "Order 09.03",
+          "338": "Order 16.03",
+          "339": "Order 31.03",
+          "340": "Order 06.04",
+          "341": "Order 13.04",
+          "342": "Order 20.04",
+          "343": "Order 27.04",
+          "344": "Order 04.05",
+          "345": "Order 11.05",
+          "346": "Order 18.05",
+          "347": "Order 26.05",
+          "348": "Order 01.06",
+          "349": "Order 08.06",
+          "350": "Order 15.06",
+          "351": "Order 22.06",
+          "352": "Order 27.06",
+          "353": "Order 06.07",
+          "354": "Order 11.07",
+          "355": "Order 21.07",
+          "356": "Order 27.07",
+          "357": "Order 03.08",
+          "358": "Order 10.08",
+          "359": "Order 17.08",
+          "360": "Order 24.08"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "705H.xlsx",
+    "sha256": "834d04f479740122f13818b9a936edd74fcdabbd3081280523cd670d817ae680",
+    "sample_directory": "excel files of all cutomer",
+    "review_issues": [
+      "705H contains historical Order/Delivery/stock columns. Confirm the shipment order column before using this mapping."
+    ]
+  },
+  {
+    "key": "707H",
+    "main_customer_code": "NGA",
+    "client_code": "707H",
+    "identity_tokens": [
+      "707H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "707H.xlsx",
+    "sha256": "581423c12fecb4ef9f58d1d842a31422bc1c69e758ee1d47c9f0190d6ee6ccab",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "709H",
+    "main_customer_code": "NGA",
+    "client_code": "709H",
+    "identity_tokens": [
+      "709H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "709H.xls",
+    "sha256": "4124fe8623c0c35e64f77e9694d747a03c404bc3151191b875f0cd1cfb6354be",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "712H",
+    "main_customer_code": "NGA",
+    "client_code": "712H",
+    "identity_tokens": [
+      "712H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003306"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "712H.xlsx",
+    "sha256": "2e101e0831b11ea5e51cc532df522887ef47fe7365372e9ed0cbf70937a49a00",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "713H",
+    "main_customer_code": "NGA",
+    "client_code": "713H",
+    "identity_tokens": [
+      "713H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "713H.xlsx",
+    "sha256": "402f4fa145be90049f9a8e5d7ba7aa8e161e422be0419dad4740e6147ac07907",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "717H",
+    "main_customer_code": "NGA",
+    "client_code": "717H",
+    "identity_tokens": [
+      "717H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "5": "Order",
+          "1": "Code",
+          "6": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "unit": 6
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "717H.xlsx",
+    "sha256": "d3518f2cbfdb3a4374e25038df5ee13e560ea9b0f8aa85ccf8998cdd544b21a5",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "720H",
+    "main_customer_code": "NGA",
+    "client_code": "720H",
+    "identity_tokens": [
+      "720H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003306"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "720H.xlsx",
+    "sha256": "4eaf4287d5311809400c34922afa68102444aa28db12fe7f574ec2c7a2f68b38",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "73H",
+    "main_customer_code": "NGA",
+    "client_code": "73H",
+    "identity_tokens": [
+      "73H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "3": "Description (English)",
+          "6": "ORDER",
+          "2": "Item",
+          "1": "Item",
+          "4": "Description Thai"
+        },
+        "fields": {
+          "name": 3,
+          "quantity": 6,
+          "alt": [
+            4
+          ],
+          "code": 2,
+          "customer_product_code": 1,
+          "description_pack": 4,
+          "unit": 8
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "73H.xlsx",
+    "sha256": "455b620ba47d492d1719fa666d4ab1e150500f6702061e9f3ca028ef7ee59486",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "74H",
+    "main_customer_code": "NGA",
+    "client_code": "74H",
+    "identity_tokens": [
+      "74H"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "3": "Description (English)",
+          "6": "ORDER",
+          "2": "Item",
+          "1": "Item",
+          "4": "Description Thai"
+        },
+        "fields": {
+          "name": 3,
+          "quantity": 6,
+          "alt": [
+            4
+          ],
+          "code": 2,
+          "customer_product_code": 1,
+          "description_pack": 4,
+          "unit": 8
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "74H.xlsx",
+    "sha256": "ed74b94a0ef60ee06aedf725a4b289232af58363c6ae558d52c505882355595d",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "82L",
+    "main_customer_code": "NGA",
+    "client_code": "82L",
+    "identity_tokens": [
+      "82L"
+    ],
+    "kind": "text",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "1": "82L"
+        },
+        "fields": {
+          "name": 1,
+          "quantity": 1
+        },
+        "customers": null
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "82L.xlsx",
+    "sha256": "c6b329556a1a66bfe53847adbfabf8f32a6d4fe186af89079051cf2d198022f9",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "88L",
+    "main_customer_code": "NGA",
+    "client_code": "88L",
+    "identity_tokens": [
+      "88L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "88L.xlsx",
+    "sha256": "a94201eec4a6f4cc587d738e92ff038475f08c6282844529d2219b24d4d687b4",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "89L",
+    "main_customer_code": "NGA",
+    "client_code": "89L",
+    "identity_tokens": [
+      "89L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "89L.xlsx",
+    "sha256": "e0d6eba7c8a3c381b5883475377267bfc6c1a9c7ad922a4ac6d054cf4966a8e0",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "90L",
+    "main_customer_code": "NGA",
+    "client_code": "90L",
+    "identity_tokens": [
+      "90L",
+      "IMS DRAMMEN"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "90L.xlsx",
+    "sha256": "dd752a1ce67740d82f658a24c8894c6a791b128a647a17de4e02eac07b38d7bc",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "912L",
+    "main_customer_code": "NGA",
+    "client_code": "912L",
+    "identity_tokens": [
+      "912L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Ark1",
+        "anchors": {
+          "2": "Description (English)",
+          "4": "ORDER",
+          "1": "Item",
+          "3": "Description Thai"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 4,
+          "alt": [
+            3
+          ],
+          "code": 1,
+          "description_pack": 3
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "912L.xlsx",
+    "sha256": "7fe83ecc194de530f082061db1629904be239c4ca1e59954e0845e9797bc77be",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "915L",
+    "main_customer_code": "NGA",
+    "client_code": "915L",
+    "identity_tokens": [
+      "915L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "915L.xls",
+    "sha256": "46a2bf925114eab74c7aea2e616370d07f83d7aa081d2314de6506923879c59e",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "917L",
+    "main_customer_code": "NGA",
+    "client_code": "917L",
+    "identity_tokens": [
+      "917L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "5": "Packge",
+          "7": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 7
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "917L.xlsx",
+    "sha256": "331893a64abd1fd29acaa5146b4f8426a589728441b87a07d2eb2782df3ba924",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "919L",
+    "main_customer_code": "NGA",
+    "client_code": "919L",
+    "identity_tokens": [
+      "919L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "919L.xls",
+    "sha256": "0af28e2f84787728c8fcc05c972956195985ef6dda81e966c4bdac56c0d4e621",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "91L",
+    "main_customer_code": "NGA",
+    "client_code": "91L",
+    "identity_tokens": [
+      "91L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "91L.xlsx",
+    "sha256": "06a6213f0048114ae61b56f127cd397ca47893c97e502721cdcd2c08683176c8",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "920L-1",
+    "main_customer_code": "NGA",
+    "client_code": "920L-1",
+    "identity_tokens": [
+      "920L-1"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "5": "Packge",
+          "7": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 7
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "920L - 1.xlsx",
+    "sha256": "b4fa49c847838e23221fb0889a5c66122ce5dfb2f8052d105c288dcd35b13119",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "920L-2",
+    "main_customer_code": "NGA",
+    "client_code": "920L-2",
+    "identity_tokens": [
+      "920L-2"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "2": "Product Name",
+          "6": "Order",
+          "1": "Code",
+          "5": "Packge",
+          "7": "Unit"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 6,
+          "alt": [
+            3,
+            4
+          ],
+          "customer_product_code": 1,
+          "pack": 5,
+          "unit": 7
+        },
+        "customers": null,
+        "ignored_columns": {}
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "920L - 2.xlsx",
+    "sha256": "6bca2f1ed3f215810f68a0690fee2a5d10da2f3fd58ecd8cf8170280e6cc3cd1",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "925L",
+    "main_customer_code": "NGA",
+    "client_code": "925L",
+    "identity_tokens": [
+      "925L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "925L.xlsx",
+    "sha256": "d7ebd7512b6b61193388afe4aeed365ad89283cd1c45cf4f8ab80649960624e5",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "934L",
+    "main_customer_code": "NGA",
+    "client_code": "934L",
+    "identity_tokens": [
+      "934L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "934L.xlsx",
+    "sha256": "c60c63d5d2b009c3bfeef0a46992235948d11171b0f0d670c2491833b4f83939",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "935L",
+    "main_customer_code": "NGA",
+    "client_code": "935L",
+    "identity_tokens": [
+      "935L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "935L.xlsx",
+    "sha256": "92e91a600bbecea532661dce93254fd6cf52ef23c9f4daff90c799bb042f4682",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "95L",
+    "main_customer_code": "NGA",
+    "client_code": "95L",
+    "identity_tokens": [
+      "95L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "4": "Product Name",
+          "9": "Order",
+          "7": "Packge",
+          "10": "Unit"
+        },
+        "fields": {
+          "name": 4,
+          "quantity": 9,
+          "alt": [
+            5,
+            6
+          ],
+          "code": 2,
+          "supplier_code": 3,
+          "pack": 7,
+          "adjacent": 8,
+          "unit": 10
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "95L.xlsx",
+    "sha256": "fd54ccb0e0ee35cbd6c759fbc109a063970dba5ee66c1ef820065a87a3b1573b",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "993L",
+    "main_customer_code": "NGA",
+    "client_code": "993L",
+    "identity_tokens": [
+      "993L"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet1",
+        "anchors": {
+          "6": "Product Name",
+          "11": "Order",
+          "4": "Item",
+          "9": "Packge",
+          "12": "Unit"
+        },
+        "fields": {
+          "name": 6,
+          "quantity": 11,
+          "alt": [
+            7,
+            8
+          ],
+          "code": 4,
+          "supplier_code": 5,
+          "pack": 9,
+          "adjacent": 10,
+          "unit": 12
+        },
+        "customers": null,
+        "ignored_columns": {
+          "1": "Code",
+          "3": "003993"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "993L (1).xlsx",
+    "sha256": "1780d5476cba5747dfeb0873e73183c08ef39a02dc480149e2d4bea1b78ee667",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "CHOKDEE",
+    "main_customer_code": "CHOKDEE",
+    "client_code": "CHOKDEE",
+    "identity_tokens": [
+      "chokdee",
+      "giggling squid",
+      "Agriculture"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Sheet2",
+        "anchors": {
+          "2": "PRODUCT NAME",
+          "5": "Amount of order (KG)",
+          "1": "CODE",
+          "4": "Packing size (gr.)",
+          "6": "UNIT",
+          "8": "REMARK"
+        },
+        "fields": {
+          "name": 2,
+          "quantity": 5,
+          "alt": [
+            3
+          ],
+          "code": 1,
+          "pack": 4,
+          "unit": 6,
+          "notes": 8
+        },
+        "customers": null,
+        "ignored_columns": {
+          "7": "Pack"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": "g",
+    "sample": "Agriculture - 07 Sept 26.xlsx",
+    "sha256": "5a2aeacab40aa79441d397c8618241b7f851a2933c9556cdcfcc81236225224c",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "TONIO-MATRIX-LAYOUT-2",
+    "main_customer_code": "TONIO",
+    "client_code": null,
+    "identity_tokens": [
+      "tonio"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Group 1",
+        "anchors": {
+          "1": "Code",
+          "3": "ENGLISH DESCRIPTION",
+          "4": "Packing",
+          "5": "CT-Trung",
+          "6": "CT-Đào",
+          "7": "CT-Liên",
+          "8": "CT-Rasel",
+          "9": "CT-Cần",
+          "10": "CT-Mạnh",
+          "11": "CT-Tít",
+          "12": "CT-Lưu",
+          "13": "CT-Phương",
+          "14": "CT-Trọng",
+          "15": "CT-Lê Na",
+          "16": "CT-Hong",
+          "17": "CT-Lydia",
+          "18": "CT-Tu",
+          "19": "CT-Vương",
+          "20": "Thanh Cheb",
+          "21": "Thành Ost",
+          "22": "LA",
+          "23": "Sơn SL",
+          "24": "C. Nhẫn Plzen",
+          "25": "TL",
+          "26": "HH",
+          "27": "TM",
+          "28": "Chú Phong",
+          "29": "CG",
+          "30": "SapaFood",
+          "31": "TMF",
+          "32": "SNN",
+          "33": "TH SL",
+          "34": "Linh Chi",
+          "35": "Trần Hường",
+          "36": "Chú Đạt",
+          "37": "VA RMN",
+          "38": "Thái Lý",
+          "39": "Kim Chi",
+          "40": "PTT",
+          "41": "PTT-Lê",
+          "42": "PTT-PC",
+          "43": "PTT-LIEU",
+          "44": "E1",
+          "45": "E2",
+          "46": "E3",
+          "47": "E5",
+          "48": "E6",
+          "49": "C1",
+          "50": "C2",
+          "51": "C3",
+          "52": "C4",
+          "53": "W1",
+          "54": "Z1",
+          "55": "BL-2",
+          "56": "BL-3",
+          "57": "BL-4",
+          "58": "BL-6",
+          "59": "BL-7",
+          "60": "BL-8",
+          "61": "BL-10",
+          "62": "BL-11",
+          "63": "BL-12",
+          "64": "BL-13",
+          "65": "BL-14",
+          "66": "BL-15",
+          "67": "BL-16",
+          "68": "BL-17",
+          "69": "BL-18",
+          "70": "BL-19",
+          "71": "Tôm-21",
+          "72": "Tôm-22",
+          "73": "Tôm-25",
+          "74": "Tôm-26",
+          "75": "Tôm-27",
+          "76": "Tôm-29",
+          "77": "Tôm-30",
+          "78": "Tôm-31",
+          "79": "Tôm-32",
+          "80": "Tôm-36",
+          "81": "Tuấn-25",
+          "82": "AU7",
+          "83": "W3",
+          "84": "W10",
+          "85": "W16",
+          "86": "KHO",
+          "87": "PG",
+          "88": "BE-A24",
+          "89": "BE-H8",
+          "90": "BE-DUYÊN",
+          "91": "BE-AB",
+          "92": "BE-HANG",
+          "93": "BE-HP",
+          "94": "BE-BÍCH",
+          "95": "BE-VD",
+          "96": "BE-HÀ",
+          "97": "BE-THÙY",
+          "98": "BE-JA Asia",
+          "99": "BE-PHƯƠNG",
+          "100": "BE-Hello Asia",
+          "101": "BE-ANH",
+          "102": "BE-LOAN",
+          "103": "BE-HUNG",
+          "104": "BE-CƯỜNG",
+          "105": "BE-SUONG",
+          "106": "BE-NHU",
+          "107": "BE-VAN"
+        },
+        "fields": {
+          "code": 1,
+          "name": 3,
+          "alt": [
+            2
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "5": "CT-Trung",
+          "6": "CT-Đào",
+          "7": "CT-Liên",
+          "8": "CT-Rasel",
+          "9": "CT-Cần",
+          "10": "CT-Mạnh",
+          "11": "CT-Tít",
+          "12": "CT-Lưu",
+          "13": "CT-Phương",
+          "14": "CT-Trọng",
+          "15": "CT-Lê Na",
+          "16": "CT-Hong",
+          "17": "CT-Lydia",
+          "18": "CT-Tu",
+          "19": "CT-Vương",
+          "20": "Thanh Cheb",
+          "21": "Thành Ost",
+          "22": "LA",
+          "23": "Sơn SL",
+          "24": "C. Nhẫn Plzen",
+          "25": "TL",
+          "26": "HH",
+          "27": "TM",
+          "28": "Chú Phong",
+          "29": "CG",
+          "30": "SapaFood",
+          "31": "TMF",
+          "32": "SNN",
+          "33": "TH SL",
+          "34": "Linh Chi",
+          "35": "Trần Hường",
+          "36": "Chú Đạt",
+          "37": "VA RMN",
+          "38": "Thái Lý",
+          "39": "Kim Chi",
+          "40": "PTT",
+          "41": "PTT-Lê",
+          "42": "PTT-PC",
+          "43": "PTT-LIEU",
+          "44": "E1",
+          "45": "E2",
+          "46": "E3",
+          "47": "E5",
+          "48": "E6",
+          "49": "C1",
+          "50": "C2",
+          "51": "C3",
+          "52": "C4",
+          "53": "W1",
+          "54": "Z1",
+          "55": "BL-2",
+          "56": "BL-3",
+          "57": "BL-4",
+          "58": "BL-6",
+          "59": "BL-7",
+          "60": "BL-8",
+          "61": "BL-10",
+          "62": "BL-11",
+          "63": "BL-12",
+          "64": "BL-13",
+          "65": "BL-14",
+          "66": "BL-15",
+          "67": "BL-16",
+          "68": "BL-17",
+          "69": "BL-18",
+          "70": "BL-19",
+          "71": "Tôm-21",
+          "72": "Tôm-22",
+          "73": "Tôm-25",
+          "74": "Tôm-26",
+          "75": "Tôm-27",
+          "76": "Tôm-29",
+          "77": "Tôm-30",
+          "78": "Tôm-31",
+          "79": "Tôm-32",
+          "80": "Tôm-36",
+          "81": "Tuấn-25",
+          "82": "AU7",
+          "83": "W3",
+          "84": "W10",
+          "85": "W16",
+          "86": "KHO",
+          "87": "PG",
+          "88": "BE-A24",
+          "89": "BE-H8",
+          "90": "BE-DUYÊN",
+          "91": "BE-AB",
+          "92": "BE-HANG",
+          "93": "BE-HP",
+          "94": "BE-BÍCH",
+          "95": "BE-VD",
+          "96": "BE-HÀ",
+          "97": "BE-THÙY",
+          "98": "BE-JA Asia",
+          "99": "BE-PHƯƠNG",
+          "100": "BE-Hello Asia",
+          "101": "BE-ANH",
+          "102": "BE-LOAN",
+          "103": "BE-HUNG",
+          "104": "BE-CƯỜNG",
+          "105": "BE-SUONG",
+          "106": "BE-NHU",
+          "107": "BE-VAN"
+        },
+        "ignored_columns": {
+          "108": "Total"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "Order Tonio 01.09.26 (1).xlsx",
+    "sha256": "d5216709859a4253ba223bb11ef7c5d6e47818b2c4ad29eb83666200521b275b",
+    "sample_directory": "excel files of all cutomer"
+  },
+  {
+    "key": "TONIO-MATRIX-LAYOUT-3",
+    "main_customer_code": "TONIO",
+    "client_code": null,
+    "identity_tokens": [
+      "tonio"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "Group 1",
+        "anchors": {
+          "1": "Code",
+          "3": "ENGLISH DESCRIPTION",
+          "4": "Packing",
+          "5": "CT-Trung",
+          "6": "CT-Đào",
+          "7": "CT-Liên",
+          "8": "CT-Rasel",
+          "9": "CT-Cần",
+          "10": "CT-Mạnh",
+          "11": "CT-Tít",
+          "12": "CT-Lưu",
+          "13": "CT-Phương",
+          "14": "CT-Trọng",
+          "15": "CT-Lê Na",
+          "16": "CT-Hong",
+          "17": "CT-Lydia",
+          "18": "CT-Tu",
+          "19": "CT-Vương",
+          "20": "Thanh Cheb",
+          "21": "Thành Ost",
+          "22": "LA",
+          "23": "Sơn SL",
+          "24": "C. Nhẫn Plzen",
+          "25": "TL",
+          "26": "HH",
+          "27": "TM",
+          "28": "Chú Phong",
+          "29": "CG",
+          "30": "SapaFood",
+          "31": "TMF",
+          "32": "SNN",
+          "33": "TH SL",
+          "34": "Linh Chi",
+          "35": "Trần Hường",
+          "36": "Chú Đạt",
+          "37": "VA RMN",
+          "38": "Thái Lý",
+          "39": "Kim Chi",
+          "40": "PTT",
+          "41": "PTT-Lê",
+          "42": "PTT-PC",
+          "43": "PTT-GAM",
+          "44": "E1",
+          "45": "E2",
+          "46": "E3",
+          "47": "E5",
+          "48": "E6",
+          "49": "C1",
+          "50": "C2",
+          "51": "C3",
+          "52": "C4",
+          "53": "W1",
+          "54": "Z1",
+          "55": "BL-2",
+          "56": "BL-3",
+          "57": "BL-4",
+          "58": "BL-6",
+          "59": "BL-7",
+          "60": "BL-8",
+          "61": "BL-10",
+          "62": "BL-11",
+          "63": "BL-12",
+          "64": "BL-13",
+          "65": "BL-14",
+          "66": "BL-15",
+          "67": "BL-16",
+          "68": "BL-17",
+          "69": "BL-18",
+          "70": "BL-19",
+          "71": "Tôm-21",
+          "72": "Tôm-22",
+          "73": "Tôm-25",
+          "74": "Tôm-26",
+          "75": "Tôm-27",
+          "76": "Tôm-29",
+          "77": "Tôm-30",
+          "78": "Tôm-31",
+          "79": "Tôm-32",
+          "80": "Tôm-36",
+          "81": "Tuấn-25",
+          "82": "AU7",
+          "83": "W3",
+          "84": "W10",
+          "85": "W16",
+          "86": "KHO",
+          "87": "PG",
+          "88": "BE-A24",
+          "89": "BE-H8",
+          "90": "BE-DUYÊN",
+          "91": "BE-AB",
+          "92": "BE-HANG",
+          "93": "BE-HP",
+          "94": "BE-BÍCH",
+          "95": "BE-VD",
+          "96": "BE-HÀ",
+          "97": "BE-THÙY",
+          "98": "BE-JA Asia",
+          "99": "BE-PHƯƠNG",
+          "100": "BE-Hello Asia",
+          "101": "BE-ANH",
+          "102": "BE-LOAN",
+          "103": "BE-HUNG",
+          "104": "BE-CƯỜNG",
+          "105": "BE-SUONG",
+          "106": "BE-NHU",
+          "107": "BE-VAN"
+        },
+        "fields": {
+          "code": 1,
+          "name": 3,
+          "alt": [
+            2
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "5": "CT-Trung",
+          "6": "CT-Đào",
+          "7": "CT-Liên",
+          "8": "CT-Rasel",
+          "9": "CT-Cần",
+          "10": "CT-Mạnh",
+          "11": "CT-Tít",
+          "12": "CT-Lưu",
+          "13": "CT-Phương",
+          "14": "CT-Trọng",
+          "15": "CT-Lê Na",
+          "16": "CT-Hong",
+          "17": "CT-Lydia",
+          "18": "CT-Tu",
+          "19": "CT-Vương",
+          "20": "Thanh Cheb",
+          "21": "Thành Ost",
+          "22": "LA",
+          "23": "Sơn SL",
+          "24": "C. Nhẫn Plzen",
+          "25": "TL",
+          "26": "HH",
+          "27": "TM",
+          "28": "Chú Phong",
+          "29": "CG",
+          "30": "SapaFood",
+          "31": "TMF",
+          "32": "SNN",
+          "33": "TH SL",
+          "34": "Linh Chi",
+          "35": "Trần Hường",
+          "36": "Chú Đạt",
+          "37": "VA RMN",
+          "38": "Thái Lý",
+          "39": "Kim Chi",
+          "40": "PTT",
+          "41": "PTT-Lê",
+          "42": "PTT-PC",
+          "43": "PTT-GAM",
+          "44": "E1",
+          "45": "E2",
+          "46": "E3",
+          "47": "E5",
+          "48": "E6",
+          "49": "C1",
+          "50": "C2",
+          "51": "C3",
+          "52": "C4",
+          "53": "W1",
+          "54": "Z1",
+          "55": "BL-2",
+          "56": "BL-3",
+          "57": "BL-4",
+          "58": "BL-6",
+          "59": "BL-7",
+          "60": "BL-8",
+          "61": "BL-10",
+          "62": "BL-11",
+          "63": "BL-12",
+          "64": "BL-13",
+          "65": "BL-14",
+          "66": "BL-15",
+          "67": "BL-16",
+          "68": "BL-17",
+          "69": "BL-18",
+          "70": "BL-19",
+          "71": "Tôm-21",
+          "72": "Tôm-22",
+          "73": "Tôm-25",
+          "74": "Tôm-26",
+          "75": "Tôm-27",
+          "76": "Tôm-29",
+          "77": "Tôm-30",
+          "78": "Tôm-31",
+          "79": "Tôm-32",
+          "80": "Tôm-36",
+          "81": "Tuấn-25",
+          "82": "AU7",
+          "83": "W3",
+          "84": "W10",
+          "85": "W16",
+          "86": "KHO",
+          "87": "PG",
+          "88": "BE-A24",
+          "89": "BE-H8",
+          "90": "BE-DUYÊN",
+          "91": "BE-AB",
+          "92": "BE-HANG",
+          "93": "BE-HP",
+          "94": "BE-BÍCH",
+          "95": "BE-VD",
+          "96": "BE-HÀ",
+          "97": "BE-THÙY",
+          "98": "BE-JA Asia",
+          "99": "BE-PHƯƠNG",
+          "100": "BE-Hello Asia",
+          "101": "BE-ANH",
+          "102": "BE-LOAN",
+          "103": "BE-HUNG",
+          "104": "BE-CƯỜNG",
+          "105": "BE-SUONG",
+          "106": "BE-NHU",
+          "107": "BE-VAN"
+        },
+        "ignored_columns": {
+          "108": "Total"
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "Order Tonio 01.09.26 FULL (2).xlsx",
+    "sha256": "12d618b3ffc6f2ae5853df057a5876f6b97333e03cef6ed323fcf11413b3a9ef",
+    "sample_directory": "excel files of all cutomer",
+    "additional_samples": [
+      {
+        "sample": "Order Tonio 01.09.26 FULL REVISED (2).xlsx",
+        "sha256": "5b743e5bb3904923022f3da60fc78f7baee06a41d7a5195a049cfcfb604c6f1d"
+      }
+    ]
+  },
+  {
+    "key": "NGA-REGIONAL-LAYOUT-2",
+    "main_customer_code": "NGA",
+    "client_code": null,
+    "identity_tokens": [
+      "nga"
+    ],
+    "kind": "table",
+    "sheets": [
+      {
+        "reference_sheet": "L.",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "60L",
+          "7": "61L",
+          "8": "82L",
+          "9": "95L",
+          "10": "920L-1",
+          "11": "920L-2",
+          "12": "925L",
+          "13": "934L",
+          "14": "993L"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "60L",
+          "7": "61L",
+          "8": "82L",
+          "9": "95L",
+          "10": "920L-1",
+          "11": "920L-2",
+          "12": "925L",
+          "13": "934L",
+          "14": "993L"
+        },
+        "ignored_columns": {
+          "5": "สั่งแล้ว",
+          "15": "ทุน",
+          "16": "ขาย",
+          "17": "",
+          "19": "",
+          "20": "",
+          "21": ""
+        }
+      },
+      {
+        "reference_sheet": "H",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "59H",
+          "7": "65H",
+          "8": "709H"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "59H",
+          "7": "65H",
+          "8": "709H"
+        },
+        "ignored_columns": {
+          "5": "สั่งแล้ว",
+          "9": "ทุน",
+          "10": "ขาย",
+          "11": "",
+          "13": "",
+          "14": "",
+          "15": ""
+        }
+      },
+      {
+        "reference_sheet": "T",
+        "anchors": {
+          "1": "CODE",
+          "4": "Weight",
+          "6": "02T",
+          "7": "07T",
+          "8": "09T",
+          "9": "12T",
+          "10": "13T",
+          "11": "37T",
+          "12": "40T",
+          "13": "424T"
+        },
+        "fields": {
+          "code": 1,
+          "name": 2,
+          "alt": [
+            3
+          ],
+          "pack": 4
+        },
+        "customers": {
+          "6": "02T",
+          "7": "07T",
+          "8": "09T",
+          "9": "12T",
+          "10": "13T",
+          "11": "37T",
+          "12": "40T",
+          "13": "424T"
+        },
+        "ignored_columns": {
+          "5": "สั่งแล้ว",
+          "14": "ทุน",
+          "15": "ขาย",
+          "16": "",
+          "18": "",
+          "19": "",
+          "20": ""
+        }
+      }
+    ],
+    "default_unit": null,
+    "numeric_pack_unit": null,
+    "sample": "ราการขนม NGA 05-09-2026 .xlsx",
+    "sha256": "8ef3e76f93b30eb28d83b921d031f368fc191a8b8e24de7ec171a5abfedd1458",
+    "sample_directory": "excel files of all cutomer"
   }
 ]

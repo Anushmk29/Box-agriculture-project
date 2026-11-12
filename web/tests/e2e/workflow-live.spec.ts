@@ -39,7 +39,7 @@ test("real workflow retains shipment through buying, packing and payment", async
   await expect(page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true })).toBeEnabled();
   await reviewLayouts(page, "purchasing");
   await page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true }).click();
-  await page.getByRole("link", { name: "View related packing orders", exact: true }).click();
+  await page.getByRole("link", { name: "Continue to packing", exact: true }).first().click();
   await expect(page).toHaveURL(new RegExp(`batch_id=${batchId}`));
   const order = page.getByRole("row").filter({ hasText: "CT-QA-A" });
   await order.getByRole("link", { name: /Start packing/ }).click();

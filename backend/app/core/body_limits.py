@@ -17,6 +17,8 @@ class BodyLimits:
         self.upload_slots = asyncio.Semaphore(2)
 
     async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and sum(name == b"content-type" for name, _ in scope.get("headers", [])) > 1:
+            return await JSONResponse(status_code=400, content={"detail": "Send exactly one Content-Type header"})(scope, receive, send)
         multipart = scope["type"] == "http" and dict(scope.get("headers", [])).get(b"content-type", b"").lower().startswith(b"multipart/")
         if multipart:
             # One ASGI event loop per worker; no await between locked() and the

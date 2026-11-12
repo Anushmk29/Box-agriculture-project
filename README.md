@@ -1,5 +1,19 @@
 # Fresh Produce Platform
 
+**8 November 2026, local audit fixes:** Imports detect new customer columns after
+summary columns; generic PDFs preserve source units and require quantity review.
+New customer records leave unknown billing emails and destination countries blank;
+complete those fields before invoice dispatch. Existing customer records still need
+source-based review. Seeded Excel template reads no longer lock the main customer,
+and bulk billing loads prices together while retaining pack, date and conflict checks.
+
+Authentication now uses shared database counters: at most 10 login attempts per
+account and 50 per client address in each 15-minute window, with HTTP 429 and
+`Retry-After` when exceeded. Apply Alembic migration `20261108_0026` before starting
+the updated API; authentication fails closed if its counter table is unavailable.
+The production gateway supplies the client address; the API does not trust arbitrary
+forwarding headers itself. Hosted migration and application deployment remain pending.
+
 **28 October 2026, hosted database:** The configured Supabase database was upgraded
 from `20261025_0015` to `20261027_0024` and independently verified. Existing records
 were preserved and all three referenced source files backed up. Application
@@ -28,6 +42,13 @@ migration and application remediation remain planned.
 
 ## Documentation for users
 
+The **ไทย / EN** buttons on the sign-in page and app header switch the interface
+between Thai and English without clearing forms. The choice is saved in the browser;
+Thai browsers start in Thai when no choice is saved. Filenames, customer/product
+records, SKUs and submitted quantities keep their original values. PDF exports keep
+their existing document language. Interface translations live in `web/lib/translations.ts`;
+new server messages fall back to their original wording until translated there.
+
 - [Documentation index](docs/README.md): where to start and which guide to use.
 - [User guide](docs/USER_GUIDE.md): bullet instructions for signing in, uploading
   orders, buying produce, packing boxes, printing stickers, and billing.
@@ -50,7 +71,15 @@ hashed receipt records, and an operator billing screen.
 The two agents are bounded workflow identities. Calculations, state transitions,
 packing constraints, and financial gates remain deterministic and auditable.
 
+See [security hardening and release checks](SECURITY_HARDENING_2026-11-12.md)
+for manual account seeding, current packing/note permissions, and owner release gates.
+
 ## Local development
+
+For a Hostinger VPS deployment, see the [deployment plan](deploy/hostinger/PLAN.md)
+and [server/CI/CD setup guide](deploy/hostinger/README.md). The production bundle
+uses Docker Compose with Caddy HTTPS, private app ports, existing Supabase services,
+and tested GHCR images. It runs migrations as a controlled release step.
 
 The application uses Supabase for its managed PostgreSQL database. PostgreSQL no
 longer runs in the local Docker Compose stack.

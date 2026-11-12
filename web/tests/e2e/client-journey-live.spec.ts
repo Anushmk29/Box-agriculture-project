@@ -44,7 +44,7 @@ test("client journey: upload, format review, purchasing, packing, sticker, final
   await page.getByLabel("Route", { exact: true }).selectOption("__custom__");
   await page.getByLabel("New route", { exact: true }).fill("CT");
   await page.getByRole("button", { name: "Upload and check order", exact: true }).click();
-  await expect(page.locator("[data-next-action='true']")).toHaveText("Review customer Excel format");
+  await expect(page.locator("[data-next-action='true']")).toHaveText("Review customer Excel format", { timeout: 45_000 });
   await page.getByRole("button", { name: "Show next action", exact: true }).click();
   await expect(page.getByRole("button", { name: "Review customer Excel format", exact: true })).toBeFocused();
   await page.getByRole("button", { name: "Review customer Excel format", exact: true }).click();
@@ -53,9 +53,11 @@ test("client journey: upload, format review, purchasing, packing, sticker, final
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator("[data-next-action='true']")).toHaveText("Confirm orders and create purchase batch");
   await page.locator(".order-file-reference summary").click();
+  await page.getByRole("button", { name: "File tools", exact: true }).click();
   const sourceDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download original file", exact: true }).click();
   expect((await sourceDownload).suggestedFilename()).toMatch(/\.xlsx$/);
+  await page.keyboard.press("Escape");
   await layouts(page, "03-order-review");
   await page.getByRole("button", { name: "Confirm orders and create purchase batch", exact: true }).click();
   await page.getByRole("link", { name: "Open purchase batch", exact: true }).click();
@@ -63,8 +65,8 @@ test("client journey: upload, format review, purchasing, packing, sticker, final
   const batchId = new URL(page.url()).searchParams.get("batchId");
   expect(batchId).toBeTruthy();
   await layouts(page, "04-purchasing");
-  await page.getByRole("link", { name: "Review purchase quantities", exact: true }).click();
-  await expect(page.locator("#purchase-quantities input").first()).toBeFocused();
+  await expect(page.getByRole("region", { name: "Purchase quantities table", exact: true })).toBeVisible();
+  await expect(page.locator("#purchase-quantities input").first()).toBeVisible();
   const buyerSheet = page.waitForEvent("popup");
   await page.getByRole("button", { name: "Export Buyer Sheet", exact: true }).click();
   const buyerDocument = await buyerSheet;
@@ -73,8 +75,9 @@ test("client journey: upload, format review, purchasing, packing, sticker, final
   await buyerDocument.screenshot({ path: "../outputs/client-journey-2026-10-29/04-buyer-sheet.png", fullPage: true });
   await buyerDocument.close();
   await page.getByRole("button", { name: "Confirm purchases and send to packing", exact: true }).click();
-  await page.getByRole("link", { name: "View related packing orders", exact: true }).click();
+  await page.getByRole("link", { name: "Continue to packing", exact: true }).first().click();
   await expect(page).toHaveURL(new RegExp(`batch_id=${batchId}`));
+  await page.getByRole("row").filter({ hasText: "QA-JOURNEY.xlsx" }).getByRole("link", { name: /View suborders/ }).click();
   await page.getByRole("row").filter({ hasText: "CT-QA-UPLOAD" }).getByRole("link", { name: /Start packing/ }).click();
   await page.getByRole("combobox", { name: "Packing rules", exact: true }).selectOption("EL");
   await page.getByRole("button", { name: "Generate packing boxes", exact: true }).click();

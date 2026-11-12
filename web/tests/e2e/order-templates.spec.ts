@@ -24,6 +24,7 @@ test("recognized Excel formats skip setup and keep adjustments under File tools"
   await expect(page.getByRole("button", { name: "Review customer Excel format", exact: true })).toHaveCount(0);
   expect(formatRequests).toBe(0);
   await page.locator(".order-file-reference summary").click();
+  await page.getByRole("button", { name: "File tools", exact: true }).click();
   await expect(page.getByRole("button", { name: "Adjust Excel format", exact: true })).toBeVisible();
 });
 
@@ -60,6 +61,7 @@ test("staff confirm a recurring format once and retain its unit on reopening", a
   await expect(confirm).toBeEnabled();
   await expect(page.locator("#order-review").getByRole("button", { name: "Review customer Excel format", exact: true })).toHaveCount(0);
   await page.locator(".order-file-reference summary").click();
+  await page.getByRole("button", { name: "File tools", exact: true }).click();
   await page.getByRole("button", { name: "Adjust Excel format", exact: true }).click();
   await expect(dialog.getByRole("combobox", { name: "Quantity unit when the order does not print one", exact: true })).toHaveValue("kg");
   await page.setViewportSize({ width: 390, height: 844 });
