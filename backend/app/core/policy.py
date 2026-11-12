@@ -39,6 +39,7 @@ POLICY: dict[Action, tuple[UserRole, frozenset[UserRole]]] = {
     Action.RETURN_HANDOFF_02: (UserRole.OWNER_ADMIN, frozenset({UserRole.AI_AGENT_2})),
     Action.DESIGN_PACKING: (UserRole.GENERAL, frozenset({UserRole.AI_AGENT_2})),
     Action.FLOOR_PACKING: (UserRole.GENERAL, _NONE),
+    # Legacy owner approval; the simplified staff finalization uses FLOOR_PACKING.
     Action.LOCK_FINAL_PACK: (UserRole.OWNER_ADMIN, _NONE),
     Action.DRAFT_INVOICE: (UserRole.GENERAL_ACCOUNTING, frozenset({UserRole.AI_AGENT_1})),
     Action.MANAGE_BILLING: (UserRole.GENERAL_ACCOUNTING, _NONE),

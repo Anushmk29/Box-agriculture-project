@@ -118,6 +118,8 @@ def validate_definition(definition):
             raise HTTPException(422, "Use valid column numbers") from None
         if any(type(c) is not int or not 1 <= c <= 512 for c in columns):
             raise HTTPException(422, "Columns must be between 1 and 512")
+        if len(set(fields.get("alt", []))) != len(fields.get("alt", [])):
+            raise HTTPException(422, "Alternate product columns must be unique")
         allowed = {
             "code",
             "supplier_code",

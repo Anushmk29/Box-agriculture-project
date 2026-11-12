@@ -234,6 +234,7 @@ class NameFirstMatcher:
     def reviewed_product(self, names: list[str | None], *, raw_code: str | None = None,
                          main_customer_id: str | None = None) -> Product | None:
         """Only exact names/codes or staff-verified mappings may enter purchasing."""
+        names = list(dict.fromkeys((name or "").strip().lower() for name in names))
         key = (tuple(names), raw_code, main_customer_id)
         if key in self._reviewed_products:
             return self._reviewed_products[key]
@@ -254,7 +255,7 @@ class NameFirstMatcher:
                 self._reviewed_products[key] = reviewed
                 return reviewed
         candidates, evidence_sets = {}, []
-        for name in [*names, ""]:
+        for name in dict.fromkeys([*names, ""]):
             exact = self.name_candidates.get(name_key(name), [])
             for product in exact:
                 candidates[product.id] = product
@@ -276,9 +277,7 @@ class NameFirstMatcher:
         return reviewed
 
     def suggestions(self, names: list[str | None], code: str | None = None) -> list[dict]:
-        terms = [n.strip().casefold() for n in names if n and n.strip()]
-        if code:
-            terms.append(code.strip().casefold())
+        terms = list(dict.fromkeys(n.strip().casefold() for n in [*names, code] if n and n.strip()))
         ranked = []
         for product in self.products:
             candidates = [product.name_en, product.name_vi, product.name_th, product.t_code, product.numeric_code]

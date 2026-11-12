@@ -71,6 +71,9 @@ hashed receipt records, and an operator billing screen.
 The two agents are bounded workflow identities. Calculations, state transitions,
 packing constraints, and financial gates remain deterministic and auditable.
 
+See [security hardening and release checks](SECURITY_HARDENING_2026-11-12.md)
+for manual account seeding, current packing/note permissions, and owner release gates.
+
 ## Local development
 
 For a Hostinger VPS deployment, see the [deployment plan](deploy/hostinger/PLAN.md)

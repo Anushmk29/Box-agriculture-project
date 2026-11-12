@@ -60,7 +60,7 @@ class Invoice(Base):
     )  # Main customer when on-behalf
     internal_notes = deferred(Column(
         Text, nullable=True
-    ))  # Private text field for owners/accounting; never shown on client PDF
+    ))  # Accounting/Agent1 draft detail; omitted from customer-facing invoice HTML.
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     items = relationship("InvoiceLineItem", back_populates="invoice", cascade="all, delete-orphan")
